@@ -43,8 +43,8 @@
         <div class="cart-popup-content">
             <span class="close">&times;</span>
             <h2>Cart Items</h2>
+            <p>Your cart is empty</p>
             <ul class="cart-items">
-                <!-- Cart items will be dynamically added here -->
             </ul>
 
         </div>
@@ -215,27 +215,69 @@ $(document).on('click', '.product-item', function(event) {
     }, 500); // Timeout in milliseconds
 });
 
+// Variables to track touch movement
+var startX = 0;
+var endX = 0;
+var threshold = 50; // Minimum distance to consider as a swipe
+
+// Get the cart icon, cart popup, and close button
 var cartIcon = document.getElementById('cart-icon');
-    var cartPopup = document.getElementById('cart-popup');
-    var closeButton = cartPopup.querySelector('.close');
+var cartPopup = document.getElementById('cart-popup');
+var closeButton = cartPopup ? cartPopup.querySelector('.close') : null;
 
-    // Show popup
-    cartIcon.addEventListener('click', function(event) {
-        event.preventDefault();
+// Show popup
+cartIcon.addEventListener('click', function(event) {
+    event.preventDefault();
+    if (cartPopup) {
         cartPopup.classList.add('show');
-    });
+    }
+});
 
-    // Close popup
+// Close popup when clicking the close button
+if (closeButton) {
     closeButton.addEventListener('click', function() {
-        cartPopup.classList.remove('show');
-    });
-
-    // Optionally, close popup when clicking outside of it
-    window.addEventListener('click', function(event) {
-        if (event.target == cartPopup) {
+        if (cartPopup) {
             cartPopup.classList.remove('show');
         }
     });
+}
+
+// Optionally, close popup when clicking outside of it
+document.addEventListener('click', function(event) {
+    var isClickInsidePopup = cartPopup && cartPopup.contains(event.target);
+    var isClickInsideCartIcon = cartIcon.contains(event.target);
+    var isClickInsideAddButton = Array.from(addButtons).some(button => button.contains(event.target));
+
+    // Check if the click was outside the cart popup and not on an add button
+    if (!isClickInsidePopup && !isClickInsideCartIcon && !isClickInsideAddButton) {
+        if (cartPopup) {
+            cartPopup.classList.remove('show');
+        }
+    }
+});
+
+
+// Detect swipe gestures
+document.addEventListener('touchstart', function(event) {
+    var touch = event.touches[0];
+    startX = touch.clientX;
+});
+
+document.addEventListener('touchend', function(event) {
+    var touch = event.changedTouches[0];
+    endX = touch.clientX;
+    
+    // Calculate the distance moved
+    var distance = endX - startX;
+    
+    // Check if swipe is to the right and exceeds the threshold
+    if (distance > threshold) {
+        if (cartPopup && cartPopup.classList.contains('show')) {
+            cartPopup.classList.remove('show');
+        }
+    }
+});
+
             $(document).on('click', '.close-modal', function() {
                 $('#product-modal').hide();
                 $('body').css('overflow-y', 'scroll'); // or 'scroll'
@@ -516,6 +558,7 @@ function hideCartPopup() {
 function updateCartPopup(product) {
     var existingItem = cartItemsList.querySelector(`[data-id="${product.id}"]`);
     var quantity = 0;
+    $('.cart-popup-content p').remove();
 
     if (existingItem) {
         // Update existing item
@@ -556,7 +599,7 @@ function updateCartPopup(product) {
             <div class="cart-item-details">
                 <div class="description">${product.name}</div>
                 <div class="price-quantity">
-                    <div class="price">Price: ₹${product.pricePerGram}</div>
+                    <div class="price">Price: $${product.pricePerGram}</div>
                     <div class="quantity-controls">
                         <select class="quantity-type">
                             ${quantityOptions}
@@ -564,8 +607,9 @@ function updateCartPopup(product) {
                         <button class="decrease-quantity">-</button>
                         <span class="quantity">1</span>
                         <button class="increase-quantity">+</button>
-                        <button class="delete-item">Delete</button>
                     </div>
+                    <button class="delete-item">Delete</button>
+
                 </div>
             </div>
         `;
@@ -581,21 +625,22 @@ function updateCartPopup(product) {
 }
 
 function updateBuyButton() {
-    var existingBuyButton = document.querySelector('.buy-button-cart');
+    // Select the cart popup content
+    var cartPopupContent = document.querySelector('.cart-popup-content');
+
+    // Remove existing buy button if present
+    var existingBuyButton = cartPopupContent.querySelector('.buy-button-cart');
     if (existingBuyButton) {
-        existingBuyButton.remove(); // Remove existing button if present
+        existingBuyButton.remove();
     }
 
-    var buyButton = document.createElement('button');
-    buyButton.classList.add('buy-button-cart');
-    buyButton.textContent = 'Buy';
-
     // Collect data for products to be bought
+    var cartItemsList = document.querySelector('.cart-items');
     var itemsData = Array.from(cartItemsList.querySelectorAll('li')).map(item => {
         var quantityElement = item.querySelector('.quantity');
         var quantity = parseInt(quantityElement.textContent, 10);
         var selectedType = item.querySelector('.quantity-type').value;
-        var description = item.getAttribute('data-description')
+        var description = item.getAttribute('data-description');
         var pricePerUnit;
 
         // Determine price per unit based on selected type
@@ -626,15 +671,23 @@ function updateBuyButton() {
             quantity: quantity,
             selectedType: selectedType,
             totalPrice: totalPrice.toFixed(2),
-            description:description
+            description: description
         };
     });
 
-    // Set data attributes on the buy button as JSON string
-    buyButton.setAttribute('data-items', JSON.stringify(itemsData));
-    
-    // Append the button to the popup content
-    document.querySelector('.cart-popup-content').appendChild(buyButton);
+    // Check if itemsData is not empty
+    if (itemsData.length > 0) {
+        // Create a new buy button
+        var buyButton = document.createElement('button');
+        buyButton.classList.add('buy-button-cart');
+        buyButton.textContent = 'Order';
+
+        // Set data attributes on the buy button as JSON string
+        buyButton.setAttribute('data-items', JSON.stringify(itemsData));
+
+        // Append the button to the popup content
+        cartPopupContent.appendChild(buyButton);
+    }
 }
 
 // Call this function whenever you need to update the buy button
@@ -669,6 +722,10 @@ $(document).on('click', '.add-button', function() {
     };
     updateCartPopup(product);
     showCartPopup();
+    
+    
+
+
 });
 
 $(document).on('click', '.increase-quantity', function() {
@@ -694,9 +751,34 @@ $(document).on('click', '.decrease-quantity', function() {
 
 
 $(document).on('click', '.delete-item', function() {
-    $(this).closest('li').remove();
-    updateCartQuantity();
-    updateBuyButton(); // Ensure buy button is updated
+    var $item = $(this).closest('li');
+    
+    // Add slide-out class for animation
+    $item.addClass('slide-out');
+    
+    // Remove the item after animation completes
+    setTimeout(function() {
+        $item.remove();
+
+        // Debugging output
+        console.log('Item removed, checking cart state...');
+        
+        // Check if cart is empty
+        if ($('.cart-items li').length === 0) { // Ensure the selector is correct
+            console.log('Cart is empty, updating UI...');
+            
+            // Remove the buy button
+            
+            // Append message indicating the cart is empty
+            $('.cart-popup-content').append('<p>Your cart is empty</p>');
+            $('#buy-button-cart').remove();
+
+        }
+        
+        // Update cart quantity and buy button
+        updateCartQuantity();
+        updateBuyButton();
+    }, 500); // Duration of the animation in milliseconds
 });
 
 // Event listener for quantity type change
