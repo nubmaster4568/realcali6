@@ -278,11 +278,11 @@ app.post('/admins', async (req, res) => {
     try {
         if (action === 'add') {
             // Add admin user
-            await client.query('INSERT INTO admin_users (user_id) VALUES ($1) ON CONFLICT (user_id) DO NOTHING', [user_id]);
+            await client.query('INSERT INTO admin (user_id) VALUES ($1) ON CONFLICT (user_id) DO NOTHING', [user_id]);
             res.send('Admin user added successfully.');
         } else if (action === 'remove') {
             // Remove admin user
-            const result = await client.query('DELETE FROM admin_users WHERE user_id = $1 RETURNING *', [user_id]);
+            const result = await client.query('DELETE FROM admin WHERE user_id = $1 RETURNING *', [user_id]);
 
             if (result.rowCount > 0) {
                 res.send('Admin user removed successfully.');
@@ -301,9 +301,10 @@ app.post('/admins', async (req, res) => {
 // Route to list admin users
 app.get('/admins', async (req, res) => {
     try {
-        const result = await client.query('SELECT user_id FROM admin_users');  // Adjust query based on your database schema
+        const result = await client.query('SELECT user_id FROM admin');  // Adjust query based on your database schema
         const admins = result.rows.map(row => row.user_id);
         res.json(admins);
+        console.log(admins)
     } catch (err) {
         console.error('Error fetching admins:', err.message);
         res.status(500).send('Error fetching admins.');
