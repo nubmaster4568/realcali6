@@ -58,12 +58,13 @@
     <script src='https://api.mapbox.com/mapbox-gl-js/v2.9.0/mapbox-gl.js'></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
     <script>document.addEventListener('DOMContentLoaded', function() {
-        function getUrlParameter(name) {
-            name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
-            const regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
-            const results = regex.exec(location.search);
-            return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
-        }
+function getUrlParameter(name) {
+    name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+    const regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+    const results = regex.exec(location.search);
+    return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' ')) || '';
+}
+
     
         function getCartItemsFromUrl() {
             const items = [];
@@ -122,7 +123,7 @@
         }
     
         const isCartPage = location.search.includes('id-');
-        const isSingleProductPage = location.search.includes('productId=');
+        const isSingleProductPage = location.search.includes('productDescription');
     
         if (isCartPage) {
             const cartItems = getCartItemsFromUrl();
@@ -143,7 +144,7 @@
                     section.appendChild(itemContainer);
     
                     const itemTitle = document.createElement('h2');
-                    itemTitle.textContent = `Product ID: ${item.id}`;
+                    itemTitle.textContent = `Product Name: ${item.id}`;
                     itemContainer.appendChild(itemTitle);
     
                     const itemDescription = document.createElement('p');
@@ -264,7 +265,8 @@
                 const perQp = parseFloat(getUrlParameter('perqp'));
                 const perHalfP = parseFloat(getUrlParameter('perhp'));
                 const perLb = parseFloat(getUrlParameter('perlb'));
-    
+                console.log({ productId, productName, productDescription, productPrice, perGram, perOz, perQp, perHalfP, perLb });
+
                 const section = document.querySelector('.section-block');
     
                 const productSummary = document.createElement('div');

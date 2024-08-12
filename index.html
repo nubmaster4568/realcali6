@@ -568,7 +568,7 @@ function updateCartPopup(product) {
     } else {
         // Add new item
         var listItem = document.createElement('li');
-        listItem.setAttribute('data-id', product.id);
+        listItem.setAttribute('data-id', product.name);
         listItem.setAttribute('data-price-per-gram', product.pricePerGram);
         listItem.setAttribute('data-price-per-oz', product.pricePerOz);
         listItem.setAttribute('data-price-per-qp', product.pricePerQp);
@@ -981,7 +981,6 @@ function fetchProducts(categorie) {
 }
 
 
-
 // Event handler for buy button
 $(document).on('click', '.buy-button', function() {
     const productId = $(this).data('id');
@@ -996,8 +995,7 @@ $(document).on('click', '.buy-button', function() {
     const productDescription = encodeURIComponent($(this).data('description'));
     const productLocation = encodeURIComponent($(this).closest('.product-item').data('location'));
 
-    const orderUrl = `order.html?perlb=${perlb}&perhp=${perhp}&perqp=${perqp}&peroz=${peroz}&perg=${perg}&productId=${productId}&productPrice=${productPrice}&productName=${productName}&productDescription=${productDescription}&productLocation=${productLocation}`;
-
+const orderUrl = `order.html?id-0=${productName}&quantity-0=${1}&type-0=grams&pricePerGram-0=${perg}&pricePerOz-0=${peroz}&pricePerQp-0=${perqp}&pricePerHalfP-0=${perhp}&pricePer1Lb-0=${perlb}&description-0=${productDescription}`
     window.location.href = orderUrl;
 });
 function filterProducts() {
