@@ -1,0 +1,33 @@
+{
+  "name": "your-project-name",
+  "version": "1.0.0",
+  "description": "Your project description",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "axios": "*",
+    "cors": "*",
+    "dropbox": "^10.34.0",
+    "express": "*",
+    "formidable": "*",
+    "isomorphic-fetch": "^3.0.0",
+    "multer": "*",
+    "node-telegram-bot-api": "^0.66.0",
+    "pg": "*",
+    "sharp": "*",
+    "telegraf": "*",
+    "tus-js-client": "^2.3.0",
+    "vimeo": "^1.2.0",
+    "vimeo-upload": "^0.1.6",
+    "vimeo-upload-client": "^1.0.0"
+  },
+  "devDependencies": {
+    "sqlite3": "*"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "license": "MIT"
+}

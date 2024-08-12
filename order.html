@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Order Details</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href='https://api.mapbox.com/mapbox-gl-js/v2.9.0/mapbox-gl.css' rel='stylesheet' />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sometype+Mono:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
+    <style>
+        .chakra-input.css-dni0pk {
+            font-family: "Sometype Mono", monospace;
+            font-optical-sizing: auto;
+            font-weight: 400;
+            font-style: normal;
+            font-size: 17px; /* Adjust the font size if needed */
+        }
+        
+        .body { 
+            height: 100vh;
+        }
+        .needed {
+            height: 1000px;
+        }
+    </style>
+</head>
+<body class="needed">
+    <nav class="navbar">
+        <!-- Logo linked to index.html -->
+        <a href="index.html" class="logo">
+            <img src="realcalilogo copy.png" alt="Logo">
+        </a>
+        <!-- Text logo, if needed -->
+        <div class="logotext">
+            <img src="logotextreal.png" alt="Logo Text">
+        </div>
+    </nav>
+    
+    <div class="sections">
+        <div class="section-block">
+            <div class="container">
+                <div class="back-button">
+                    <a href="javascript:history.back()">
+                        &#9664; Back
+                    </a>
+                </div>
+    
+                <div id="product-name"></div>
+                <h1>Order Details</h1>
+                <form id="order-form">
+                    <div class="form-group">
+                        <label for="delivery-address">Delivery Address:</label>
+                        <input type="text" id="delivery-address" name="deliveryAddress" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="delivery-location">Delivery Date:</label>
+                        <input type="text" id="delivery-location" name="deliveryLocation" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="quantity" id="quantitylabel">Quantity:</label>
+                        <input type="number" id="quantity" name="quantity" required>
+                        <select id="quantity-unit" style="width: 150px;" name="quantityUnit" optional>
+                            <!-- Options will be dynamically populated -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="contact-info">Contact Info (Phone Number or Telegram Username):</label>
+                        <input type="text" id="contact-info" name="contactInfo" required>
+                    </div>
+                    <div class="form-group">
+                        <button type="submit">Place Order</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src='https://api.mapbox.com/mapbox-gl-js/v2.9.0/mapbox-gl.js'></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Function to get URL parameters
+            function getUrlParameter(name) {
+                name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+                const regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+                const results = regex.exec(location.search);
+                return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+            }
+    
+            // Get parameters from URL
+            const productName = getUrlParameter('productName');
+            const productPrice = parseFloat(getUrlParameter('productPrice')) || 0;
+            const productDescription = getUrlParameter('productDescription');
+            const productId = getUrlParameter('productId');
+            const perGram = parseFloat(getUrlParameter('perg')) || 0;
+            const perOz = parseFloat(getUrlParameter('peroz')) || 0;
+            const perQp = parseFloat(getUrlParameter('perqp')) || 0;
+            const perHalfP = parseFloat(getUrlParameter('perhp')) || 0;
+            const perLb = parseFloat(getUrlParameter('perlb')) || 0;
+    
+            // Set product name
+            document.getElementById('product-name').textContent = `Product Name: ${productName}`;
+    
+            // Populate quantity unit select
+            const quantityUnitSelect = document.getElementById('quantity-unit');
+            const units = [
+                { value: 'lbs', text: `Pounds (lbs) - $${perLb.toFixed(2)}`, price: perLb },
+                { value: 'grams', text: `Grams - $${perGram.toFixed(2)}`, price: perGram },
+                { value: 'oz', text: `Ounces (oz) - $${perOz.toFixed(2)}`, price: perOz },
+                { value: 'qp', text: `Quarter Pound (QP) - $${perQp.toFixed(2)}`, price: perQp },
+                { value: 'half-pound', text: `Half Pound - $${perHalfP.toFixed(2)}`, price: perHalfP }
+            ];
+    
+            // Check if there are any valid units
+            const hasValidUnits = units.some(unit => unit.price > 0);
+    
+            if (hasValidUnits) {
+                // Add valid units to the select menu
+                units.forEach(unit => {
+                    if (unit.price > 0) {
+                        const option = document.createElement('option');
+                        option.value = unit.value;
+                        option.textContent = unit.text;
+                        quantityUnitSelect.appendChild(option);
+                    }
+                });
+    
+                // Set default quantity to 1
+                const quantityInput = document.getElementById('quantity');
+
+                quantityInput.value = 1;
+    
+                // Function to calculate and display the total price based on the selected weight type
+                function updateTotalPrice() {
+                    const selectedValue = quantityUnitSelect.value;
+                    const selectedUnit = units.find(unit => unit.value === selectedValue);
+                    if (selectedUnit) {
+                        const quantity = parseFloat(quantityInput.value) || 1; // Default to 1 if quantity is not valid
+                        const totalPrice = selectedUnit.price * quantity;
+                        document.getElementById('product-name').textContent = `Product Name: ${productName} - Total Price: $${totalPrice.toFixed(2)}`;
+                    }
+                }
+    
+                // Initialize the displayed price
+                updateTotalPrice();
+    
+                // Update displayed price when the quantity or unit changes
+                quantityUnitSelect.addEventListener('change', updateTotalPrice);
+                quantityInput.addEventListener('input', updateTotalPrice);
+            } else {
+                // Hide the quantity unit select if no valid units
+                quantityUnitSelect.style.display = 'none';
+                // Set price based on the default price parameter
+                document.getElementById('product-name').textContent = `Product Name: ${productName} - Total Price: $${productPrice.toFixed(2)}`;
+            }
+    
+            // Handle form submission
+            const orderForm = document.getElementById('order-form');
+            if (orderForm) {
+                orderForm.addEventListener('submit', function(event) {
+                    event.preventDefault(); // Prevent default form submission
+    
+                    const formData = new FormData(orderForm);
+                    const orderData = {
+                        deliveryAddress: formData.get('deliveryAddress'),
+                        deliveryLocation: formData.get('deliveryLocation'),
+                        quantity: formData.get('quantity') || 1, // Default to 1 if quantity is not provided
+                        quantityUnit: formData.get('quantityUnit') || 'N/A',
+                        contactInfo: formData.get('contactInfo'),
+                        chatId: sessionStorage.getItem('user')
+                    };
+    
+                    // Send order data to the server
+                    $.ajax({
+                        url: 'http://localhost:3000/api/place-order',
+                        method: 'POST',
+                        data: JSON.stringify(orderData),
+                        contentType: 'application/json',
+                        success: function(response) {
+                            if (response.success) {
+                                alert('Order placed successfully!');
+                                // Optionally, clear the form or redirect the user
+                                orderForm.reset();
+                            } else {
+                                alert('Failed to place order.');
+                            }
+                        },
+                        error: function(jqXHR, textStatus, errorThrown) {
+                            console.error('Order submission failed:', textStatus, errorThrown);
+                        }
+                    });
+    
+                    // Optionally open a link or perform other actions
+                    window.open('https://t.me/realcalidirect', '_blank');
+                });
+            }
+        });
+    </script>
+    
+    
+    
+</body>
+</html>

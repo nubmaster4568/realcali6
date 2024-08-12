@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Shop Page</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href='https://api.mapbox.com/mapbox-gl-js/v2.9.0/mapbox-gl.css' rel='stylesheet' />
+    <link rel="stylesheet" href="style.css" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.css"/>
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick-theme.css"/>
+
+<!-- Slick Slider JS -->
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js"></script>
+
+</head>
+<body>
+    <nav class="navbar">
+        <!-- Logo linked to index.html -->
+        <a href="index.html" class="logo">
+            <img src="realcalilogo copy.png" alt="Logo">
+        </a>
+        <!-- Text logo, if needed -->
+        <div class="logotext">
+            <img src="logotextreal.png" alt="Logo Text">
+        </div>
+    </nav>
+    
+
+    <!-- Main Menu with Map and Product Grid -->
+    <div class="main-menu">
+        
+        <div class="banner2">
+            <div class="button-container">
+            </div>
+        </div>
+        
+
+        <div class="banner">
+            <div class="banner-images">
+                <!-- Banner images and text -->
+                <div class="banner-item">
+                    <div class="css-11ktyzx">
+                        <div class="css-10kwzia">Some<br></div>
+                    </div>
+                </div>
+                <div class="banner-item">
+                    <div class="css-11ktyzx1">
+                        <div class="css-10kwzia">Random</div>
+                    </div>
+                </div>
+                <div class="banner-item">
+                    <div class="css-11ktyzx2">
+                        <div class="css-10kwzia">Banners</div>
+                    </div>
+                </div>
+            </div>
+            <div class="dots">
+                <div class="dot active"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+            </div>
+        </div>
+
+        <div class="filters-container">
+            <!-- Category Filter -->
+
+        
+            <!-- Price Filter -->
+            <div class="filter-button">
+                <select class="filter-price">
+                    <option value="">Price Range</option>
+                    <option value="0-10">0 - 10</option>
+                    <option value="26-50">20 - 50</option>
+                    <option value="51-100">51 - 100</option>
+                </select>
+            </div>
+        
+            <!-- Type Filter -->
+
+        </div>
+
+    <div class="product-menu">
+        
+        <div class="product-grid" id="product-grid"></div>
+    </div>
+<!-- Modal -->
+<div class="modal" id="product-modal">
+    <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <h2 class="modal-title">Product Title</h2>
+        <p class="modal-price"><span class="modal-price-value"></span></p>
+        
+        <!-- Additional prices per weight type -->
+        <p class="modal-price-per-gram" style="display:none;">Price per gram: <span class="modal-price-per-gram-value"></span></p>
+        <p class="modal-price-per-oz" style="display:none;">Price per oz: <span class="modal-price-per-oz-value"></span></p>
+        <p class="modal-price-per-qp" style="display:none;">Price per quarter pound: <span class="modal-price-per-qp-value"></span></p>
+        <p class="modal-price-per-half-p" style="display:none;">Price per half pound: <span class="modal-price-per-half-p-value"></span></p>
+        <p class="modal-price-per-1lb" style="display:none;">Price per 1 lb: <span class="modal-price-per-1lb-value"></span></p>
+
+        <!-- Slider container -->
+        <div class="modal-slider">
+            <!-- Slider images and videos will be inserted here -->
+        </div>
+
+        <p class="modal-description"></p>
+    </div>
+</div>
+
+
+
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.js"></script>
+
+    <script src='https://api.mapbox.com/mapbox-gl-js/v2.9.0/mapbox-gl.js'></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+    
+    <script>
+        $(document).ready(function() {
+            function initializeSlider() {
+    $('.modal-slider').slick({
+        dots: true, // Show navigation dots
+        infinite: true, // Infinite looping
+        speed: 300, // Slide transition speed
+        slidesToShow: 1, // Show one slide at a time
+        slidesToScroll: 1, // Scroll one slide at a time
+        arrows: true, // Show navigation arrows
+    });
+}
+
+            function refreshSlider() {
+    if ($('.modal-slider').hasClass('slick-initialized')) {
+        $('.modal-slider').slick('unslick'); // Destroy previous instance
+    }
+    initializeSlider(); // Reinitialize slider
+}
+
+$(document).on('click', '.product-item', function() {
+    const name = $(this).data('name');
+    const price = $(this).data('price');
+    const description = $(this).data('description');
+    const images = JSON.parse($(this).attr('data-images') || '[]');
+    const videos = JSON.parse($(this).attr('data-videos') || '[]');
+    
+    // Extract additional prices
+    const pricePerGram = $(this).data('price-per-gram');
+    const pricePerOz = $(this).data('price-per-oz');
+    const pricePerQp = $(this).data('price-per-qp');
+    const pricePerHalfP = $(this).data('price-per-half-p');
+    const pricePer1Lb = $(this).data('price-per-1lb');
+
+    // Delay the modal display by 0.5 seconds
+    setTimeout(() => {
+        // Update modal title, price, and description
+        $('.modal-title').text(name);
+        $('.modal-price-value').text(price);
+        $('.modal-description').text(description);
+
+        // Clear existing content in slider
+        const $slider = $('.modal-slider');
+        $slider.empty();
+
+        // Add images to slider
+        images.forEach(image => {
+            $slider.append(`<div><img src="${image}" alt="${name}" /></div>`);
+        });
+
+        // Add videos to slider
+        videos.forEach(video => {
+            $slider.append(`<div><video controls autoplay><source src="${video}" type="video/mp4"></video></div>`);
+        });
+
+        // Refresh slider to update images/videos
+        refreshSlider(); // Ensure this function is defined to initialize the slider, if needed
+
+        // Update and show additional prices if they are greater than 0
+        $('.modal-price-per-gram').toggle(pricePerGram > 0).find('.modal-price-per-gram-value').text(pricePerGram > 0 ? `$${pricePerGram}` : '');
+        $('.modal-price-per-oz').toggle(pricePerOz > 0).find('.modal-price-per-oz-value').text(pricePerOz > 0 ? `$${pricePerOz}` : '');
+        $('.modal-price-per-qp').toggle(pricePerQp > 0).find('.modal-price-per-qp-value').text(pricePerQp > 0 ? `$${pricePerQp}` : '');
+        $('.modal-price-per-half-p').toggle(pricePerHalfP > 0).find('.modal-price-per-half-p-value').text(pricePerHalfP > 0 ? `$${pricePerHalfP}` : '');
+        $('.modal-price-per-1lb').toggle(pricePer1Lb > 0).find('.modal-price-per-1lb-value').text(pricePer1Lb > 0 ? `$${pricePer1Lb}` : '');
+
+        // Show the modal
+        $('#product-modal').show();
+        $('body').css('overflow-y', 'hidden');
+    }, 500); // Timeout in milliseconds
+});
+
+
+            $(document).on('click', '.close-modal', function() {
+                $('#product-modal').hide();
+                $('body').css('overflow-y', 'scroll'); // or 'scroll'
+
+            });
+
+            $(window).on('click', function(event) {
+                if ($(event.target).is('#product-modal')) {
+                    $('#product-modal').hide();
+                    $('body').css('overflow-y', 'scroll'); // or 'scroll'
+
+                }
+            });
+        
+            const $balanceText = $('.balance-text');
+            const dropdowns = document.querySelectorAll('.dropdown-content');
+            const $banner3 = $('.banner3');
+            const $banner2 = $('.banner2');
+            const $banner4 = $('.banner4');
+            const $dots = $('.dots .dot');
+            const imageCount = $dots.length;
+            const $prevBtn = $('.prev-btn');
+            const $nextBtn = $('.next-btn');
+            const $bannerImages = $('.banner-images');
+    
+            let selectedCityId = '';
+            let selectedCategorie = '';
+            let selectedType = '';
+            let currentIndex = 0;
+            let autoScrollInterval;
+
+    
+            function getUrlParameter(name) {
+                    name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+                    var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+                    var results = regex.exec(location.search);
+                    return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+                }
+        
+                var userId = getUrlParameter('userId'); // Correctly get userId
+        
+                if (userId) {
+            // Check for active transactions
+            $.ajax({
+    url: 'http://localhost:3000/api/checkActiveTransactions', // Endpoint to check active transactions
+    method: 'GET', // Ensure method matches the endpoint
+    data: { userId: userId }, // Send userId as query parameter
+    success: function(response) {
+        if (response.hasActiveTransaction) {
+            const transaction = response.transaction;
+            const redirectUrl = `/order.html?userId=${transaction.user_id}&productId=${transaction.product_id}&price=${transaction.price}`;
+            // Redirect to orders page with the transaction details
+            window.location.href = redirectUrl;
+        } else {
+            // Update links with userId parameter
+            $('a').each(function() {
+                var href = $(this).attr('href'); // Get the current href attribute
+                if (href) {
+                    if (href.indexOf('?') !== -1) {
+                        $(this).attr('href', href + '&userId=' + userId);
+                    } else {
+                        $(this).attr('href', href + '?userId=' + userId);
+                    }
+                }
+            });
+        }
+    },
+    error: function(xhr, status, error) {
+        console.error('AJAX Error:', status, error);
+    }
+            });
+            $.ajax({
+            url: 'http://localhost:3000/api/getBalance', // Endpoint to fetch balance
+            method: 'GET',
+            data: { userId: userId },
+            success: function(response) {
+                if (response && response.balance !== undefined) {
+                    // Ensure balance is a number
+                    let balance = parseFloat(response.balance);
+                    if (!isNaN(balance)) {
+                        $balanceText.text(`${balance.toFixed(2)} $`);
+                    } else {
+                        console.error('Balance is not a valid number:', response.balance);
+                    }
+                } else {
+                    console.error('Invalid balance response:', response);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error fetching balance:', status, error);
+            }
+        });
+        
+        
+        
+        
+        }
+            // Fetch and update cities
+            async function fetchCategories() {
+                try {
+                    const response = await fetch('http://localhost:3000/api/categories');
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    const data = await response.json();
+                    return data.cities;
+                } catch (error) {
+                    console.error('Error fetching cities:', error);
+                }
+            }
+        
+            // Fetch and update locations based on cityId
+            async function fetchLocations(cityId) {
+                try {
+                    const response = await fetch(`http://localhost:3000/api/locations?cityId=${cityId}`);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    const data = await response.json();
+                    return data.locations;
+                } catch (error) {
+                    console.error('Error fetching locations:', error);
+                }
+            }
+    
+            function updateBanner(index) {
+                $bannerImages.css('transform', `translateX(-${index * 100}%)`);
+                $dots.removeClass('active');
+                $dots.eq(index).addClass('active');
+            }
+    
+            function startAutoScroll() {
+                autoScrollInterval = setInterval(function() {
+                    currentIndex = (currentIndex + 1) % imageCount;
+                    updateBanner(currentIndex);
+                }, 3000);
+            }
+            
+            function stopAutoScroll() {
+                clearInterval(autoScrollInterval);
+            }
+            
+            // Initialize the banner
+            updateBanner(currentIndex);
+            startAutoScroll();
+    
+            // Click event for next button
+            $nextBtn.on('click', function() {
+                stopAutoScroll();
+                currentIndex = (currentIndex + 1) % imageCount;
+                updateBanner(currentIndex);
+                startAutoScroll();
+            });
+            
+            // Click event for previous button
+            $prevBtn.on('click', function() {
+                stopAutoScroll();
+                currentIndex = (currentIndex - 1 + imageCount) % imageCount;
+                updateBanner(currentIndex);
+                startAutoScroll();
+            });
+            
+            // Click event for dots
+            $dots.on('click', function() {
+                stopAutoScroll();
+                const index = $(this).index();
+                currentIndex = index;
+                updateBanner(currentIndex);
+                startAutoScroll();
+            });
+    
+            async function updateBanner2() {
+    const response = await fetch('/api/categories');
+    const data = await response.json();
+    const categories = data.categories; // Update to use 'categories' based on the server response
+
+    if (categories) {
+        // Sort categories so that "Weed" comes first
+        categories.sort((a, b) => {
+            if (a.categorie_name === 'Weed') return -1;
+            if (b.categorie_name === 'Weed') return 1;
+            return 0;
+        });
+
+        const $buttonContainer = $('.button-container');
+        $buttonContainer.empty();
+
+        categories.forEach((categorie, index) => {
+            // Create a button element for each category
+            const $button = $('<button></button>', {
+                class: 'banner-button',
+                'data-id': categorie.id,
+                css: {
+                    '--i': index + 1
+                }
+            });
+
+            // Set button content with image and label
+            $button.html(`
+                <img src="${categorie.categorie_image}" alt="Icon" class="button-icon" />
+                <div class="button-label">${categorie.categorie_name}</div>
+            `);
+
+            // Add click event listener
+            $button.on('click', async function() {
+                $('.banner-button').removeClass('selected');
+                $(this).addClass('selected');
+                selectedCategorie = $(this).data('id');
+                $banner3.addClass('visible');
+                $('.filter-category').val(''); // Clear category filter
+                $('.filter-price').val('');    // Clear price filter
+                $('.filter-type').val('');     // Clear type filter
+                await fetchProducts(selectedCategorie); // Fetch products based on selected category
+            });
+
+            $buttonContainer.append($button);
+        });
+
+        // Select the button for "Weed" by default
+        const weedButton = $buttonContainer.find('button').filter(function() {
+            return $(this).find('.button-label').text() === 'Weed';
+        });
+
+        if (weedButton.length) {
+            weedButton.addClass('selected');
+            selectedCategorie = weedButton.data('id');
+            $banner3.addClass('visible');
+            $('.filter-category').val(''); // Clear category filter
+            $('.filter-price').val('');    // Clear price filter
+            $('.filter-type').val('');     // Clear type filter
+            await fetchProducts(selectedCategorie); // Fetch products based on selected category
+        }
+    }
+}
+
+
+
+
+function bufferToBase64(buffer) {
+    // Create a Uint8Array from the buffer
+    const uint8Array = new Uint8Array(buffer);
+    // Convert Uint8Array to a binary string
+    let binary = '';
+    const len = uint8Array.byteLength;
+    for (let i = 0; i < len; i++) {
+        binary += String.fromCharCode(uint8Array[i]);
+    }
+    // Convert binary string to Base64
+    return window.btoa(binary);
+}
+function fetchProducts(categorie) {
+    $.ajax({
+        url: 'http://localhost:3000/api/products',
+        type: 'GET',
+        data: { categorie },
+        success: function(response) {
+            const products = response.products;
+            const $productGrid = $('#product-grid');
+            $productGrid.empty();
+            
+            products.forEach(product => {
+                // Check if media_data exists and is correctly structured
+                const mediaData = product.media_data || {};
+                const images = mediaData.images || [];
+                const videos = mediaData.videos || [];
+
+                // Determine the first image URL (if available)
+                const firstImageUrl = images.length > 0 ? images[0] : '';
+
+                // Extract price per weight category
+                const pricePerGram = parseFloat(product.price_per_gram) || 0;
+                const pricePerOz = parseFloat(product.price_per_oz) || 0;
+                const pricePerQp = parseFloat(product.price_per_qp) || 0;
+                const pricePerHalfP = parseFloat(product.price_per_half_p) || 0;
+                const pricePer1Lb = parseFloat(product.price_per_1lb) || 0;
+
+                // Determine the lowest price and its associated category
+                const prices = [
+                    { type: 'per g', price: pricePerGram },
+                    { type: 'per oz', price: pricePerOz },
+                    { type: 'per QP', price: pricePerQp },
+                    { type: 'per 1/2 P', price: pricePerHalfP },
+                    { type: 'per 1 lb', price: pricePer1Lb }
+                ].filter(p => p.price > 0); // Filter out zero prices
+
+                let lowestPriceInfo = { type: ' ', price: parseFloat(product.price) };
+
+                if (prices.length > 0) {
+                    // Find the lowest price
+                    lowestPriceInfo = prices.reduce((min, p) => p.price < min.price ? p : min, prices[0]);
+                }
+
+                // Create product item HTML
+                const productItem = $('<div>', { class: 'product-item' })
+                    .attr('data-name', product.name)
+                    .attr('data-price', `$${lowestPriceInfo.price.toFixed(2)}`)
+                    .attr('data-lat', product.latitude)
+                    .attr('data-lng', product.longitude)
+                    .attr('data-type', product.type)
+                    .attr('data-description', product.description)
+                    .attr('data-image', firstImageUrl) // Main image URL
+                    .attr('data-images', JSON.stringify(images)) // Other images URLs
+                    .attr('data-videos', JSON.stringify(videos)) // Video URLs
+                    .attr('data-id', product.identifier)
+                    .attr('data-location', product.location)
+                    .attr('data-price-per-gram', pricePerGram.toFixed(2) || '0')
+                    .attr('data-price-per-oz', pricePerOz.toFixed(2) || '0')
+                    .attr('data-price-per-qp', pricePerQp.toFixed(2) || '0')
+                    .attr('data-price-per-half-p', pricePerHalfP.toFixed(2) || '0')
+                    .attr('data-price-per-1lb', pricePer1Lb.toFixed(2) || '0')
+                    .html(`
+                        <div class="product-price">$${lowestPriceInfo.price.toFixed(2)} ${lowestPriceInfo.type}</div>
+                        ${firstImageUrl ? `<img src="${firstImageUrl}" alt="${product.name}" class="product-image"/>` : ''}
+                        <div class="product-name">${product.name}</div>
+                        <button class="buy-button" 
+                            data-id="${product.identifier}" 
+                            data-price="${lowestPriceInfo.price}" 
+                            data-image="${firstImageUrl}" 
+                            data-description="${product.description}" 
+                            data-price-per-gram="${pricePerGram.toFixed(2)}" 
+                            data-price-per-oz="${pricePerOz.toFixed(2)}" 
+                            data-price-per-qp="${pricePerQp.toFixed(2)}" 
+                            data-price-per-half-p="${pricePerHalfP.toFixed(2)}" 
+                            data-price-per-1lb="${pricePer1Lb.toFixed(2)}">Buy
+                        </button>
+                    `);
+
+                $productGrid.append(productItem);
+                productItem.css('animation', 'fadeInUp 0.5s forwards');
+
+                
+            });
+        },
+        error: function(xhr, status, error) {
+            console.error('Error fetching products:', error);
+        }
+    });
+}
+// Event handler for buy button
+$(document).on('click', '.buy-button', function() {
+    const productId = $(this).data('id');
+    const productPrice = $(this).data('price');
+    const productImage = $(this).data('image');
+    const perg = $(this).data('price-per-gram');
+    const peroz = $(this).data('price-per-oz');
+    const perqp = $(this).data('price-per-qp');
+    const perhp = $(this).data('price-per-half-p');
+    const perlb = $(this).data('price-per-1lb');
+    const productName = $(this).closest('.product-item').data('name');
+    const productDescription = encodeURIComponent($(this).data('description'));
+    const productLocation = encodeURIComponent($(this).closest('.product-item').data('location'));
+
+    const orderUrl = `order.html?perlb=${perlb}&perhp=${perhp}&perqp=${perqp}&peroz=${peroz}&perg=${perg}&productId=${productId}&productPrice=${productPrice}&productName=${productName}&productDescription=${productDescription}&productLocation=${productLocation}`;
+
+    window.location.href = orderUrl;
+});
+function filterProducts() {
+        // Get selected filter values
+        const selectedCategory = $('.filter-category').val();
+        const selectedPriceRange = $('.filter-price').val();
+        const selectedType = $('.filter-type').val();
+        
+        // Iterate over each product item
+        $('.product-item').each(function() {
+            const $product = $(this);
+            const productCategory = $product.data('category'); // Update this line to match your data attribute
+            const productPrice = parseFloat($product.data('price').replace('$', ''));
+            const productType = $product.data('type');
+            let showProduct = true;
+
+            // Check category filter
+            if (selectedCategory && productCategory !== selectedCategory) {
+                showProduct = false;
+            }
+
+            // Check price range filter
+            if (selectedPriceRange) {
+                const [minPrice, maxPrice] = selectedPriceRange.split('-').map(Number);
+                if (productPrice < minPrice || productPrice > maxPrice) {
+                    showProduct = false;
+                }
+            }
+
+            // Check type filter
+            if (selectedType && productType !== selectedType) {
+                showProduct = false;
+            }
+
+            // Show or hide the product based on the filters
+            if (showProduct) {
+                $product.show();
+            } else {
+                $product.hide();
+            }
+        });
+    }
+
+    // Event listener for filter changes
+    $('.filter-category, .filter-price, .filter-type').on('change', function() {
+        filterProducts();
+    });
+
+            // Initialize
+            updateBanner2();
+            
+            // Update product type button state when city or location changes
+            $('.banner2').on('click', '.banner-button', function() {
+                fetchProducts(selectedCategorie);
+            
+            });
+    
+            $('.banner3').on('click', '.banner-button2', function() {
+                updateProductTypeButtons();
+            });
+        });
+
+
+
+
+
+
+
+</script>
+    
+</body>
+</html>

@@ -1,0 +1,1474 @@
+
+body {
+    margin: 0;
+    font-family: 'Roboto', sans-serif;
+    background-color: #fff9eb;
+}
+.sections {
+    margin: 0;
+    font-family: 'Roboto', sans-serif;
+}
+.slick-slide img, .slick-slide video {
+    height:300px !important;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between; /* Aligns items to the right */
+    align-items: center; /* Centers items vertically if needed */
+    padding: 5px 15px 5px 15px;
+    background-color: #25262e;
+    border-radius: 15px;
+    margin: 10px; /* Optional: Adds padding around the navbar */
+}
+.blue-balance-link {
+    text-decoration: none /* Ensures padding and border are included in the element's total width and height */
+
+}
+/* Style for the button */
+.blue-balance {
+    display: flex; /* Use flexbox for alignment */
+    align-items: center; /* Center items vertically */
+    justify-content: space-around; /* Center items horizontally */
+    background-color: rgb(0, 122, 255);
+    width: 150px;
+    height: 50px;
+    border: none; /* Removes default border */
+    color: white; /* Sets text color to white */
+    cursor: pointer; /* Changes cursor to pointer on hover */
+    font-size: 16px;
+    border-radius: 12px; 
+    padding: 0 10px; /* Adds padding inside the button */
+    box-sizing: border-box;
+    text-decoration: none /* Ensures padding and border are included in the element's total width and height */
+}
+
+/* Adjust font size if needed */
+.balance-text {
+    font-size: 30px;
+    padding: 10px;
+    color: white; /* Optional: Adds padding around the navbar */
+}
+.banner {
+    width: 95%;
+    height: 100px; /* Adjust this height based on the content */
+    background: linear-gradient(135deg, rgb(138, 94, 36) 0%, rgb(238, 148, 52) 100%);
+    margin: 10px auto;
+    border-radius: 15px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+}
+
+.banner-images {
+    display: flex;
+    transition: transform 0.5s ease-in-out;
+    width: 300%; /* Adjust based on the number of images */
+}
+
+.banner-item {
+    flex: 0 0 100%;
+    height: 100%; /* Ensure full height of banner */
+    box-sizing: border-box;
+    display: flex; /* Align content inside banner-item */
+    align-items: center; /* Center content vertically */
+    justify-content: center; /* Center content horizontally */
+}
+
+.css-11ktyzx {
+    color: white;
+    position: relative;
+    background: linear-gradient(135deg, rgb(138, 73, 36) 0%, rgb(238, 142, 52) 100%);
+    border-radius: 4px;
+    padding: 30px; /* Adjust based on your content */
+    height: 100%; /* Make it fit the banner-item */
+    width: 100%; /* Make it fit the banner-item */
+    box-sizing: border-box; /* Include padding in width and height calculations */
+    display: flex; /* Flexbox for aligning content */
+ /* Center text inside */
+    overflow: hidden;
+}
+.css-11ktyzx1 {
+    color: white;
+    position: relative;
+    background: linear-gradient(135deg, rgb(36, 39, 138) 0%, rgb(52, 74, 238) 100%);
+    border-radius: 4px;
+    padding: 30px; /* Adjust based on your content */
+    height: 100%; /* Make it fit the banner-item */
+    width: 100%; /* Make it fit the banner-item */
+    box-sizing: border-box; /* Include padding in width and height calculations */
+    display: flex; /* Flexbox for aligning content */
+ /* Center text inside */
+    overflow: hidden;
+}
+
+.css-11ktyzx::before {
+    content: "";
+    position: absolute;
+    width: 200px;
+    height: 168px;
+    bottom: 0;
+    right: 0;
+    background-size: cover;
+    background-repeat: no-repeat;
+    z-index: -1;
+}
+
+.css-11ktyzx1::before {
+    content: "";
+    position: absolute;
+    width: 200px;
+    height: 100px;
+    bottom: 0px;
+    right: 0px;
+    background-size: cover;
+    background-repeat: no-repeat;
+    z-index: 1;
+}
+.css-11ktyzx2::before {
+    content: "";
+    position: absolute;
+    width: 200px;
+    height: 100px;
+    bottom: 0px;
+    right: 0px;
+    background-size: cover;
+    background-repeat: no-repeat;
+    z-index: 1;
+}
+
+
+.banner-images img {
+    width: 100%;
+    height: 100%; /* Ensure images fill the height of their container */
+    object-fit: cover;
+}
+
+.dots {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 10px;
+}
+/* Style for selected buttons */
+.banner-button.selected {
+    background: rgb(115 61 30);
+    /* Darker blue or any color you prefer */
+}
+/* Style for selected buttons */
+.banner-button2.selected {
+    background: rgb(115 61 30);
+    /* Darker blue or any color you prefer */
+}
+
+/* Style for product-type buttons (add selected state if needed) */
+.product-type.meth.selected {
+    background: #2077b1 !important;
+    border: solid 1px white; /* Darker blue or any color you prefer */
+}
+/* Style for product-type buttons (add selected state if needed) */
+.product-type.weed.selected {
+    background: #217d21 !important;
+    border: solid 1px white; /* Darker blue or any color you prefer */
+    /* Darker blue or any color you prefer */
+}
+.product-type.shok.selected {
+    background: #7a531e !important;
+    border: solid 1px white; /* Darker blue or any color you prefer */
+    /* Darker blue or any color you prefer */
+}
+.dot {
+    width: 12px;
+    height: 12px;
+    background-color: rgba(255, 255, 255, 0.5);
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.dot.active {
+    background-color: white;
+}
+
+
+.banner2 {
+    display: flex;
+    margin: 10px auto;
+    border-radius: 15px;
+    overflow: hidden; /* Hide overflow of the banner itself */
+    position: relative;
+    max-height: 300px;
+    transition: max-height 0.3s ease;
+}
+
+/* When expanded, set max-height to accommodate all buttons */
+.banner2.expanded {
+    max-height: 1000px; /* Large enough to show all buttons; adjust as needed */
+}
+
+
+
+.css-11ktyzx {
+    color: white;
+    position: relative;
+    background: linear-gradient(135deg, rgb(36, 138, 61) 0%, rgb(52, 238, 80) 100%);
+    border-radius: 4px;
+    padding: 39px 16px;
+    height: 168px;
+    z-index: 1;
+    overflow: hidden;
+}
+
+.css-11ktyzx2 {
+    color: white;
+    position: relative;
+    background: linear-gradient(135deg, rgb(138, 73, 36) 0%, rgb(238, 142, 52) 100%);
+    border-radius: 4px;
+    padding: 30px; /* Adjust based on your content */
+    height: 100%; /* Make it fit the banner-item */
+    width: 100%; /* Make it fit the banner-item */
+    box-sizing: border-box; /* Include padding in width and height calculations */
+    display: flex; /* Flexbox for aligning content */
+ /* Center text inside */
+    overflow: hidden;
+}
+.css-16a12ag {
+    font-weight: 300;
+    font-size: 20px;
+    line-height: 40px;
+    margin-bottom: 8px;
+}
+.css-10kwzia {
+    font-weight: 600;
+    font-size: 17px;
+    line-height: 24px;
+}
+.css-11ktyzx::before {
+    content: "";
+    position: absolute;
+    width: 200px;
+    height: 168px;
+    bottom: 0px;
+    right: 0px;
+    background-size: cover;
+    background-repeat: no-repeat;
+    z-index: -1;
+}
+.expand-btn {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #3498db; /* Adjust as needed */
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+.button-container {
+    color: white;
+    display: flex; /* Lay out buttons horizontally */
+    padding: 10px;
+    padding-bottom: 50px;
+    height: 100%;
+    max-height: 200px;
+    overflow-x: auto; /* Enable horizontal scrolling */
+    overflow-y: hidden; /* Prevent vertical scrolling */
+    position: relative;
+    white-space: nowrap; /* Prevent buttons from wrapping */
+    -ms-overflow-style: none; /* For Internet Explorer and Edge */
+    scrollbar-width: none;}
+
+    .button-container::-webkit-scrollbar {
+        display: none; /* Hide scrollbar for Webkit browsers */
+    }
+
+    .banner-button {
+        margin-right: 10px;
+        width: 60px;
+        height: 60px;
+        outline: 1px white;
+        background: rgb(226 172 66);
+        border: none;
+        color: white;
+        padding: 10px 20px;
+        font-size: 10px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease, opacity 10s ease;
+        box-shadow: rgb(97, 99, 61) 0px 3px;
+        pointer-events: auto;
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+.banner-button2 {
+    width: 100px;
+    outline:1px white;
+    background: rgba(63, 71, 94, 0.6);
+    border: none; /* Removes default border */
+    color: white; /* White text */
+    padding: 10px 20px; /* Adds padding */
+    font-size: 10px; /* Sets font size */
+    border-radius: 5px; /* Rounds corners */
+    cursor: pointer; /* Changes cursor on hover */
+    transition: background-color 0.3s ease;
+    box-shadow: rgb(61, 71, 99) 0px 3px;
+    pointer-events: auto;
+    transition: background-color 0.3s ease, opacity 10s ease; /* Combined transition properties */
+    /* Ensure buttons are clickable */
+    /* Smooth background color transition */
+}
+.banner-button .button-icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 40px; /* Adjust size as needed */
+    height: 40px; /* Adjust size as needed */
+}
+.button-label {
+    margin-top: 60px; /* Adjust spacing as needed */
+    font-size: 11px; /* Adjust font size as needed */
+    color: #222222; /* Adjust color as needed */
+    text-align: center;
+}
+.banner4 {
+    position: relative; /* Ensure the overlay is positioned relative to this container */
+    display: flex;
+    justify-content: center; /* Center buttons horizontally */
+    gap: 10px; /* Space between buttons */
+    height: auto; /* Adjust height automatically based on content */
+    width: 95%;
+    background-color: rgba(37, 39, 46); /* #25272e with 0.5 opacity */
+    margin: 10px auto;
+    border-radius: 15px;
+    padding: 10px 0px;
+}
+.css-1lgem63 {
+    width: 16px;
+    height: 16px;
+    display: inline-block;
+    line-height: 1em;
+    flex-shrink: 0;
+    color: currentcolor;
+    vertical-align: middle;
+    fill: none;
+    position: absolute;
+    top: 7px;
+    right: 7px;
+}
+
+.banner3::after {
+    border-radius: 15px;
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(37, 39, 46, 0.5); /* #25272e with 0.5 opacity */
+    transition: opacity 0.3s ease;
+    opacity: 1; /* Overlay visible initially */
+    z-index: 1; /* Ensure overlay is on top */
+    pointer-events: auto; /* Ensure overlay intercepts clicks */
+}
+
+.banner3.visible::after {
+    opacity: 0; /* Hide the overlay */
+    pointer-events: none; /* Allow clicks to pass through */
+}
+/* General styles for the deposit-content */
+/* General styles for the deposit-content */
+.deposit-content {
+    display: flex;                /* Enable flexbox layout */
+    flex-direction: column;       /* Stack children vertically */
+    align-items: center;          /* Center items horizontally */
+    justify-content: flex-start;  /* Align items to the top */
+    text-align: center;           /* Center text */
+    padding-top: 20px;            /* Add some padding from the top */
+}
+.deposit-content2 {
+    display: flex;                /* Enable flexbox layout */
+    flex-direction: column;       /* Stack children vertically */
+    align-items: center;          /* Center items horizontally */
+    justify-content: flex-start;  /* Align items to the top */
+    text-align: center;           /* Center text */
+    padding-top: 20px;            /* Add some padding from the top */
+}
+/* Additional styling for the deposit-text */
+.deposit-text {
+    color: white;
+    font-size: 24px;              /* Font size for the text */
+    font-weight: bold;            /* Bold text */
+    margin: 0;                    /* Remove default margin */
+}
+
+
+.product-type {
+    border: none; /* Removes default border */
+    color: white; /* White text */
+    padding: 10px 30px; /* Adds padding */
+    border-radius: 5px; /* Rounds corners */
+    cursor: pointer; /* Changes cursor on hover */
+    transition: background-color 0.3s ease;
+    box-shadow: rgb(83, 83, 83) 0px 2px; /* Adds shadow */
+    display: flex; /* Use flexbox to center content */
+    align-items: center; /* Center content vertically */
+    justify-content: center; /* Center content horizontally */
+    text-align: center;
+    margin: 0; /* Reset margin */
+
+}
+
+.product-type.weed {
+    background: linear-gradient(135deg, rgb(36, 138, 61) 0%, rgb(52, 238, 80) 100%);
+    /* Green gradient background for weed type */
+}
+.product-type.weed.disabled{
+    background: rgba(63, 71, 94, 0.6);
+ 
+}
+.product-type.meth {
+    background: linear-gradient(135deg, rgb(36, 39, 138) 0%, rgb(52, 74, 238) 100%);
+    /* Green gradient background for weed type */
+}
+.product-type.meth.disabled{
+    background: rgba(63, 71, 94, 0.6);
+ 
+}
+.product-type.shok {
+    background: linear-gradient(135deg, rgb(138, 73, 36) 0%, rgb(238, 142, 52) 100%);
+    /* Green gradient background for weed type */
+}
+.product-type.shok.disabled{
+    background: rgba(63, 71, 94, 0.6);
+ 
+}
+.product-type:hover {
+    background-color: #2980b9; /* Darker color on hover */
+}
+.button-container .banner-button:nth-child(n) {
+    animation-delay: calc(0.1s * var(--i)); /* Delay for each button */
+}
+.button-container .banner-button2:nth-child(n) {
+    animation-delay: calc(0.1s * var(--i)); /* Delay for each button */
+}
+.banner-button:hover {
+    background-color: rgb(115 61 30); /* Darker blue on hover */
+}
+.banner-button2:hover {
+    background-color: rgb(115 61 30); /* Darker blue on hover */
+}
+.button-container .banner-button {
+    opacity: 0; /* Initial state for animation */
+    transform: translateY(20px); /* Initial state for animation */
+    animation: fadeIn 0.5s forwards; /* Apply animation */
+}
+
+.button-container .banner-button2 {
+    opacity: 0; /* Initial state for animation */
+    transform: translateY(20px); /* Initial state for animation */
+    animation: fadeIn 0.5s forwards; /* Apply animation */
+}
+
+
+
+
+
+.banner3.visible::after {
+    opacity: 0; /* Hide the overlay */
+    pointer-events: none; /* Allow clicks to pass through */
+}
+
+
+
+
+
+
+
+.product-item.status-off {
+    position: relative;
+    opacity: 0.6; /* Make the item appear gray and faded */
+    pointer-events: none; /* Make the item not clickable */
+}
+
+.product-item.status-off .product-status {
+    background-color: rgba(128, 128, 128, 0.5); /* Gray overlay */
+    color: #fff; /* Text color inside the overlay */
+    padding: 5px;
+    border-radius: 3px;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    text-align: center;
+}
+
+.product-item img {
+    width: 120px;
+    height: 120px;
+    border-radius: 10px;
+    animation: fadeInUp 0.5s forwards;
+
+}
+
+.product-item .product-name {
+    position: relative;
+    border-radius: 11px;
+    font-weight: 700;
+    left: 0;
+        padding: 5px;
+    background-color: #333f351a;
+    color: black;
+}
+.product-menu {
+    margin-top: 20px;
+    position: relative;
+    width: calc(100% - 40px);
+    max-width: 400px;
+    height: 40%;
+    background: #252c25;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 15px;
+    padding: 10px;
+}
+.product-price {
+    border: solid rgb(138, 73, 36);
+    font-weight: 700;
+    display: flex;
+    color: white;
+    padding: 5px;
+    border-radius: 20px;
+    padding-bottom: 1;
+    margin-bottom: 5px;
+    justify-content: center;
+    background-color: rgb(115 61 30);
+    box-shadow: 0 10px 20px rgb(138, 94, 36);
+}
+
+.buy-button {
+    border: solid 2px rgb(55 86 60);
+    background-color: #2158129e;
+    border-radius: 15px;
+    color: white;
+    border-radius: 50px;
+    margin-top: 5px;
+    padding: 5px;
+    width: 50%;
+    cursor: pointer;
+    font-size: 16px;
+}
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+.product-item .product-weight {
+    position: relative;
+    border-radius: 11px;
+    font-weight: 500;
+    left: 0;
+        padding: 5px;
+    background-color: #5757571a;
+}
+.product-item {
+    background-color: #fff;
+    color: rgb(250 246 225);
+    padding: 10px;
+    border-radius: 10px;
+    text-align: center;
+    transition: background-color 0.3s;
+    overflow: hidden;
+    box-shadow: 0 10px 10px rgba(0, 38, 128, 0.3);
+}
+
+.product-item:active {
+    background-color: #323232;
+    color: white;
+    padding: 10px;
+    border-radius: 10px;
+    text-align: center;
+}
+.product-item.status-off .product-item-content {
+    filter: grayscale(100%); /* Optional: Make content grayscale */
+}
+
+.product-item.status-off .buy-button {
+    display: none; /* Hide the buy button if the item is off */
+}
+
+
+.filters-container {
+    overflow-x: auto; /* Allows horizontal scrolling */
+    white-space: nowrap; /* Keeps buttons in a single line */
+    padding: 10px;
+    scrollbar-width: none;
+}
+
+    .filters-container::-webkit-scrollbar {
+        display: none; /* Hide scrollbar for Webkit browsers */
+    }
+
+
+    .filter-button {
+        display: inline-block;
+        background-color: rgba(63, 63, 94, 0.6);
+        color: white;
+        border: solid 1px #4f3bff57;
+        border-radius: 5px;
+        cursor: pointer;
+        position: relative;
+        margin-right: 10px;
+    }
+
+.filter-button select {
+    color: white;
+    border: none;
+    appearance: none; /* Hide default styling */
+    -webkit-appearance: none; /* For WebKit browsers */
+    -moz-appearance: none; /* For Firefox */
+    padding: 5px 30px 5px 10px;
+    border-radius: 5px;
+    background: transparent;
+    cursor: pointer;
+    font-size: 11px; /* Adjust font size as needed */
+    line-height: 1.5; /* Ensure line height is consistent */
+    background-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%23fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"%3E%3Cpath d="M19 9l-7 7-7-7" /%3E%3C/svg%3E');
+    background-repeat: no-repeat;
+    background-position: right 10px center; /* Position the arrow */
+    background-size: 12px 12px; /* Size of the arrow, adjust as needed */
+}
+
+.filter-button select:focus {
+    outline: none; /* Remove default focus outline */
+}
+
+
+/* Wallet block styles */
+.wallet-block {
+    border-radius: 15px;
+    color: white;
+    margin-top: 20px;
+    padding-top: 20px;
+    background-color: #25272e;
+    padding-bottom: 20px;
+    display: inline-block;
+    width: 90%;
+
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+.wallet-block2 {
+    display: flex;
+    flex-direction: column;
+    border-radius: 15px;
+    color: white;
+    margin-top: 20px;
+    padding-top: 20px;
+    background-color: #25272e;
+    padding-bottom: 20px;
+    width: 90%;
+    gap: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Transaction styling */
+.transaction {
+    background-color: #2b2e36;
+    width: 90%;
+    margin: 0 auto;
+    border-radius: 15px;
+    display: flex;
+    flex-direction: column; /* Change to column to stack content */
+    padding: 10px;
+    transition: all 0.3s ease; /* Smooth transition for expand/collapse */
+    overflow: hidden; /* Ensures content doesn’t overflow the container */
+    position: relative; /* Needed for absolute positioning of details */
+    cursor: pointer; /* Indicates that the item is clickable */
+}
+
+/* Expanded state styling */
+.transaction.expanded {
+    height: auto; /* Height auto to fit content */
+}
+
+/* Transaction date and amount styling */
+.transaction-date, .transaction-amount {
+    color: #d5e2ff; /* Light color for text */
+    font-size: 14px; /* Slightly smaller text size */
+    margin-bottom: 5px; /* Spacing between date and amount */
+}
+
+/* Status indicator */
+.transaction-status {
+    width: 20px;
+    height: 20px;
+    border-radius: 100px;
+    background-color: #3fdb3f; /* Default confirmed color */
+    margin: 0 auto;
+    /* Spacing between status and other content */
+}
+
+/* Additional status colors (if needed) */
+.transaction-status.pending {
+    background-color: #ffeb3b; /* Example: yellow for pending */
+}
+
+.transaction-status.failed {
+    background-color: #ff5722; /* Example: red for failed */
+}
+
+/* Details section (hidden by default) */
+.transaction-details {
+    display: none; /* Hidden by default */
+    color: #d5e2ff; /* Light color for text */
+    font-size: 12px; /* Slightly smaller text size for details */
+    margin-top: 10px;
+    padding-top: 10px; /* Padding to separate from the main content */
+    border-top: 1px solid #444; /* Separator line */
+}
+
+/* Display details when expanded */
+.transaction.expanded .transaction-details {
+    display: block;
+}
+
+
+.wallet-title2 {
+    font-size: 17px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    align-self: flex-start;
+    padding-bottom: 15px;
+    color: white;
+}
+.wallet-title {
+    padding: 10px;
+    font-size: 14px;
+    margin-bottom: 10px;
+    align-self: flex-start;
+    padding-bottom: 15px; /* Align the title to the start (left) */
+}
+
+.wallet-field {
+    display: flex;
+    align-items: center;
+}
+
+.wallet-field input {
+    flex: 1;
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 14px;
+    color: white;
+}
+#contact-info {
+    flex: 1;
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 14px;
+    color: rgb(0, 0, 0);
+}
+.wallet-field button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    margin-left: 10px;
+    cursor: pointer;
+}
+
+.wallet-field button:hover {
+    background-color: #0056b3;
+}
+
+
+
+.css-ni9hf8 {
+    display: flex;
+    flex-direction: column;
+    min-height: calc(-104px + 100vh);
+}
+.css-14tiaba {
+    padding: 16px;
+    background: rgb(25, 32, 51);
+    border-radius: 16px;
+}
+
+.css-12xb3c3 {
+    font-weight: 600;
+    font-size: 16px;
+    line-height: 22px;
+    margin-bottom: 16px;
+}
+.css-pv6ryy {
+    width: 20px;
+    height: 20px;
+    display: inline-block;
+    line-height: 1em;
+    flex-shrink: 0;
+    color: currentcolor;
+    vertical-align: middle;
+    fill: none;
+}
+.css-1rzo072 {
+    align-items: center;
+    height: 50px;
+    display: flex;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 6px;
+    margin: 0 auto;
+    width: 90%;
+    border-radius: 10px;
+
+}
+.css-1rzo0722 {
+    align-items: center;
+    height: 50px;
+    display: flex;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 6px;
+    margin: 0 auto;
+    width: 100%;
+    border-radius: 10px;
+
+}
+.css-dni0pk[aria-readonly="true"], .css-dni0pk[readonly], .css-dni0pk[data-readonly] {
+    user-select: all;
+    height: 40px;
+}
+
+.css-dni0pk {
+    width: 100%;
+    min-width: 0px;
+    outline: transparent solid 2px;
+    outline-offset: 2px;
+    position: relative;
+    appearance: none;
+    
+    height: 48px;
+    background: rgba(49, 61, 94, 0.32);
+    border: 1px solid rgba(49, 61, 94, 0.32);
+    border-radius: 8px;
+    padding: 0px 56px 0px 12px;
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 20px;
+    pointer-events: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+
+    --chakra-line-clamp: 1;
+}
+
+.css-1flfxcl {
+    display: inline-flex;
+    appearance: none;
+    -webkit-box-align: center;
+    align-items: center;
+    -webkit-box-pack: center;
+    justify-content: center;
+    user-select: none;
+    position: absolute;
+    white-space: nowrap;
+    vertical-align: middle;
+    outline: transparent solid 2px;
+    outline-offset: 2px;
+    line-height: 20px;
+    font-weight: 600;
+    height: 40px;
+    min-width: unset;
+    font-size: 15px;
+    padding-inline: 20px;
+    padding: unset;
+    top: 4px;
+    right: 4px;
+    flex-shrink: 0;
+    width: 40px;
+    background: rgba(49, 61, 94, 0.3);
+    transition: all 0.2s ease 0s;
+    border-radius: 8px;
+}
+
+.css-8ptgm5 {
+    font-weight: 500;
+    font-size: 12px;
+    line-height: 16px;
+    opacity: 0.4;
+    margin-bottom: 16px;
+}
+
+.css-ktc5z7 {
+    cursor: pointer;
+    text-decoration: none;
+    outline: transparent solid 2px;
+    outline-offset: 2px;
+    color: inherit;
+    -webkit-tap-highlight-color: transparent;
+    position: relative;
+    display: block;
+    width: 90%;
+    margin: 0 auto;
+    height: 48px;
+    background: rgb(0, 122, 255);
+    box-shadow: rgba(51, 149, 255, 0.08) 0px 6px 20px 0px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 20px;
+    transition: all 0.2s ease 0s;
+    margin-top: 10px;
+    margin-bottom: 8px;
+}
+.css-1e6ma0l {
+    display: flex;
+    -webkit-box-align: center;
+    align-items: center;
+    -webkit-box-pack: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+
+
+.css-ktc5z7 {
+    cursor: pointer;
+    text-decoration: none;
+    outline: transparent solid 2px;
+    outline-offset: 2px;
+    color: inherit;
+    -webkit-tap-highlight-color: transparent;
+    position: relative;
+    display: block;
+    height: 48px;
+    background: rgb(0, 122, 255);
+    box-shadow: rgba(51, 149, 255, 0.08) 0px 6px 20px 0px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 20px;
+    transition: all 0.2s ease 0s;
+    margin-bottom: 8px;
+}
+.css-ktc5z2 {
+    margin-top:20px;
+    cursor: pointer;
+    text-decoration: none;
+    outline: transparent solid 2px;
+    outline-offset: 2px;
+    color: inherit;
+    -webkit-tap-highlight-color: transparent;
+    position: relative;
+    display: block;
+    height: 48px;
+    background: rgb(0, 122, 255);
+    box-shadow: rgba(51, 149, 255, 0.08) 0px 6px 20px 0px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 20px;
+    transition: all 0.2s ease 0s;
+    margin-bottom: 8px;
+}
+.cancel-button {
+    margin-top:20px;
+    cursor: pointer;
+    text-decoration: none;
+    outline: transparent solid 2px;
+    outline-offset: 2px;
+    color: inherit;
+    -webkit-tap-highlight-color: transparent;
+    position: relative;
+    display: block;
+    height: 48px;
+    background: rgb(255, 25, 0);
+    box-shadow: rgba(51, 149, 255, 0.08) 0px 6px 20px 0px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 20px;
+    width: 100%;
+    transition: all 0.2s ease 0s;
+    margin: 0 auto;
+    border:none;
+}
+.css-1e6ma0l {
+    display: flex;
+    -webkit-box-align: center;
+    align-items: center;
+    -webkit-box-pack: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+*, ::before, ::after {
+    border-color: var(--ton-colors-gray-200);
+    overflow-wrap: break-word;
+}
+
+.css-5p7olr {
+    display: inline-flex;
+    appearance: none;
+    -webkit-box-align: center;
+    align-items: center;
+    -webkit-box-pack: center;
+    justify-content: center;
+    user-select: none;
+    position: relative;
+    white-space: nowrap;
+    vertical-align: middle;
+    outline: transparent solid 2px;
+    outline-offset: 2px;
+    line-height: 20px;
+    border-radius: 8px;
+    font-weight: 600;
+
+    padding-inline: 20px;
+    width: 100%;
+    height: 48px;
+    background: rgba(49, 61, 94, 0.32);
+    font-size: 14px;
+    transition: all 0.2s ease 0s;
+}
+
+.chakra-button {
+    position: absolute; /* Position the button absolutely within the container */
+    right: 10px; /* Adjust this value to position the button inside the input */
+    top: 50%;
+    transform: translateY(-50%); /* Center the button vertically */
+    padding: 10px 15px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+.css-1qm1lh {
+    margin-bottom: 16px;
+}
+
+.css-uusoxa {
+    display: flex;
+    -webkit-box-align: center;
+    align-items: center;
+    -webkit-box-pack: justify;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(49, 61, 94, 0.3);
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+.css-y3pmzh {
+    width: 16px;
+    height: 16px;
+    background: url(https://cloud.tonroll.com/assets/walletPaymentMethodsLogo/usdLogo.svg) center center / contain no-repeat;
+    flex-shrink: 0;
+}
+.css-uusoxa {
+    display: flex;
+    -webkit-box-align: center;
+    align-items: center;
+    -webkit-box-pack: justify;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(49, 61, 94, 0.3);
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+.css-kr151x {
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 20px;
+}
+
+.css-138ot80 {
+    display: flex;
+    -webkit-box-align: center;
+    align-items: center;
+    gap: 4px;
+    overflow: hidden;
+}
+.css-uusoxa {
+    display: flex;
+    -webkit-box-align: center;
+    align-items: center;
+    -webkit-box-pack: justify;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(49, 61, 94, 0.3);
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.css-y3pmzh {
+    width: 16px;
+    height: 16px;
+    background: url(https://cloud.tonroll.com/assets/walletPaymentMethodsLogo/usdLogo.svg) center center / contain no-repeat;
+    flex-shrink: 0;
+}
+.css-138ot80 {
+    display: flex;
+    -webkit-box-align: center;
+    align-items: center;
+    gap: 4px;
+    overflow: hidden;
+}
+.css-kr151x {
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 20px;
+}
+.css-1m7ritw {
+    font-weight: 700;
+    font-size: 14px;
+    line-height: 20px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: var(--chakra-line-clamp);
+    --chakra-line-clamp: 1;
+}.css-1m7ritw1 {
+    font-weight: 700;
+    font-size: 14px;
+    line-height: 20px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: var(--chakra-line-clamp);
+    --chakra-line-clamp: 1;
+}
+.css-138ot80 {
+    display: flex;
+    -webkit-box-align: center;
+    align-items: center;
+    gap: 4px;
+    overflow: hidden;
+}
+.css-kr151x {
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 20px;
+}
+
+.section-block {
+    color: white;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 24px;
+    background: #25262e;
+    border-radius: 24px;
+    margin-top: 24px;
+    margin-bottom: 16px;
+    align-self: flex-start;
+}
+.section-step {
+    background: #45AEF5;
+    border-radius: 16px;
+
+    font-style: normal;
+    font-weight: 600;
+    font-size: 18px;
+    line-height: 32px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 16px;
+}
+.sections {
+    width: 90%;
+    margin: 0 auto;
+}
+.section-title {
+    font-weight: 700;
+    font-size: 18px;
+    line-height: 28px;
+    margin-bottom: 10px;
+}
+.section-caption {
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 20px;
+    color: #8994A3;
+    margin-bottom: 20px;
+}
+.section-button {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    padding: 0px 16px 0px 14px;
+    background: #45AEF5;
+    border-radius: 12px;
+    font-family: 'Montserrat';
+    font-style: normal;
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 22px;
+    text-decoration: none;
+    height: 48px;
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 150ms ease-in-out;
+    text-decoration: none;
+}
+
+.section-button {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    padding: 0px 16px 0px 14px;
+    background: #45AEF5;
+    border-radius: 12px;
+    font-family: 'Montserrat';
+    font-style: normal;
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 22px;
+    text-decoration: none;
+    height: 48px;
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 150ms ease-in-out;
+    text-decoration: none;
+}
+
+.logo img {
+    width: 60px;
+    height: 60px;
+}
+
+.logotext img {
+    width: 200px;
+}
+
+.product-weight-type {
+    color: black;
+    font-weight: 500;
+    margin-bottom: 4px;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+.back-button {
+    position: relative;
+    margin-bottom: 20px;
+    z-index: 1000; /* Ensure it's on top of other elements */
+}
+
+.back-button a {
+    display: inline-block;
+    padding: 8px 12px;
+    font-size: 16px;
+    color: #fff;
+    background-color: #007bff; /* Blue background for the button */
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.back-button a:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+}
+
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1000; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow-y: scroll; /* Prevent content overflow */
+    background-color: rgba(0, 0, 0, 0.5); /* Black background with opacity */
+}
+
+/* Modal content */
+.modal-content {
+    color: #232323;
+    position: absolute;
+
+    width: 100%; /* Adjusted width for better responsiveness */
+    max-width: 1000px; /* Maximum width for large screens */
+    background-color: #fff9eb;
+    border-radius: 10px;
+    box-shadow: inset 20px 20px 30px rgb(115 61 30 / 23%), 0 4px 8px rgba(0, 0, 0, 0.2);
+    animation: slideUp 0.5s;
+    padding: 20px;
+    box-sizing: border-box;
+    overflow-y: scroll; /* Prevent content overflow */
+}
+
+/* Close button */
+.close-modal {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 40px;
+    color: #ffcfff;
+    cursor: pointer;
+    z-index: 1100; /* Ensure close button is above modal content */
+}
+
+/* Modal slider */
+.modal-slider {
+    width: 100%;
+    margin-bottom: 20px; /* Space below slider */
+}
+
+/* Slick Slider styles */
+.slick-slide img {
+    height: auto;
+    border-radius: 10px;
+    margin: 0 auto ;
+
+}
+.slick-slide video {
+    width: 100%;
+    height: auto;
+    border-radius: 10px;
+}
+
+/* Modal title and description */
+.modal-title {
+    font-size: 24px;
+    margin: 20px 0 10px;
+}
+
+.modal-description {
+    font-size: 16px;
+    margin: 10px 0;
+}
+
+/* Modal price */
+.modal-price {
+    display: flex;
+    font-weight: 700;
+    font-size: 20px;
+    color: #ffffff;
+    width: fit-content;
+    background-color: rgb(138, 94, 36);
+    border-radius: 15px;
+    justify-content: center;
+    padding: 5px 10px;
+    border: solid rgb(115 61 30);
+    box-shadow: 0 4px 80px rgb(138, 73, 36);
+    margin: 10px 0;
+}
+
+/* Animation keyframes */
+@keyframes slideUp {
+    from {
+        opacity: 0; /* Start from the bottom */
+    }
+    to {
+        opacity: 1; /* End at center */
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* Lower opacity of background elements */
+.modal-active {
+    opacity: 0.3;
+    pointer-events: none; /* Prevent interactions with background elements */
+}
+.slick-prev:before, .slick-next:before{
+    color: black !important;
+}
+/* Slick slider navigation */
+.slick-prev, .slick-next {
+    font-size: 0 !important;
+    line-height: 0 !important;
+    position: absolute !important;
+    top: 50% !important;
+    display: block !important;
+    width: 40px !important;
+    height: 40px !important; /* Added height for better touch targets */
+    padding: 0 !important;
+    transform: translate(0, -50%) !important;
+    cursor: pointer !important;
+    color: black !important;
+    border: none !important;
+    outline: none !important;
+    background: transparent !important;
+}
+
+/* Slick slider dots */
+.slick-dots {
+    bottom: 10px; /* Adjust position of dots */
+}
+
+
+
+.form-group {
+    margin-bottom: 15px;
+}
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+.form-group input, .form-group textarea, .form-group select {
+    width: 90%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+.form-group textarea {
+    resize: vertical;
+}
+.form-group button {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+}
+.form-group button:hover {
+    background-color: #0056b3;
+}
+
+.container {
+    display: block;
+    max-width: 90%;
+    margin: 0 auto;
+}

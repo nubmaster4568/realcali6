@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Get Dropbox Access Token</title>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Dropbox App credentials and settings
+            const clientId = 'gkw3ezdshtjsq95';
+            const redirectUri = 'http://localhost:3000/admin/gettoken.html'; // Your redirect URI
+
+            // Dropbox authorization URL
+            const authUrl = `https://www.dropbox.com/oauth2/authorize?client_id=${clientId}&response_type=token&redirect_uri=${redirectUri}`;
+
+            if (!window.location.hash.includes('access_token')) {
+                window.location.href = authUrl;
+            } else {
+                handleAccessToken();
+            }
+        });
+
+        // Function to get URL parameters from hash
+        function getUrlParameter(name) {
+            name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+            const regex = new RegExp('[\\#]' + name + '=([^&#]*)');
+            const results = regex.exec(location.hash);
+            return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+        }
+
+
+        // Function to save access token
+        function saveAccessToken(accessToken) {
+            fetch('http://localhost:3000/store-access-token', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ accessToken }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Access token saved:', data);
+                alert('Access token saved successfully!');
+            })
+            .catch(error => {
+                console.error('Error saving access token:', error);
+                alert('Failed to save access token.');
+            });
+        }
+
+        // Check if we are on the redirect URI and handle the access token
+        if (window.location.hash) {
+            const accessToken = getUrlParameter('access_token');
+            if (accessToken) {
+                saveAccessToken(accessToken);
+            } else {
+                alert('No access token found in the URL.');
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>Redirecting to Dropbox for authorization...</h1>
+</body>
+</html>
