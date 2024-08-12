@@ -563,7 +563,18 @@ body {
     border-radius: 50px;
     margin-top: 5px;
     padding: 5px;
-    width: 50%;
+    width: 60%;
+    cursor: pointer;
+    font-size: 16px;
+}
+.add-button {
+    border: solid 2px rgb(55 86 60);
+    background-color: #5758129e;
+    border-radius: 15px;
+    color: white;
+    border-radius: 50px;
+    margin-top: 5px;
+    padding: 5px;
     cursor: pointer;
     font-size: 16px;
 }
@@ -1471,4 +1482,259 @@ body {
     display: block;
     max-width: 90%;
     margin: 0 auto;
+}
+
+* Cart icon container */
+.cart-container {
+    position: relative;
+}
+
+/* Cart icon styling */
+.cart-icon {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: #333; /* Change as needed */
+}
+
+/* Cart icon */
+.cart-icon .fas {
+    font-size: 24px; /* Adjust size as needed */
+}
+
+/* Quantity indicator styling */
+.cart-quantity {
+    position: absolute;
+    top: 20px;
+    right: 15px; /* Adjust position as needed */
+    background-color: red; /* Adjust color as needed */
+    color: white;
+    border-radius: 50%;
+    padding: 2px 6px;
+    font-size: 12px; /* Adjust size as needed */
+    font-weight: bold;
+}
+
+.cart-popup {
+    position: fixed;
+    top: 0;
+    right: -100%; /* Hide off-screen initially */
+    width: 300px; /* Adjust width as needed */
+    height: 100%;
+    background-color: #fff;
+    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.3);
+    transition: right 0.3s ease-in-out; /* Slide-in animation */
+    z-index: 1000;
+}
+/* Popup content */
+.cart-popup-content {
+    padding: 20px;
+    overflow-y: auto;
+    height: 100%;
+    position: relative; /* To position the close button correctly */
+}
+
+/* Close button */
+.cart-popup-content .close {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+/* Cart items */
+.cart-items {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+/* Cart item */
+.cart-items li {
+    border-bottom: 1px solid #ddd;
+    padding: 10px 0;
+    align-items: center;
+}
+
+/* Image */
+.cart-items li img {
+    width: 50px; /* Adjust as needed */
+    height: auto;
+    margin-right: 15px;
+}
+
+/* Item details */
+.cart-item-details {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+/* Description */
+.cart-item-details .description {
+    margin-bottom: 5px;
+}
+
+/* Price */
+.cart-item-details .price {
+    margin-top: 5px;
+    font-weight: bold;
+}
+
+/* Show popup */
+.cart-popup.show {
+    right: 0; /* Slide in */
+    position: fixed;
+    top: 0;
+    width: 300px; /* Adjust as needed */
+    height: 100%;
+    background-color: white;
+    box-shadow: -2px 0 5px rgba(0,0,0,0.3);
+    transition: right 0.3s ease;
+}
+/* Container */
+.container {
+    display: block;
+    max-width: 90%;
+    margin: 0 auto;
+}
+
+/* Cart icon container */
+.cart-container {
+    position: relative;
+}
+
+/* Cart icon styling */
+.cart-icon {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: #333; /* Change as needed */
+}
+
+/* Cart icon */
+.cart-icon .fas {
+    font-size: 24px; /* Adjust size as needed */
+}
+
+/* Quantity indicator styling */
+.cart-quantity {
+    position: absolute;
+    top: 20px;
+    right: 15px; /* Adjust position as needed */
+    background-color: red; /* Adjust color as needed */
+    color: white;
+    border-radius: 50%;
+    padding: 2px 6px;
+    font-size: 12px; /* Adjust size as needed */
+    font-weight: bold;
+}
+
+/* Popup */
+.cart-popup {
+    position: fixed;
+    top: 0;
+    right: -100%; /* Hide off-screen initially */
+    width: 300px; /* Adjust width as needed */
+    height: 100%;
+    background-color: #fff;
+    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.3);
+    transition: right 0.3s ease-in-out; /* Slide-in animation */
+    z-index: 1000;
+}
+
+/* Popup content */
+.cart-popup-content {
+    padding: 20px;
+    overflow-y: auto;
+    height: 100%;
+    position: relative; /* To position the close button correctly */
+}
+
+/* Close button */
+.cart-popup-content .close {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+/* Cart items */
+.cart-items {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+/* Cart item */
+.cart-items li {
+    border-bottom: 1px solid #ddd;
+    padding: 10px 0;
+    display: flex; /* Use flexbox to layout image and details side by side */
+    align-items: flex-start; /* Align items to the start (top) */
+}
+
+/* Image */
+.cart-items li img {
+    width: 50px; /* Adjust as needed */
+    height: auto;
+    margin-right: 15px; /* Space between image and details */
+}
+
+/* Item details */
+.cart-item-details {
+    flex: 1; /* Take up remaining space */
+    display: flex;
+    flex-direction: column; /* Stack details vertically */
+}
+
+/* Description */
+.cart-item-details .description {
+    margin-bottom: 5px;
+}
+
+/* Price and quantity container */
+.price-quantity {
+    display: flex;
+    flex-direction: column; /* Stack price and quantity vertically */
+}
+
+/* Price */
+.price-quantity .price {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+/* Quantity */
+.price-quantity .quantity {
+    color: #555;
+}
+
+/* Show popup */
+.cart-popup.show {
+    right: 0; /* Slide in */
+    position: fixed;
+    top: 0;
+    width: 300px; /* Adjust as needed */
+    height: 100%;
+    background-color: white;
+    box-shadow: -2px 0 5px rgba(0,0,0,0.3);
+    transition: right 0.3s ease;
+}
+.item-container input {
+    width: 20%;
+    padding: 6px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+
+.custom-select {
+        width: 40%;
+        padding: 6px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        margin-left: 5px
 }

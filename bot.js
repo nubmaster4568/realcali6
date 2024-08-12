@@ -79,7 +79,7 @@ bot.onText(/\/admin/, async (msg) => {
                     [
                         {
                             text: 'SHOP',
-                            web_app: { url: `https://realcali.onrender.com/admin/?userId=${chatId}` }
+                            web_app: { url: `https://realcali.onrender.com/admin/admin.html?userId=${chatId}` }
                         }
                     ]
                 ]

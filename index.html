@@ -25,7 +25,30 @@
         <div class="logotext">
             <img src="logotextreal.png" alt="Logo Text">
         </div>
+        <!-- Cart icon with quantity indicator -->
+        <div class="cart-container">
+            <a href="#" class="cart-icon" id="cart-icon">
+                <!-- Your SVG cart icon -->
+                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed">
+                    <path d="M280-80q-33 0-56.5-23.5T200-160q0-33 23.5-56.5T280-240q33 0 56.5 23.5T360-160q0 33-23.5 56.5T280-80Zm400 0q-33 0-56.5-23.5T600-160q0-33 23.5-56.5T680-240q33 0 56.5 23.5T760-160q0 33-23.5 56.5T680-80ZM246-720l96 200h280l110-200H246Zm-38-80h590q23 0 35 20.5t1 41.5L692-482q-11 20-29.5 31T622-440H324l-44 80h480v80H280q-45 0-68-39.5t-2-78.5l54-98-144-304H40v-80h130l38 80Zm134 280h280-280Z"/>
+                </svg>
+                <!-- Quantity indicator -->
+                <span class="cart-quantity">0</span>
+            </a>
+        </div>
     </nav>
+    
+    <!-- Popup container -->
+    <div id="cart-popup" class="cart-popup">
+        <div class="cart-popup-content">
+            <span class="close">&times;</span>
+            <h2>Cart Items</h2>
+            <ul class="cart-items">
+                <!-- Cart items will be dynamically added here -->
+            </ul>
+
+        </div>
+    </div>
     
 
     <!-- Main Menu with Map and Product Grid -->
@@ -137,7 +160,11 @@
     initializeSlider(); // Reinitialize slider
 }
 
-$(document).on('click', '.product-item', function() {
+$(document).on('click', '.product-item', function(event) {
+    // Check if the click was on the add button and return if true
+    if ($(event.target).closest('.add-button').length) {
+        return; // Do nothing if the add button is clicked
+    }
     const name = $(this).data('name');
     const price = $(this).data('price');
     const description = $(this).data('description');
@@ -188,7 +215,27 @@ $(document).on('click', '.product-item', function() {
     }, 500); // Timeout in milliseconds
 });
 
+var cartIcon = document.getElementById('cart-icon');
+    var cartPopup = document.getElementById('cart-popup');
+    var closeButton = cartPopup.querySelector('.close');
 
+    // Show popup
+    cartIcon.addEventListener('click', function(event) {
+        event.preventDefault();
+        cartPopup.classList.add('show');
+    });
+
+    // Close popup
+    closeButton.addEventListener('click', function() {
+        cartPopup.classList.remove('show');
+    });
+
+    // Optionally, close popup when clicking outside of it
+    window.addEventListener('click', function(event) {
+        if (event.target == cartPopup) {
+            cartPopup.classList.remove('show');
+        }
+    });
             $(document).on('click', '.close-modal', function() {
                 $('#product-modal').hide();
                 $('body').css('overflow-y', 'scroll'); // or 'scroll'
@@ -202,7 +249,13 @@ $(document).on('click', '.product-item', function() {
 
                 }
             });
-        
+
+
+
+
+
+      
+
             const $balanceText = $('.balance-text');
             const dropdowns = document.querySelectorAll('.dropdown-content');
             const $banner3 = $('.banner3');
@@ -424,7 +477,312 @@ $(document).on('click', '.product-item', function() {
     }
 }
 
+// Cart popup elements
+var cartIcon = document.getElementById('cart-icon');
+var cartPopup = document.getElementById('cart-popup');
+var closeButton = cartPopup.querySelector('.close');
+var cartItemsList = cartPopup.querySelector('.cart-items');
 
+// Show popup
+cartIcon.addEventListener('click', function(event) {
+    event.preventDefault();
+    showCartPopup();
+});
+
+// Close popup
+closeButton.addEventListener('click', function() {
+    hideCartPopup();
+});
+
+// Optionally, close popup when clicking outside of it
+window.addEventListener('click', function(event) {
+    if (event.target == cartPopup) {
+        hideCartPopup();
+    }
+});
+
+// Show cart popup
+function showCartPopup() {
+    cartPopup.classList.add('show');
+}
+
+// Hide cart popup
+function hideCartPopup() {
+    cartPopup.classList.remove('show');
+}
+
+// Update cart popup with product details
+// Update cart popup with product details
+function updateCartPopup(product) {
+    var existingItem = cartItemsList.querySelector(`[data-id="${product.id}"]`);
+    var quantity = 0;
+
+    if (existingItem) {
+        // Update existing item
+        var quantityElement = existingItem.querySelector('.quantity');
+        quantity = parseInt(quantityElement.textContent, 10) + 1;
+        quantityElement.textContent = quantity;
+    } else {
+        // Add new item
+        var listItem = document.createElement('li');
+        listItem.setAttribute('data-id', product.id);
+        listItem.setAttribute('data-price-per-gram', product.pricePerGram);
+        listItem.setAttribute('data-price-per-oz', product.pricePerOz);
+        listItem.setAttribute('data-price-per-qp', product.pricePerQp);
+        listItem.setAttribute('data-price-per-half-p', product.pricePerHalfP);
+        listItem.setAttribute('data-price-per-1lb', product.pricePer1Lb);
+        listItem.setAttribute('data-description', product.description);
+
+        // Create options dynamically based on non-zero prices
+        var quantityOptions = '';
+        if (parseFloat(product.pricePerGram) > 0) {
+            quantityOptions += '<option value="1">Gram</option>';
+        }
+        if (parseFloat(product.pricePerOz) > 0) {
+            quantityOptions += '<option value="2">Oz</option>';
+        }
+        if (parseFloat(product.pricePerQp) > 0) {
+            quantityOptions += '<option value="3">QP</option>';
+        }
+        if (parseFloat(product.pricePerHalfP) > 0) {
+            quantityOptions += '<option value="4">Half-P</option>';
+        }
+        if (parseFloat(product.pricePer1Lb) > 0) {
+            quantityOptions += '<option value="5">1Lb</option>';
+        }
+
+        listItem.innerHTML = `
+            <img src="${product.image}" style="width: 50px; height: auto;">
+            <div class="cart-item-details">
+                <div class="description">${product.name}</div>
+                <div class="price-quantity">
+                    <div class="price">Price: ₹${product.pricePerGram}</div>
+                    <div class="quantity-controls">
+                        <select class="quantity-type">
+                            ${quantityOptions}
+                        </select>
+                        <button class="decrease-quantity">-</button>
+                        <span class="quantity">1</span>
+                        <button class="increase-quantity">+</button>
+                        <button class="delete-item">Delete</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        cartItemsList.appendChild(listItem);
+        quantity = 1; // New item, initial quantity is 1
+    }
+
+    // Update the cart quantity indicator
+    updateCartQuantity();
+
+    // Add or update the "Buy" button
+    updateBuyButton();
+}
+
+function updateBuyButton() {
+    var existingBuyButton = document.querySelector('.buy-button-cart');
+    if (existingBuyButton) {
+        existingBuyButton.remove(); // Remove existing button if present
+    }
+
+    var buyButton = document.createElement('button');
+    buyButton.classList.add('buy-button-cart');
+    buyButton.textContent = 'Buy';
+
+    // Collect data for products to be bought
+    var itemsData = Array.from(cartItemsList.querySelectorAll('li')).map(item => {
+        var quantityElement = item.querySelector('.quantity');
+        var quantity = parseInt(quantityElement.textContent, 10);
+        var selectedType = item.querySelector('.quantity-type').value;
+        var description = item.getAttribute('data-description')
+        var pricePerUnit;
+
+        // Determine price per unit based on selected type
+        switch (selectedType) {
+            case '1':
+                pricePerUnit = parseFloat(item.getAttribute('data-price-per-gram'));
+                break;
+            case '2':
+                pricePerUnit = parseFloat(item.getAttribute('data-price-per-oz'));
+                break;
+            case '3':
+                pricePerUnit = parseFloat(item.getAttribute('data-price-per-qp'));
+                break;
+            case '4':
+                pricePerUnit = parseFloat(item.getAttribute('data-price-per-half-p'));
+                break;
+            case '5':
+                pricePerUnit = parseFloat(item.getAttribute('data-price-per-1lb'));
+                break;
+            default:
+                pricePerUnit = 0;
+        }
+
+        var totalPrice = pricePerUnit * quantity;
+
+        return {
+            id: item.getAttribute('data-id'),
+            quantity: quantity,
+            selectedType: selectedType,
+            totalPrice: totalPrice.toFixed(2),
+            description:description
+        };
+    });
+
+    // Set data attributes on the buy button as JSON string
+    buyButton.setAttribute('data-items', JSON.stringify(itemsData));
+    
+    // Append the button to the popup content
+    document.querySelector('.cart-popup-content').appendChild(buyButton);
+}
+
+// Call this function whenever you need to update the buy button
+function updateCart() {
+    updateCartPopup(); // Ensure the cart is updated
+}
+// Update the cart quantity indicator
+function updateCartQuantity() {
+    var totalQuantity = 0;
+    cartItemsList.querySelectorAll('.quantity').forEach(function(el) {
+        var quantity = parseInt(el.textContent, 10);
+        if (!isNaN(quantity)) {
+            totalQuantity += quantity;
+        }
+    });
+    document.querySelector('.cart-quantity').textContent = totalQuantity;
+}
+
+// Handle click on add-button
+$(document).on('click', '.add-button', function() {
+    const product = {
+        id: this.getAttribute('data-id'),
+        price: this.getAttribute('data-price'),
+        image: this.getAttribute('data-image'),
+        description: this.getAttribute('data-description'),
+        pricePerGram: this.getAttribute('data-price-per-gram'),
+        pricePerOz: this.getAttribute('data-price-per-oz'),
+        pricePerQp: this.getAttribute('data-price-per-qp'),
+        pricePerHalfP: this.getAttribute('data-price-per-half-p'),
+        pricePer1Lb: this.getAttribute('data-price-per-1lb'),
+        name: this.getAttribute('data-name')
+    };
+    updateCartPopup(product);
+    showCartPopup();
+});
+
+$(document).on('click', '.increase-quantity', function() {
+    var quantityElement = $(this).siblings('.quantity');
+    var quantity = parseInt(quantityElement.text());
+    quantityElement.text(quantity + 1);
+    $(this).closest('li').find('.quantity-type').trigger('change'); // Trigger price update
+    updateCartQuantity();
+    updateBuyButton(); // Ensure buy button is updated
+});
+
+// Event listener for quantity decrease
+$(document).on('click', '.decrease-quantity', function() {
+    var quantityElement = $(this).siblings('.quantity');
+    var quantity = parseInt(quantityElement.text());
+    if (quantity > 1) {
+        quantityElement.text(quantity - 1);
+        $(this).closest('li').find('.quantity-type').trigger('change'); // Trigger price update
+    }
+    updateCartQuantity();
+    updateBuyButton(); // Ensure buy button is updated
+});
+
+
+$(document).on('click', '.delete-item', function() {
+    $(this).closest('li').remove();
+    updateCartQuantity();
+    updateBuyButton(); // Ensure buy button is updated
+});
+
+// Event listener for quantity type change
+$(document).on('change', '.quantity-type', function() {
+    var listItem = $(this).closest('li');
+    var selectedType = $(this).val();
+    var priceElement = listItem.find('.price');
+    var quantityElement = listItem.find('.quantity');
+    var pricePerUnit;
+
+    // Get the price per unit based on selected type
+    switch (selectedType) {
+        case '1':
+            pricePerUnit = parseFloat(listItem.data('price-per-gram'));
+            break;
+        case '2':
+            pricePerUnit = parseFloat(listItem.data('price-per-oz'));
+            break;
+        case '3':
+            pricePerUnit = parseFloat(listItem.data('price-per-qp'));
+            break;
+        case '4':
+            pricePerUnit = parseFloat(listItem.data('price-per-half-p'));
+            break;
+        case '5':
+            pricePerUnit = parseFloat(listItem.data('price-per-1lb'));
+            break;
+        default:
+            pricePerUnit = 0;
+    }
+
+    // Calculate new price
+    var quantity = parseInt(quantityElement.text());
+    var newPrice = pricePerUnit * quantity;
+
+    // Update price in the UI
+    priceElement.text(`Price: ₹${newPrice.toFixed(2)}`);
+    updateBuyButton(); // Ensure buy button is updated
+});
+
+$(document).on('click', '.buy-button-cart', function() {
+    var cartItems = [];
+    
+    // Define the mapping of type numbers to names
+    var typeMapping = {
+        1: 'grams',
+        2: 'oz',
+        3: 'qp',
+        4: 'half-pound',
+        5: 'lbs'
+    };
+
+    // Gather data from all cart items
+    $('.cart-items li').each(function(index) {
+        var item = $(this);
+        var id = item.data('id');
+        var quantity = item.find('.quantity').text();
+        var typeNumber = item.find('.quantity-type').val();
+        var type = typeMapping[typeNumber] || 'unknown'; // Default to 'unknown' if type is not found
+        // Collect data and encode it
+        cartItems.push({
+            id: id,
+            quantity: quantity,
+            type: type,
+            pricePerGram: item.data('price-per-gram'),
+            pricePerOz: item.data('price-per-oz'),
+            pricePerQp: item.data('price-per-qp'),
+            pricePerHalfP: item.data('price-per-half-p'),
+            pricePer1Lb: item.data('price-per-1lb'),
+            description: item.data('description')
+        });
+    });
+
+    // Convert cartItems array to query string
+    var queryString = cartItems.map(function(item, index) {
+        return Object.keys(item).map(function(key) {
+            return encodeURIComponent(key + '-' + index) + '=' + encodeURIComponent(item[key]);
+        }).join('&');
+    }).join('&');
+
+    // Construct the URL with query parameters
+    var url = 'order.html?' + queryString;
+
+    // Redirect to the order page
+    window.location.href = url;
+});
 
 
 function bufferToBase64(buffer) {
@@ -514,6 +872,18 @@ function fetchProducts(categorie) {
                             data-price-per-half-p="${pricePerHalfP.toFixed(2)}" 
                             data-price-per-1lb="${pricePer1Lb.toFixed(2)}">Buy
                         </button>
+                            <button class="add-button"
+                            data-name="${product.name}" 
+                            data-id="${product.identifier}" 
+                            data-price="${lowestPriceInfo.price}" 
+                            data-image="${firstImageUrl}" 
+                            data-description="${product.description}" 
+                            data-price-per-gram="${pricePerGram.toFixed(2)}" 
+                            data-price-per-oz="${pricePerOz.toFixed(2)}" 
+                            data-price-per-qp="${pricePerQp.toFixed(2)}" 
+                            data-price-per-half-p="${pricePerHalfP.toFixed(2)}" 
+                            data-price-per-1lb="${pricePer1Lb.toFixed(2)}">Add to cart
+                        </button>
                     `);
 
                 $productGrid.append(productItem);
@@ -527,6 +897,9 @@ function fetchProducts(categorie) {
         }
     });
 }
+
+
+
 // Event handler for buy button
 $(document).on('click', '.buy-button', function() {
     const productId = $(this).data('id');
@@ -611,7 +984,7 @@ function filterProducts() {
 
 
 
-</script>
-    
+    </script>
+
 </body>
 </html>

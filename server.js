@@ -239,20 +239,60 @@ async function createWalletAddress(user_id) {
 
 
 app.post('/api/place-order', (req, res) => {
-    const { deliveryAddress, deliveryLocation, quantity, quantityUnit, contactInfo } = req.body;
-
+    const { deliveryAddress, deliveryDate, contactInfo, items,comments } = req.body;
+    console.log(deliveryAddress, deliveryDate, contactInfo, items,comments);
+    
+    if (!Array.isArray(items) || items.length === 0) {
+        return res.status(400).json({ success: false, message: 'No items in order.' });
+    }
+    
     // Prepare message content
+    let itemsMessage = items.map(item => {
+        let pricePerUnit;
+
+        // Determine price per unit based on item type
+        switch (item.type) {
+            case 'grams':
+                pricePerUnit = item.pricePerGram;
+                break;
+            case 'oz':
+                pricePerUnit = item.pricePerOz;
+                break;
+            case 'qp':
+                pricePerUnit = item.pricePerQp;
+                break;
+            case 'half-pound':
+                pricePerUnit = item.pricePerHalfP;
+                break;
+            case 'lbs':
+                pricePerUnit = item.pricePer1Lb;
+                break;
+            default:
+                pricePerUnit = 0; // Default if type is not recognized
+        }
+
+        return `
+            Product ID: ${item.id}
+            Quantity: ${item.quantity} ${item.type}
+            Price Per Unit: $${pricePerUnit.toFixed(2)}
+            Total Price: $${(pricePerUnit * item.quantity).toFixed(2)}
+        `;
+    }).join('\n\n');
+
     const message = `
         New Order Details:
         - Delivery Address: ${deliveryAddress}
-        - Delivery Date: ${deliveryLocation}
-        - Quantity: ${quantity} ${quantityUnit}
+        - Delivery Date: ${deliveryDate}
         - Contact Info: ${contactInfo}
+        
+        -Comments: ${comments}
+        Order Items:
+        ${itemsMessage}
     `;
 
     // Send message via Telegram bot
     axios.post(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-        chat_id: '5838062267',
+        chat_id: '1903358250', // Replace with your chat ID
         text: message,
         parse_mode: 'Markdown' // Optional: Use Markdown for formatting
     })
