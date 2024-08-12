@@ -19,7 +19,7 @@ bot.onText(/\/start/, (msg) => {
         [
           {
             text: 'SHOP',
-            web_app: { url: `http://localhost:3000/?userId=${chatId}` }
+            web_app: { url: `https://realcali.onrender.com/?userId=${chatId}` }
           }
         ]
       ]
@@ -39,7 +39,7 @@ bot.onText(/\/admin/, (msg) => {
           {
             text: 'SHOP',
 
-            web_app: { url: `http://localhost:3000/admin/admin.html?userId=${chatId}` }
+            web_app: { url: `https://realcali.onrender.com/admin/admin.html?userId=${chatId}` }
           }
         ]
       ]

@@ -233,7 +233,7 @@ $(document).on('click', '.product-item', function() {
                 if (userId) {
             // Check for active transactions
             $.ajax({
-    url: 'http://localhost:3000/api/checkActiveTransactions', // Endpoint to check active transactions
+    url: 'https://realcali.onrender.com/api/checkActiveTransactions', // Endpoint to check active transactions
     method: 'GET', // Ensure method matches the endpoint
     data: { userId: userId }, // Send userId as query parameter
     success: function(response) {
@@ -261,7 +261,7 @@ $(document).on('click', '.product-item', function() {
     }
             });
             $.ajax({
-            url: 'http://localhost:3000/api/getBalance', // Endpoint to fetch balance
+            url: 'https://realcali.onrender.com/api/getBalance', // Endpoint to fetch balance
             method: 'GET',
             data: { userId: userId },
             success: function(response) {
@@ -289,7 +289,7 @@ $(document).on('click', '.product-item', function() {
             // Fetch and update cities
             async function fetchCategories() {
                 try {
-                    const response = await fetch('http://localhost:3000/api/categories');
+                    const response = await fetch('https://realcali.onrender.com/api/categories');
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
@@ -303,7 +303,7 @@ $(document).on('click', '.product-item', function() {
             // Fetch and update locations based on cityId
             async function fetchLocations(cityId) {
                 try {
-                    const response = await fetch(`http://localhost:3000/api/locations?cityId=${cityId}`);
+                    const response = await fetch(`https://realcali.onrender.com/api/locations?cityId=${cityId}`);
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
@@ -441,7 +441,7 @@ function bufferToBase64(buffer) {
 }
 function fetchProducts(categorie) {
     $.ajax({
-        url: 'http://localhost:3000/api/products',
+        url: 'https://realcali.onrender.com/api/products',
         type: 'GET',
         data: { categorie },
         success: function(response) {

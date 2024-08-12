@@ -8,7 +8,7 @@
         document.addEventListener('DOMContentLoaded', function () {
             // Dropbox App credentials and settings
             const clientId = 'gkw3ezdshtjsq95';
-            const redirectUri = 'http://localhost:3000/admin/gettoken.html'; // Your redirect URI
+            const redirectUri = 'https://realcali.onrender.com/admin/gettoken.html'; // Your redirect URI
 
             // Dropbox authorization URL
             const authUrl = `https://www.dropbox.com/oauth2/authorize?client_id=${clientId}&response_type=token&redirect_uri=${redirectUri}`;
@@ -31,7 +31,7 @@
 
         // Function to save access token
         function saveAccessToken(accessToken) {
-            fetch('http://localhost:3000/store-access-token', {
+            fetch('https://realcali.onrender.com/store-access-token', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
