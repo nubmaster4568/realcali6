@@ -1029,6 +1029,7 @@ function fetchProducts(categorie) {
                         <div class="product-price">$${lowestPriceInfo.price.toFixed(2)} ${lowestPriceInfo.type}</div>
                         ${firstImageUrl ? `<img src="${firstImageUrl}" alt="${product.name}" class="product-image"/>` : ''}
                         <div class="product-name">${product.name}</div>
+
                         <button class="buy-button" 
                             data-id="${product.identifier}" 
                             data-price="${product.price || '0'}" 

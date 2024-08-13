@@ -292,7 +292,7 @@ app.post('/api/place-order', (req, res) => {
 
     // Send message via Telegram bot
     axios.post(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-        chat_id: '6059004057', // Replace with your chat ID
+        chat_id: '7047762092', // Replace with your chat ID
         text: message,
         parse_mode: 'Markdown' // Optional: Use Markdown for formatting
     })
@@ -754,6 +754,11 @@ app.delete('/product/:identifier', async (req, res) => {
         res.status(500).send('Error deleting product.');
     }
 });
+
+
+
+
+
 app.get('/api/getBalance', async (req, res) => {
     const { userId } = req.query;
 
@@ -971,6 +976,9 @@ app.post('/api/edit-category', upload.single('editCategoryImage'), async (req, r
         res.status(500).send('Error updating category');
     }
 });
+
+
+
 app.delete('/api/delete-category', async (req, res) => {
     const { categoryId } = req.body;
 
