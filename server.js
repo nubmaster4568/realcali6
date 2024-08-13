@@ -463,17 +463,12 @@ app.post('/upload-product', upload.fields([
         const pricePerHalfP = parseFloat(price_per_half_p) || 0;
         const pricePer1Lb = parseFloat(price_per_1lb) || 0;
 
-        const prices = [
-            { type: 'per gram', price: pricePerGram },
-            { type: 'per oz', price: pricePerOz },
-            { type: 'per quarter pound', price: pricePerQp },
-            { type: 'per half pound', price: pricePerHalfP },
-            { type: 'per 1 lb', price: pricePer1Lb }
-        ].filter(p => p.price > 0);
+        // Array of price per unit
+        const unitPrices = [pricePerGram, pricePerOz, pricePerQp, pricePerHalfP, pricePer1Lb];
 
-        const finalPrice = prices.length > 0 ? 
-            Math.min(...prices.map(p => p.price)) :
-            parseFloat(price);
+        // Determine final price
+        const hasValidUnitPrice = unitPrices.some(p => p > 0);
+        const finalPrice = hasValidUnitPrice ? 0 : parseFloat(price) || 0;
 
         // Store all media in a single row
         await client.query(`
@@ -487,6 +482,7 @@ app.post('/upload-product', upload.fields([
         res.status(500).send('Error saving product.');
     }
 });
+
 
 app.get('/auth', (req, res) => {
     const clientId = 'YOUR_APP_KEY';
@@ -944,7 +940,22 @@ app.get('/api/search-category', async (req, res) => {
 });
 app.post('/api/edit-category', upload.single('editCategoryImage'), async (req, res) => {
     const { categoryId, categoryName } = req.body;
-    const categoryImage = req.file ? req.file.buffer : null;
+    const categoryImageBuffer = req.file ? req.file.buffer : null;
+
+    let compressedImageBuffer = null;
+
+    if (categoryImageBuffer) {
+        try {
+            // Compress and convert the image to PNG format
+            compressedImageBuffer = await sharp(categoryImageBuffer)
+                .resize({ width: 800 }) // Resize to width 800px, adjust as needed
+                .png({ quality: 1 }) // Set PNG quality, adjust as needed
+                .toBuffer();
+        } catch (error) {
+            console.error('Error processing image:', error.message);
+            return res.status(500).send('Error processing image');
+        }
+    }
 
     try {
         await client.query(
@@ -952,7 +963,7 @@ app.post('/api/edit-category', upload.single('editCategoryImage'), async (req, r
              SET categorie_name = $1,
                  categorie_image = COALESCE($2, categorie_image)
              WHERE id = $3`,
-            [categoryName, categoryImage, categoryId]
+            [categoryName, compressedImageBuffer, categoryId]
         );
         res.status(200).send('Category updated successfully');
     } catch (error) {

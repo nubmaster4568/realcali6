@@ -463,8 +463,8 @@ document.addEventListener('touchend', function(event) {
     if (categories) {
         // Sort categories so that "Weed" comes first
         categories.sort((a, b) => {
-            if (a.categorie_name === 'Weed') return -1;
-            if (b.categorie_name === 'Weed') return 1;
+            if (a.categorie_name === 'Flower') return -1;
+            if (b.categorie_name === 'Flower') return 1;
             return 0;
         });
 
@@ -504,7 +504,7 @@ document.addEventListener('touchend', function(event) {
 
         // Select the button for "Weed" by default
         const weedButton = $buttonContainer.find('button').filter(function() {
-            return $(this).find('.button-label').text() === 'Weed';
+            return $(this).find('.button-label').text() === 'Flower';
         });
 
         if (weedButton.length) {
@@ -578,7 +578,7 @@ function updateCartPopup(product) {
         listItem.setAttribute('data-price-per-1lb', product.pricePer1Lb);
         listItem.setAttribute('data-description', product.description);
         listItem.setAttribute('data-price', product.price);
-
+        console.log(product.price)
         // Calculate the lowest price and default quantity type
         var lowestPrice = Math.min(
             parseFloat(product.pricePerGram) || Infinity,
@@ -589,23 +589,33 @@ function updateCartPopup(product) {
             parseFloat(product.price) || Infinity
 
         );
-        
-        var defaultQuantityType = '1'; // Default to Gram if no price is available
+        let defaultQuantityType = '1'
+                    defaultQuantityType = '1';
+
         if (lowestPrice === parseFloat(product.pricePerOz)) {
+            console.log('2')
             defaultQuantityType = '2';
         } else if (lowestPrice === parseFloat(product.pricePerQp)) {
             defaultQuantityType = '3';
+            console.log('3')
+
         } else if (lowestPrice === parseFloat(product.pricePerHalfP)) {
             defaultQuantityType = '4';
+                        console.log('4')
+
         } else if (lowestPrice === parseFloat(product.pricePer1Lb)) {
             defaultQuantityType = '5';
+            console.log('5')
+
         } else if (lowestPrice === parseFloat(product.price)){
             defaultQuantityType = '6'
+            console.log('6',lowestPrice,product.pricePerGram)
+
         }
         // Create options dynamically based on non-zero prices
         var quantityOptions = '';
         if (parseFloat(product.pricePerGram) > 0) {
-            quantityOptions += '<option value="1">Gram</option>';
+            quantityOptions += '<option value="1">3.5 Gram</option>';
         }
         if (parseFloat(product.pricePerOz) > 0) {
             quantityOptions += '<option value="2">Oz</option>';
@@ -974,7 +984,7 @@ function fetchProducts(categorie) {
 
                 // Determine the lowest price and its associated category
                 const prices = [
-                    { type: 'per g', price: pricePerGram },
+                    { type: 'per 3.5 g', price: pricePerGram },
                     { type: 'per oz', price: pricePerOz },
                     { type: 'per QP', price: pricePerQp },
                     { type: 'per 1/2 P', price: pricePerHalfP },
@@ -991,7 +1001,7 @@ function fetchProducts(categorie) {
                 // Create product item HTML
                 const productItem = $('<div>', { class: 'product-item' })
                     .attr('data-name', product.name)
-                    .attr('data-price', `$${lowestPriceInfo.price.toFixed(2)}`)
+                    .attr('data-price', `$${product.price}`)
                     .attr('data-lat', product.latitude)
                     .attr('data-lng', product.longitude)
                     .attr('data-type', product.type)
@@ -1012,7 +1022,7 @@ function fetchProducts(categorie) {
                         <div class="product-name">${product.name}</div>
                         <button class="buy-button" 
                             data-id="${product.identifier}" 
-                            data-price="${lowestPriceInfo.price}" 
+                            data-price="${product.price || '0'}" 
                             data-image="${firstImageUrl}" 
                             data-description="${product.description}" 
                             data-price-per-gram="${pricePerGram.toFixed(2)}" 
@@ -1024,7 +1034,7 @@ function fetchProducts(categorie) {
                             <button class="add-button"
                             data-name="${product.name}" 
                             data-id="${product.identifier}" 
-                            data-price="${lowestPriceInfo.price}" 
+                            data-price="${product.price}" 
                             data-image="${firstImageUrl}" 
                             data-description="${product.description}" 
                             data-price-per-gram="${pricePerGram.toFixed(2)}" 
