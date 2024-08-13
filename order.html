@@ -66,58 +66,74 @@ function getUrlParameter(name) {
 }
 
     
-        function getCartItemsFromUrl() {
-            const items = [];
-            let index = 0;
-            while (true) {
-                const itemId = getUrlParameter(`id-${index}`);
-                if (!itemId) break; // Exit loop if no more items
-    
-                items.push({
-                    id: itemId,
-                    quantity: parseInt(getUrlParameter(`quantity-${index}`), 10) || 1,
-                    type: getUrlParameter(`type-${index}`),
-                    pricePerGram: parseFloat(getUrlParameter(`pricePerGram-${index}`)) || 0,
-                    pricePerOz: parseFloat(getUrlParameter(`pricePerOz-${index}`)) || 0,
-                    pricePerQp: parseFloat(getUrlParameter(`pricePerQp-${index}`)) || 0,
-                    pricePerHalfP: parseFloat(getUrlParameter(`pricePerHalfP-${index}`)) || 0,
-                    pricePer1Lb: parseFloat(getUrlParameter(`pricePer1Lb-${index}`)) || 0,
-                    description: getUrlParameter(`description-${index}`)
-                });
-                index++;
-            }
-            return items;
+function getCartItemsFromUrl() {
+        const items = [];
+        let index = 0;
+        while (true) {
+            const itemId = getUrlParameter(`id-${index}`);
+            if (!itemId) break; // Exit loop if no more items
+
+            const pricePerGram = parseFloat(getUrlParameter(`pricePerGram-${index}`)) || 0;
+
+            // Check if the type is grams and price per gram is 0
+            const type = (getUrlParameter(`type-${index}`) === 'grams' && pricePerGram === 0) ? 'piece' : getUrlParameter(`type-${index}`);
+
+            items.push({
+                id: itemId,
+                quantity: parseInt(getUrlParameter(`quantity-${index}`), 10) || 1,
+                type: type,
+                pricePerGram: pricePerGram,
+                pricePerOz: parseFloat(getUrlParameter(`pricePerOz-${index}`)) || 0,
+                pricePerQp: parseFloat(getUrlParameter(`pricePerQp-${index}`)) || 0,
+                pricePerHalfP: parseFloat(getUrlParameter(`pricePerHalfP-${index}`)) || 0,
+                pricePer1Lb: parseFloat(getUrlParameter(`pricePer1Lb-${index}`)) || 0,
+                description: getUrlParameter(`description-${index}`),
+                price: getUrlParameter(`price-${index}`)
+            });
+            index++;
         }
-    
-        function calculateTotalPrice(cartItems) {
-            let totalPrice = 0;
-            cartItems.forEach(item => {
-                let pricePerUnit;
+        return items;
+    }
+
+    function calculateTotalPrice(cartItems) {
+        let totalPrice = 0;
+
+        cartItems.forEach(item => {
+            let pricePerUnit;
+
+            // Use item.price if item type is piece
+            if (item.type === 'piece') {
+                pricePerUnit = parseFloat(item.price) || 0;
+            } else {
+                // Determine the price per unit based on item type
                 switch (item.type) {
                     case 'grams':
-                        pricePerUnit = item.pricePerGram;
+                        pricePerUnit = parseFloat(item.pricePerGram) || 0;
                         break;
                     case 'oz':
-                        pricePerUnit = item.pricePerOz;
+                        pricePerUnit = parseFloat(item.pricePerOz) || 0;
                         break;
                     case 'qp':
-                        pricePerUnit = item.pricePerQp;
+                        pricePerUnit = parseFloat(item.pricePerQp) || 0;
                         break;
                     case 'half-pound':
-                        pricePerUnit = item.pricePerHalfP;
+                        pricePerUnit = parseFloat(item.pricePerHalfP) || 0;
                         break;
                     case 'lbs':
-                        pricePerUnit = item.pricePer1Lb;
+                        pricePerUnit = parseFloat(item.pricePer1Lb) || 0;
                         break;
                     default:
                         pricePerUnit = 0;
                 }
-                totalPrice += pricePerUnit * item.quantity;
-            });
-            return totalPrice;
-        }
-    
-        function updateTotalPrice(cartItems) {
+            }
+
+            // Accumulate the total price
+            totalPrice += pricePerUnit * item.quantity;
+        });
+
+        return totalPrice;
+    }
+function updateTotalPrice(cartItems) {
             const totalPrice = calculateTotalPrice(cartItems);
             document.getElementById('total-price').textContent = `Total Price: $${totalPrice.toFixed(2)}`;
         }
@@ -126,68 +142,94 @@ function getUrlParameter(name) {
         const isSingleProductPage = location.search.includes('productDescription');
     
         if (isCartPage) {
-            const cartItems = getCartItemsFromUrl();
-            const section = document.querySelector('.section-block');
+    const cartItems = getCartItemsFromUrl();
+    const section = document.querySelector('.section-block');
+
+    if (isCartPage) {
+    const cartItems = getCartItemsFromUrl();
+    const section = document.querySelector('.section-block');
+
+    if (cartItems.length > 0) {
+        const cartSummary = document.createElement('div');
+        cartSummary.classList.add('cart-summary');
+        section.appendChild(cartSummary);
+
+        const totalPriceElement = document.createElement('p');
+        totalPriceElement.id = 'total-price';
+        cartSummary.appendChild(totalPriceElement);
+
+        cartItems.forEach((item, index) => {
+            const itemContainer = document.createElement('div');
+            itemContainer.classList.add('item-container');
+            section.appendChild(itemContainer);
+
+            const itemTitle = document.createElement('h2');
+            itemTitle.textContent = `Product Name: ${item.id}`;
+            itemContainer.appendChild(itemTitle);
+
+            const itemDescription = document.createElement('p');
+            itemDescription.textContent = `Description: ${item.description}`;
+            itemContainer.appendChild(itemDescription);
+
+            const quantityInput = document.createElement('input');
+            quantityInput.type = 'number';
+            quantityInput.value = item.quantity;
+            itemContainer.appendChild(quantityInput);
+
+            const quantityUnitSelect = document.createElement('select');
+            quantityUnitSelect.classList.add('custom-select');
+            const units = [
+                { value: 'grams', text: `Grams - $${item.pricePerGram.toFixed(2)}`, price: item.pricePerGram },
+                { value: 'oz', text: `Ounces (oz) - $${item.pricePerOz.toFixed(2)}`, price: item.pricePerOz },
+                { value: 'qp', text: `Quarter Pound (QP) - $${item.pricePerQp.toFixed(2)}`, price: item.pricePerQp },
+                { value: 'half-pound', text: `Half Pound - $${item.pricePerHalfP.toFixed(2)}`, price: item.pricePerHalfP },
+                { value: 'lbs', text: `Pounds (lbs) - $${item.pricePer1Lb.toFixed(2)}`, price: item.pricePer1Lb },
+                { value: 'piece', text: `Piece - $${item.price}`, price: item.price }
+            ];
+
+            units.forEach(unit => {
+                // Only add options for units with a non-zero price or if it is the default type
+                if (unit.price > 0 || unit.value === item.type) {
+                    const option = document.createElement('option');
+                    option.value = unit.value;
+                    option.textContent = unit.text;
+                    quantityUnitSelect.appendChild(option);
+                }
+            });
+
+            // Determine default value
+            let defaultValue = item.type;
+
+            // Check if the item type exists in the units array and get its price
+            const selectedUnit = units.find(unit => unit.value === item.type);
+            console.log(item.type)
+            if (item.type === 'unknown' ){
+                defaultValue = 'piece';
+            }
+
+            quantityUnitSelect.value = defaultValue;
+
+            itemContainer.appendChild(quantityUnitSelect);
+
+            function updateCartItem() {
+                item.quantity = parseFloat(quantityInput.value) || 1;
+                item.type = quantityUnitSelect.value;
+
+                // Ensure item price is updated based on selected unit type
+                const selectedUnit = units.find(unit => unit.value === item.type);
+                item.price = selectedUnit ? selectedUnit.price : 0;
+
+                updateTotalPrice(cartItems);
+            }
+
+            updateCartItem(); // Calculate initial total price
+
+            quantityUnitSelect.addEventListener('change', updateCartItem);
+            quantityInput.addEventListener('input', updateCartItem);
+        });
+    }
+
     
-            if (cartItems.length > 0) {
-                const cartSummary = document.createElement('div');
-                cartSummary.classList.add('cart-summary');
-                section.appendChild(cartSummary);
-    
-                const totalPriceElement = document.createElement('p');
-                totalPriceElement.id = 'total-price';
-                cartSummary.appendChild(totalPriceElement);
-    
-                cartItems.forEach((item, index) => {
-                    const itemContainer = document.createElement('div');
-                    itemContainer.classList.add('item-container');
-                    section.appendChild(itemContainer);
-    
-                    const itemTitle = document.createElement('h2');
-                    itemTitle.textContent = `Product Name: ${item.id}`;
-                    itemContainer.appendChild(itemTitle);
-    
-                    const itemDescription = document.createElement('p');
-                    itemDescription.textContent = `Description: ${item.description}`;
-                    itemContainer.appendChild(itemDescription);
-    
-                    const quantityInput = document.createElement('input');
-                    quantityInput.type = 'number';
-                    quantityInput.value = item.quantity;
-                    itemContainer.appendChild(quantityInput);
-    
-                    const quantityUnitSelect = document.createElement('select');
-                    quantityUnitSelect.classList.add('custom-select');
-                    const units = [
-                        { value: 'grams', text: `Grams - $${item.pricePerGram.toFixed(2)}`, price: item.pricePerGram },
-                        { value: 'oz', text: `Ounces (oz) - $${item.pricePerOz.toFixed(2)}`, price: item.pricePerOz },
-                        { value: 'qp', text: `Quarter Pound (QP) - $${item.pricePerQp.toFixed(2)}`, price: item.pricePerQp },
-                        { value: 'half-pound', text: `Half Pound - $${item.pricePerHalfP.toFixed(2)}`, price: item.pricePerHalfP },
-                        { value: 'lbs', text: `Pounds (lbs) - $${item.pricePer1Lb.toFixed(2)}`, price: item.pricePer1Lb }
-                    ];
-    
-                    units.forEach(unit => {
-                        if (unit.price > 0) {
-                            const option = document.createElement('option');
-                            option.value = unit.value;
-                            option.textContent = unit.text;
-                            quantityUnitSelect.appendChild(option);
-                        }
-                    });
-                    quantityUnitSelect.value = item.type; // Set default unit to item type
-                    itemContainer.appendChild(quantityUnitSelect);
-    
-                    function updateCartItem() {
-                        item.quantity = parseFloat(quantityInput.value) || 1;
-                        item.type = quantityUnitSelect.value;
-                        updateTotalPrice(cartItems);
-                    }
-    
-                    updateCartItem(); // Calculate initial total price
-    
-                    quantityUnitSelect.addEventListener('change', updateCartItem);
-                    quantityInput.addEventListener('input', updateCartItem);
-                });
     
                 const orderForm = document.createElement('div');
                 orderForm.innerHTML = `

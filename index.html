@@ -554,7 +554,6 @@ function hideCartPopup() {
 }
 
 // Update cart popup with product details
-// Update cart popup with product details
 function updateCartPopup(product) {
     var existingItem = cartItemsList.querySelector(`[data-id="${product.id}"]`);
     var quantity = 0;
@@ -565,17 +564,44 @@ function updateCartPopup(product) {
         var quantityElement = existingItem.querySelector('.quantity');
         quantity = parseInt(quantityElement.textContent, 10) + 1;
         quantityElement.textContent = quantity;
+
+        // Update price based on the selected quantity type
+        updatePrice(existingItem);
     } else {
         // Add new item
         var listItem = document.createElement('li');
-        listItem.setAttribute('data-id', product.name);
+        listItem.setAttribute('data-id', product.id);
         listItem.setAttribute('data-price-per-gram', product.pricePerGram);
         listItem.setAttribute('data-price-per-oz', product.pricePerOz);
         listItem.setAttribute('data-price-per-qp', product.pricePerQp);
         listItem.setAttribute('data-price-per-half-p', product.pricePerHalfP);
         listItem.setAttribute('data-price-per-1lb', product.pricePer1Lb);
         listItem.setAttribute('data-description', product.description);
+        listItem.setAttribute('data-price', product.price);
 
+        // Calculate the lowest price and default quantity type
+        var lowestPrice = Math.min(
+            parseFloat(product.pricePerGram) || Infinity,
+            parseFloat(product.pricePerOz) || Infinity,
+            parseFloat(product.pricePerQp) || Infinity,
+            parseFloat(product.pricePerHalfP) || Infinity,
+            parseFloat(product.pricePer1Lb) || Infinity,
+            parseFloat(product.price) || Infinity
+
+        );
+        
+        var defaultQuantityType = '1'; // Default to Gram if no price is available
+        if (lowestPrice === parseFloat(product.pricePerOz)) {
+            defaultQuantityType = '2';
+        } else if (lowestPrice === parseFloat(product.pricePerQp)) {
+            defaultQuantityType = '3';
+        } else if (lowestPrice === parseFloat(product.pricePerHalfP)) {
+            defaultQuantityType = '4';
+        } else if (lowestPrice === parseFloat(product.pricePer1Lb)) {
+            defaultQuantityType = '5';
+        } else if (lowestPrice === parseFloat(product.price)){
+            defaultQuantityType = '6'
+        }
         // Create options dynamically based on non-zero prices
         var quantityOptions = '';
         if (parseFloat(product.pricePerGram) > 0) {
@@ -592,14 +618,16 @@ function updateCartPopup(product) {
         }
         if (parseFloat(product.pricePer1Lb) > 0) {
             quantityOptions += '<option value="5">1Lb</option>';
-        }
+        } if (parseFloat(product.price) > 0) {
+            quantityOptions += '<option value="6">Piece</option>';
 
+        }
         listItem.innerHTML = `
             <img src="${product.image}" style="width: 50px; height: auto;">
             <div class="cart-item-details">
                 <div class="description">${product.name}</div>
                 <div class="price-quantity">
-                    <div class="price">Price: $${product.pricePerGram}</div>
+                    <div class="price">Price: $${lowestPrice.toFixed(2)}</div>
                     <div class="quantity-controls">
                         <select class="quantity-type">
                             ${quantityOptions}
@@ -609,12 +637,19 @@ function updateCartPopup(product) {
                         <button class="increase-quantity">+</button>
                     </div>
                     <button class="delete-item">Delete</button>
-
                 </div>
             </div>
         `;
         cartItemsList.appendChild(listItem);
         quantity = 1; // New item, initial quantity is 1
+
+        // Bind change event to update price
+        $(listItem).find('.quantity-type').change(function() {
+            updatePrice(listItem);
+        });
+
+        // Set the default quantity type
+        $(listItem).find('.quantity-type').val(defaultQuantityType);
     }
 
     // Update the cart quantity indicator
@@ -622,6 +657,34 @@ function updateCartPopup(product) {
 
     // Add or update the "Buy" button
     updateBuyButton();
+}
+
+function updatePrice(item) {
+    var quantityType = $(item).find('.quantity-type').val();
+    var pricePerUnit;
+
+    switch (quantityType) {
+        case '1':
+            pricePerUnit = $(item).data('price-per-gram');
+            break;
+        case '2':
+            pricePerUnit = $(item).data('price-per-oz');
+            break;
+        case '3':
+            pricePerUnit = $(item).data('price-per-qp');
+            break;
+        case '4':
+            pricePerUnit = $(item).data('price-per-half-p');
+            break;
+        case '5':
+            pricePerUnit = $(item).data('price-per-1lb');
+            break;
+        default:
+            pricePerUnit = $(item).data('price-per-gram');
+    }
+
+    // Update the price display
+    $(item).find('.price').text(`Price: $${pricePerUnit}`);
 }
 
 function updateBuyButton() {
@@ -718,7 +781,7 @@ $(document).on('click', '.add-button', function() {
         pricePerQp: this.getAttribute('data-price-per-qp'),
         pricePerHalfP: this.getAttribute('data-price-per-half-p'),
         pricePer1Lb: this.getAttribute('data-price-per-1lb'),
-        name: this.getAttribute('data-name')
+        name: this.getAttribute('data-name'),
     };
     updateCartPopup(product);
     showCartPopup();
@@ -806,6 +869,9 @@ $(document).on('change', '.quantity-type', function() {
         case '5':
             pricePerUnit = parseFloat(listItem.data('price-per-1lb'));
             break;
+            case '6':
+            pricePerUnit = parseFloat(listItem.data('price'));
+            break; 
         default:
             pricePerUnit = 0;
     }
@@ -815,7 +881,7 @@ $(document).on('change', '.quantity-type', function() {
     var newPrice = pricePerUnit * quantity;
 
     // Update price in the UI
-    priceElement.text(`Price: ₹${newPrice.toFixed(2)}`);
+    priceElement.text(`Price: $${newPrice.toFixed(2)}`);
     updateBuyButton(); // Ensure buy button is updated
 });
 
@@ -848,7 +914,8 @@ $(document).on('click', '.buy-button-cart', function() {
             pricePerQp: item.data('price-per-qp'),
             pricePerHalfP: item.data('price-per-half-p'),
             pricePer1Lb: item.data('price-per-1lb'),
-            description: item.data('description')
+            description: item.data('description'),
+            price: item.data('price')
         });
     });
 
