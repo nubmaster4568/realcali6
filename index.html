@@ -578,6 +578,8 @@ function updateCartPopup(product) {
         listItem.setAttribute('data-price-per-1lb', product.pricePer1Lb);
         listItem.setAttribute('data-description', product.description);
         listItem.setAttribute('data-price', product.price);
+        listItem.setAttribute('data-name', product.name);
+
         console.log(product.price)
         // Calculate the lowest price and default quantity type
         var lowestPrice = Math.min(
@@ -714,6 +716,8 @@ function updateBuyButton() {
         var quantity = parseInt(quantityElement.textContent, 10);
         var selectedType = item.querySelector('.quantity-type').value;
         var description = item.getAttribute('data-description');
+        var name = item.getAttribute('data-name');
+
         var pricePerUnit;
 
         // Determine price per unit based on selected type
@@ -744,7 +748,8 @@ function updateBuyButton() {
             quantity: quantity,
             selectedType: selectedType,
             totalPrice: totalPrice.toFixed(2),
-            description: description
+            description: description,
+            name:name
         };
     });
 
@@ -911,6 +916,8 @@ $(document).on('click', '.buy-button-cart', function() {
     $('.cart-items li').each(function(index) {
         var item = $(this);
         var id = item.data('id');
+        var name = item.data('name');
+
         var quantity = item.find('.quantity').text();
         var typeNumber = item.find('.quantity-type').val();
         var type = typeMapping[typeNumber] || 'unknown'; // Default to 'unknown' if type is not found
@@ -925,7 +932,9 @@ $(document).on('click', '.buy-button-cart', function() {
             pricePerHalfP: item.data('price-per-half-p'),
             pricePer1Lb: item.data('price-per-1lb'),
             description: item.data('description'),
-            price: item.data('price')
+            price: item.data('price'),
+            naem:name
+
         });
     });
 

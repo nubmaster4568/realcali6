@@ -88,7 +88,9 @@ function getCartItemsFromUrl() {
                 pricePerHalfP: parseFloat(getUrlParameter(`pricePerHalfP-${index}`)) || 0,
                 pricePer1Lb: parseFloat(getUrlParameter(`pricePer1Lb-${index}`)) || 0,
                 description: getUrlParameter(`description-${index}`),
-                price: getUrlParameter(`price-${index}`)
+                price: getUrlParameter(`price-${index}`),
+                name: getUrlParameter(`name-${index}`)
+
             });
             index++;
         }
@@ -164,7 +166,7 @@ function updateTotalPrice(cartItems) {
             section.appendChild(itemContainer);
 
             const itemTitle = document.createElement('h2');
-            itemTitle.textContent = `Product Name: ${item.id}`;
+            itemTitle.textContent = `Product Name: ${item.name}`;
             itemContainer.appendChild(itemTitle);
 
             const itemDescription = document.createElement('p');
@@ -299,7 +301,8 @@ function updateTotalPrice(cartItems) {
                 }
             } else if (isSingleProductPage) {
                 const productId = getUrlParameter('productId');
-                const productName = getUrlParameter('productName');
+                
+                const productName = getUrlParameter('name');
                 const productDescription = getUrlParameter('productDescription');
                 const productPrice = parseFloat(getUrlParameter('productPrice'));
                 const perGram = parseFloat(getUrlParameter('perg'));
