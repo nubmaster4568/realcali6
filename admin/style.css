@@ -20,6 +20,15 @@
     width: 100%;
     box-sizing: border-box;
 }
+.edit-form-container {
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    max-width: 500px;
+    width: 100%;
+    box-sizing: border-box;
+}
 .categories-form-container {
     background-color: #ffffff;
     border-radius: 8px;
@@ -66,6 +75,19 @@ h1 {
     font-size: 14px;
 }
 
+.form-container input ,
+.form-container select,
+.form-container textarea{
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+.form-container input[type="file"] {
+    padding: 0;
+
+}
 .form-group input[type="file"] {
     padding: 0;
 }

@@ -25,6 +25,49 @@
         .needed {
             height: 1000px;
         }
+        .popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            z-index: 9999;
+        }
+        .popup h2 {
+            margin: 0 0 10px;
+        }
+        .popup p {
+            margin: 5px 0;
+        }
+        .popup button {
+            margin-top: 15px;
+            padding: 10px 15px;
+            background-color: #28a745;
+            border: none;
+            color: #fff;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .popup button:hover {
+            background-color: #218838;
+        }
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+
     </style>
 </head>
 <body class="needed">
@@ -38,7 +81,21 @@
             <img src="logotextreal.png" alt="Logo Text">
         </div>
     </nav>
-    
+    <div class="overlay" id="overlay"></div>
+
+    <div class="popup" id="order-popup">
+        <h2 style="padding: 10px;">Products</h2>
+        <div id="order-items"></div>
+        <div class="summary">
+        <h2>Order Details</h2>
+        <p><strong>Delivery Address:</strong> <span id="popup-address"></span></p>
+        <p><strong>Name:</strong> <span id="popup-date"></span></p>
+        <p><strong>Contact Info:</strong> <span id="popup-contact"></span></p>
+        <p><strong>Comments:</strong> <span id="popup-comments"></span></p>
+        <button id="confirm-order-btn">Confirm Order</button>
+    </div>
+    </div>
+
     <div class="sections">
         <div class="section-block">
             <div class="container">
@@ -49,7 +106,16 @@
                 </div>
     
                 <div id="product-name"></div>
-                
+                 <!-- Order Summary Section -->
+                 <div id="order-summary" class="order-summary" style="display:none;">
+                    <h1>Order Summary</h1>
+                    <div id="order-summary-details"></div>
+                    <button id="confirm-order-button" class="submit-button">Confirm Order</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
             </div>
         </div>
     </div>
@@ -64,10 +130,16 @@ function getUrlParameter(name) {
     const results = regex.exec(location.search);
     return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' ')) || '';
 }
+let items = [];
 
-    
+let cartItems;
+
+
+
+
+
+
 function getCartItemsFromUrl() {
-        const items = [];
         let index = 0;
         while (true) {
             const itemId = getUrlParameter(`id-${index}`);
@@ -89,7 +161,7 @@ function getCartItemsFromUrl() {
                 pricePer1Lb: parseFloat(getUrlParameter(`pricePer1Lb-${index}`)) || 0,
                 description: getUrlParameter(`description-${index}`),
                 price: getUrlParameter(`price-${index}`),
-                name: getUrlParameter(`name-${index}`)
+                name: itemId
 
             });
             index++;
@@ -144,7 +216,7 @@ function updateTotalPrice(cartItems) {
         const isSingleProductPage = location.search.includes('productDescription');
     
         if (isCartPage) {
-    const cartItems = getCartItemsFromUrl();
+    cartItems = getCartItemsFromUrl();
     const section = document.querySelector('.section-block');
 
     if (isCartPage) {
@@ -152,117 +224,189 @@ function updateTotalPrice(cartItems) {
     const section = document.querySelector('.section-block');
 
     if (cartItems.length > 0) {
-        const cartSummary = document.createElement('div');
-        cartSummary.classList.add('cart-summary');
-        section.appendChild(cartSummary);
+    const cartSummary = document.createElement('div');
+    cartSummary.classList.add('cart-summary');
+    section.appendChild(cartSummary);
 
-        const totalPriceElement = document.createElement('p');
-        totalPriceElement.id = 'total-price';
-        cartSummary.appendChild(totalPriceElement);
+    const totalPriceElement = document.createElement('p');
+    totalPriceElement.id = 'total-price';
+    cartSummary.appendChild(totalPriceElement);
 
-        cartItems.forEach((item, index) => {
-            const itemContainer = document.createElement('div');
-            itemContainer.classList.add('item-container');
-            section.appendChild(itemContainer);
+    cartItems.forEach((item, index) => {
+        const itemContainer = document.createElement('div');
+        itemContainer.classList.add('item-container');
+        section.appendChild(itemContainer);
 
-            const itemTitle = document.createElement('h2');
-            itemTitle.textContent = `Product Name: ${item.name}`;
-            itemContainer.appendChild(itemTitle);
+        const itemTitle = document.createElement('h2');
+        itemTitle.textContent = `Product Name: ${item.name}`;
+        itemContainer.appendChild(itemTitle);
 
-            const itemDescription = document.createElement('p');
-            itemDescription.textContent = `Description: ${item.description}`;
-            itemContainer.appendChild(itemDescription);
+        const itemDescription = document.createElement('p');
+        itemDescription.textContent = `Description: ${item.description}`;
+        itemContainer.appendChild(itemDescription);
 
-            const quantityInput = document.createElement('input');
-            quantityInput.type = 'number';
-            quantityInput.value = item.quantity;
-            itemContainer.appendChild(quantityInput);
+        const quantityInput = document.createElement('input');
+        quantityInput.type = 'number';
+        quantityInput.classList.add('quantity');
 
-            const quantityUnitSelect = document.createElement('select');
-            quantityUnitSelect.classList.add('custom-select');
-            const units = [
-                { value: 'grams', text: `Grams - $${item.pricePerGram.toFixed(2)}`, price: item.pricePerGram },
-                { value: 'oz', text: `Ounces (oz) - $${item.pricePerOz.toFixed(2)}`, price: item.pricePerOz },
-                { value: 'qp', text: `Quarter Pound (QP) - $${item.pricePerQp.toFixed(2)}`, price: item.pricePerQp },
-                { value: 'half-pound', text: `Half Pound - $${item.pricePerHalfP.toFixed(2)}`, price: item.pricePerHalfP },
-                { value: 'lbs', text: `Pounds (lbs) - $${item.pricePer1Lb.toFixed(2)}`, price: item.pricePer1Lb },
-                { value: 'piece', text: `Piece - $${item.price}`, price: item.price }
-            ];
+        quantityInput.value = item.quantity;
+        itemContainer.appendChild(quantityInput);
 
-            units.forEach(unit => {
-                // Only add options for units with a non-zero price or if it is the default type
-                if (unit.price > 0 || unit.value === item.type) {
-                    const option = document.createElement('option');
-                    option.value = unit.value;
-                    option.textContent = unit.text;
-                    quantityUnitSelect.appendChild(option);
+        const quantityUnitSelect = document.createElement('select');
+        quantityUnitSelect.classList.add('custom-select');
+        const units = [
+            { value: 'grams', text: `Grams - $${item.pricePerGram.toFixed(2)}`, price: item.pricePerGram },
+            { value: 'oz', text: `Ounces (oz) - $${item.pricePerOz.toFixed(2)}`, price: item.pricePerOz },
+            { value: 'qp', text: `Quarter Pound (QP) - $${item.pricePerQp.toFixed(2)}`, price: item.pricePerQp },
+            { value: 'half-pound', text: `Half Pound - $${item.pricePerHalfP.toFixed(2)}`, price: item.pricePerHalfP },
+            { value: 'lbs', text: `Pounds (lbs) - $${item.pricePer1Lb.toFixed(2)}`, price: item.pricePer1Lb },
+            { value: 'piece', text: `Piece - $${item.price}`, price: item.price }
+        ];
+
+        units.forEach(unit => {
+    // Only add options for units with a non-zero price or if it is the default type
+    if (unit.price > 0 || unit.value === item.type) {
+        const option = document.createElement('option');
+        option.value = unit.value;
+        option.textContent = unit.text;
+
+        // Set data attributes
+        option.dataset.price = unit.price;
+        option.dataset.value = unit.value;
+        // Add other data attributes as needed
+
+        quantityUnitSelect.appendChild(option);
+    }
+});
+
+        // Determine default value
+        let defaultValue = item.type;
+
+        // Check if the item type exists in the units array and get its price
+        const selectedUnit = units.find(unit => unit.value === item.type);
+        console.log(item.type)
+        if (item.type === 'unknown' ){
+            defaultValue = 'piece';
+        }
+
+        quantityUnitSelect.value = defaultValue;
+
+        itemContainer.appendChild(quantityUnitSelect);
+
+        // Add comment section for each product
+        const commentSection = document.createElement('div');
+        commentSection.classList.add('comment-section');
+        const commentLabel = document.createElement('label');
+        commentSection.appendChild(commentLabel);
+
+        const commentTextArea = document.createElement('textarea');
+        commentTextArea.rows = 3; // Set the number of visible rows
+        commentTextArea.cols = 30; // Set the number of visible columns
+        commentTextArea.placeholder = 'Comments for this product:';
+        commentTextArea.value = item.comment || ''; // Load existing comment if available
+        commentSection.appendChild(commentTextArea);
+
+        itemContainer.appendChild(commentSection);
+
+        function updateCartItem() {
+            item.quantity = parseFloat(quantityInput.value) || 1;
+            item.type = quantityUnitSelect.value;
+            item.comment = commentTextArea.value; // Save comment
+
+            // Ensure item price is updated based on selected unit type
+            const selectedUnit = units.find(unit => unit.value === item.type);
+            item.price = selectedUnit ? selectedUnit.price : 0;
+
+            updateTotalPrice(cartItems);
+        }
+
+        updateCartItem(); // Calculate initial total price
+
+        quantityUnitSelect.addEventListener('change', updateCartItem);
+        quantityInput.addEventListener('input', updateCartItem);
+        commentTextArea.addEventListener('input', updateCartItem); // Update when comment changes
+    });
+}
+  
+    
+                const orderForm = document.createElement('div');
+                orderForm.innerHTML = `
+                    <h1>Order Details</h1>
+                    <div class="form-group">
+                        <label for="delivery-address">Delivery Address:</label>
+                        <input type="text" id="delivery-address" name="deliveryAddress" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="delivery-date">Name:</label>
+                        <input type="text" id="delivery-date" name="deliveryDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="contact-info">Contact Info (Phone Number or Telegram Username):</label>
+                        <input type="text" id="contact-info" name="contactInfo" required>
+                    </div>
+                    <!-- New Comment Section -->
+                    <div class="form-group">
+                        <label for="comments">Comments:</label>
+                        <textarea id="comments" name="comments" rows="4" placeholder="Add any additional comments here"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <button id="place-order-button">Check Order</button>
+
+                    </div>
+                `;
+                section.appendChild(orderForm);
+    
+                // Add the event listener here
+                
+            } 
                 }
+
+                document.getElementById('place-order-button').addEventListener('click', function() {
+            // Collect form data
+            var address = document.getElementById('delivery-address').value;
+            var date = document.getElementById('delivery-date').value;
+            var contact = document.getElementById('contact-info').value;
+            var comments = document.getElementById('comments').value;
+
+            // Gather item details
+            var items = document.querySelectorAll('.item-container');
+            var orderItemsHtml = '';
+
+            items.forEach(function(item) {
+                var productName = item.querySelector('h2').textContent.replace('Product Name: ', '');
+                var quantity = item.querySelector('.quantity').value;
+                var weightType = item.querySelector('.custom-select').selectedOptions[0].text;
+                var price = item.querySelector('.custom-select').selectedOptions[0].getAttribute('data-price');
+                var totalPrice = (quantity * parseFloat(price)).toFixed(2);
+
+                orderItemsHtml += `
+                    <div class="order-item">
+                        <p><strong>Product Name:</strong> ${productName}</p>
+                        <p><strong>Quantity:</strong> ${quantity}</p>
+                        <p><strong>Weight Type:</strong> ${weightType}</p>
+                        <p><strong>Total Price:</strong> $${totalPrice}</p>
+                    </div>
+                `;
+
+                
             });
 
-            // Determine default value
-            let defaultValue = item.type;
+            // Populate the popup with form data
+            document.getElementById('popup-address').textContent = address;
+            document.getElementById('popup-date').textContent = date;
+            document.getElementById('popup-contact').textContent = contact;
+            document.getElementById('popup-comments').textContent = comments;
+            document.getElementById('order-items').innerHTML = orderItemsHtml;
 
-            // Check if the item type exists in the units array and get its price
-            const selectedUnit = units.find(unit => unit.value === item.type);
-            console.log(item.type)
-            if (item.type === 'unknown' ){
-                defaultValue = 'piece';
-            }
-
-            quantityUnitSelect.value = defaultValue;
-
-            itemContainer.appendChild(quantityUnitSelect);
-
-            function updateCartItem() {
-                item.quantity = parseFloat(quantityInput.value) || 1;
-                item.type = quantityUnitSelect.value;
-
-                // Ensure item price is updated based on selected unit type
-                const selectedUnit = units.find(unit => unit.value === item.type);
-                item.price = selectedUnit ? selectedUnit.price : 0;
-
-                updateTotalPrice(cartItems);
-            }
-
-            updateCartItem(); // Calculate initial total price
-
-            quantityUnitSelect.addEventListener('change', updateCartItem);
-            quantityInput.addEventListener('input', updateCartItem);
+            // Show the popup and overlay
+            document.getElementById('order-popup').style.display = 'block';
+            document.getElementById('overlay').style.display = 'block';
         });
-    }
+        document.getElementById('confirm-order-btn').addEventListener('click', function() {
+            alert('Order confirmed!');
+            document.getElementById('order-popup').style.display = 'none';
+            document.getElementById('overlay').style.display = 'none';
 
-    
-    
-                const orderForm = document.createElement('div');
-                orderForm.innerHTML = `
-                    <h1>Order Details</h1>
-                    <div class="form-group">
-                        <label for="delivery-address">Delivery Address:</label>
-                        <input type="text" id="delivery-address" name="deliveryAddress" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="delivery-date">Delivery Date:</label>
-                        <input type="text" id="delivery-date" name="deliveryDate" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="contact-info">Contact Info (Phone Number or Telegram Username):</label>
-                        <input type="text" id="contact-info" name="contactInfo" required>
-                    </div>
-                    <!-- New Comment Section -->
-                    <div class="form-group">
-                        <label for="comments">Comments:</label>
-                        <textarea id="comments" name="comments" rows="4" placeholder="Add any additional comments here"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <button id="place-order-button" class="submit-button">Place Order</button>
-                    </div>
-                `;
-                section.appendChild(orderForm);
-    
-                // Add the event listener here
-                const placeOrderButton = document.getElementById('place-order-button');
-                if (placeOrderButton) {
-                    placeOrderButton.addEventListener('click', function() {
     const deliveryAddress = document.getElementById('delivery-address').value;
     const deliveryDate = document.getElementById('delivery-date').value;
     const contactInfo = document.getElementById('contact-info').value;
@@ -286,7 +430,6 @@ function updateTotalPrice(cartItems) {
         success: function(response) {
             console.log('Order response:', response); // Debugging: check server response
             if (response.success) {
-                alert('Order placed successfully!');
                 // Optionally clear inputs or perform another action
             } else {
                 alert('Failed to place order.');
@@ -298,145 +441,12 @@ function updateTotalPrice(cartItems) {
         }
     });
 });
-                }
-            } else if (isSingleProductPage) {
-                const productId = getUrlParameter('productId');
-                
-                const productName = getUrlParameter('name');
-                const productDescription = getUrlParameter('productDescription');
-                const productPrice = parseFloat(getUrlParameter('productPrice'));
-                const perGram = parseFloat(getUrlParameter('perg'));
-                const perOz = parseFloat(getUrlParameter('peroz'));
-                const perQp = parseFloat(getUrlParameter('perqp'));
-                const perHalfP = parseFloat(getUrlParameter('perhp'));
-                const perLb = parseFloat(getUrlParameter('perlb'));
-                console.log({ productId, productName, productDescription, productPrice, perGram, perOz, perQp, perHalfP, perLb });
 
-                const section = document.querySelector('.section-block');
-    
-                const productSummary = document.createElement('div');
-                productSummary.classList.add('product-summary');
-                section.appendChild(productSummary);
-    
-                const title = document.createElement('h2');
-                title.textContent = `Product ID: ${productId}`;
-                productSummary.appendChild(title);
-    
-                const description = document.createElement('p');
-                description.textContent = `Description: ${productDescription}`;
-                productSummary.appendChild(description);
-    
-                const priceElement = document.createElement('p');
-                priceElement.textContent = `Price: $${productPrice.toFixed(2)}`;
-                productSummary.appendChild(priceElement);
-    
-                const quantityInput = document.createElement('input');
-                quantityInput.type = 'number';
-                quantityInput.value = 1;
-                quantityInput.min = 1;
-                productSummary.appendChild(quantityInput);
-    
-                const quantityUnitSelect = document.createElement('select');
-                quantityUnitSelect.classList.add('custom-select');
-                const units = [
-                    { value: 'grams', text: `Grams - $${perGram.toFixed(2)}`, price: perGram },
-                    { value: 'oz', text: `Ounces (oz) - $${perOz.toFixed(2)}`, price: perOz },
-                    { value: 'qp', text: `Quarter Pound (QP) - $${perQp.toFixed(2)}`, price: perQp },
-                    { value: 'half-pound', text: `Half Pound - $${perHalfP.toFixed(2)}`, price: perHalfP },
-                    { value: 'lbs', text: `Pounds (lbs) - $${perLb.toFixed(2)}`, price: perLb }
-                ];
-    
-                units.forEach(unit => {
-                    if (unit.price > 0) {
-                        const option = document.createElement('option');
-                        option.value = unit.value;
-                        option.textContent = unit.text;
-                        quantityUnitSelect.appendChild(option);
-                    }
-                });
-                quantityUnitSelect.value = 'grams'; // Set default unit to grams
-                productSummary.appendChild(quantityUnitSelect);
-    
-                function updateTotalPrice() {
-                    const quantity = parseFloat(quantityInput.value) || 1;
-                    const unit = quantityUnitSelect.value;
-                    const pricePerUnit = units.find(u => u.value === unit).price || 0;
-                    priceElement.textContent = `Total Price: $${(quantity * pricePerUnit).toFixed(2)}`;
-                }
-    
-                updateTotalPrice(); // Calculate initial total price
-    
-                quantityInput.addEventListener('input', updateTotalPrice);
-                quantityUnitSelect.addEventListener('change', updateTotalPrice);
-    
-                const orderForm = document.createElement('div');
-                orderForm.innerHTML = `
-                    <h1>Order Details</h1>
-                    <div class="form-group">
-                        <label for="delivery-address">Delivery Address:</label>
-                        <input type="text" id="delivery-address" name="deliveryAddress" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="delivery-date">Delivery Date:</label>
-                        <input type="text" id="delivery-date" name="deliveryDate" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="contact-info">Contact Info (Phone Number or Telegram Username):</label>
-                        <input type="text" id="contact-info" name="contactInfo" required>
-                    </div>
-                    <!-- New Comment Section -->
-                    <div class="form-group">
-                        <label for="comments">Comments:</label>
-                        <textarea id="comments" name="comments" rows="4" placeholder="Add any additional comments here"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <button id="place-order-button" class="submit-button">Place Order</button>
-                    </div>
-                `;
-                section.appendChild(orderForm);
-    
-                // Add the event listener here
-                const placeOrderButton = document.getElementById('place-order-button');
-                if (placeOrderButton) {
-                    placeOrderButton.addEventListener('click', function() {
-    const deliveryAddress = document.getElementById('delivery-address').value;
-    const deliveryDate = document.getElementById('delivery-date').value;
-    const contactInfo = document.getElementById('contact-info').value;
-    const comments = document.getElementById('comments').value;
 
-    const orderData = {
-        deliveryAddress: deliveryAddress,
-        deliveryDate: deliveryDate,
-        contactInfo: contactInfo,
-        comments: comments,
-        items: cartItems
-    };
-
-    console.log('Order Data:', orderData); // Debugging: check the order data
-
-    $.ajax({
-        url: 'https://realcali.onrender.com/api/place-order',
-        method: 'POST',
-        data: JSON.stringify(orderData),
-        contentType: 'application/json',
-        success: function(response) {
-            console.log('Order response:', response); // Debugging: check server response
-            if (response.success) {
-                alert('Order placed successfully!');
-                // Optionally clear inputs or perform another action
-            } else {
-                alert('Failed to place order.');
-            }
-        },
-        error: function(jqXHR, textStatus, errorThrown) {
-            console.error('Order submission failed:', textStatus, errorThrown);
-            alert('An error occurred. Please try again.');
-        }
-    });
-});
-                }
-            }
-        }
+        document.getElementById('overlay').addEventListener('click', function() {
+            document.getElementById('order-popup').style.display = 'none';
+            document.getElementById('overlay').style.display = 'none';
+        });
     });
     </script>
         

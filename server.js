@@ -796,9 +796,13 @@ app.get('/product/:identifier', async (req, res) => {
                 price: row.price,
                 weight: row.weight,
                 type: row.type,
-                latitude: row.latitude,
-                longitude: row.longitude,
-                location: row.location
+                categorie: row.categorie,
+                price_per_gram: row.price_per_gram,
+                price_per_oz: row.price_per_oz,
+                price_per_qp: row.price_per_qp,
+                price_per_half_p: row.price_per_half_p,
+                price_per_1lb: row.price_per_1lb,
+                description: row.description
             };
             res.json(productDetails);
         } else {
@@ -807,6 +811,48 @@ app.get('/product/:identifier', async (req, res) => {
     } catch (err) {
         console.error('Error retrieving product:', err.message);
         res.status(500).send('Error retrieving product.');
+    }
+});
+
+
+app.put('/product/:identifier', async (req, res) => {
+    const identifier = req.params.identifier;
+    const { name, price, weight, type, latitude, longitude, location } = req.body;
+
+    // Check for required fields
+    if (!name || !price || !weight || !type || !latitude || !longitude || !location) {
+        return res.status(400).send('All fields are required.');
+    }
+
+    try {
+        // Perform the update query
+        const result = await pool.query(
+            `UPDATE products
+             SET name = $1, price = $2, weight = $3, type = $4, latitude = $5, longitude = $6, location = $7
+             WHERE identifier = $8
+             RETURNING *`,
+            [name, price, weight, type, latitude, longitude, location, identifier]
+        );
+
+        if (result.rowCount > 0) {
+            const updatedProduct = result.rows[0];
+            const productDetails = {
+                identifier: updatedProduct.identifier,
+                name: updatedProduct.name,
+                price: updatedProduct.price,
+                weight: updatedProduct.weight,
+                type: updatedProduct.type,
+                latitude: updatedProduct.latitude,
+                longitude: updatedProduct.longitude,
+                location: updatedProduct.location
+            };
+            res.json(productDetails);
+        } else {
+            res.status(404).send('Product not found.');
+        }
+    } catch (err) {
+        console.error('Error updating product:', err.message);
+        res.status(500).send('Error updating product.');
     }
 });
 app.post('/api/get-user-transactions', async (req, res) => {
@@ -932,6 +978,106 @@ app.get('/api/products', async (req, res) => {
         res.status(500).send('Error retrieving products.');
     }
 });
+
+
+app.post('/edit-products', upload.fields([
+    { name: 'images[]', maxCount: 10 },
+    { name: 'videos[]', maxCount: 5 }
+]), async (req, res) => {
+    const { name, price, description, perg, peroz, perqp, perhalfp, per1lb, id } = req.body;
+
+    const productImages = req.files['images[]'] || [];
+    const productVideos = req.files['videos[]'] || [];
+
+    console.log(req.files); // Debugging line to check received files
+
+    if (productImages.length === 0 && productVideos.length === 0) {
+        return res.status(400).send('At least one image or video is required.');
+    }
+
+    try {
+        // Get Dropbox access token
+        const accessToken = await getAccessToken();
+        const dbx = new Dropbox({ accessToken, fetch: fetch });
+
+        // Process and save images as base64
+        const base64Images = await Promise.all(
+            productImages.map(async (file) => {
+                console.log('Processing image file:', file);
+                const compressedImage = await sharp(file.buffer)
+                    .resize(800) // Resize if needed (optional)
+                    .jpeg({ quality: 20 }) // Compress and set quality
+                    .toBuffer();
+                return `data:image/jpeg;base64,${compressedImage.toString('base64')}`;
+            })
+        );
+
+        // Upload videos to Dropbox and get file links
+        const videoLinks = await Promise.all(
+            productVideos.map(async (file) => {
+                console.log('Uploading video file:', file.originalname);
+                const filePath = `/${file.originalname}`;
+                const response = await dbx.filesUpload({
+                    path: filePath,
+                    contents: file.buffer
+                });
+                
+                // Create a shared link for the uploaded file
+                const sharedLinkResponse = await dbx.sharingCreateSharedLinkWithSettings({
+                    path: filePath
+                });
+
+                return sharedLinkResponse.result.url.replace('dl=0', 'dl=1'); // Get a direct download link
+            })
+        );
+
+        // Combine all images and videos into a single JSON object
+        const mediaData = JSON.stringify({
+            images: base64Images,
+            videos: videoLinks
+        });
+
+        // Determine final price
+        const pricePerGram = parseFloat(perg) || 0;
+        const pricePerOz = parseFloat(peroz) || 0;
+        const pricePerQp = parseFloat(perqp) || 0;
+        const pricePerHalfP = parseFloat(perhalfp) || 0;
+        const pricePer1Lb = parseFloat(per1lb) || 0;
+
+        // Array of price per unit
+        const unitPrices = [pricePerGram, pricePerOz, pricePerQp, pricePerHalfP, pricePer1Lb];
+
+        // Determine final price
+        const hasValidUnitPrice = unitPrices.some(p => p > 0);
+        const finalPrice = hasValidUnitPrice ? 0 : parseFloat(price) || 0;
+
+        // Store all media in a single row
+        await client.query(`
+            UPDATE products SET name = $1, 
+    price = $2, 
+    price_per_gram = $3, 
+    price_per_oz = $4, 
+    price_per_qp = $5, 
+    price_per_half_p = $6, 
+    price_per_1lb = $7, 
+    media_data = $8,
+    description = $9
+    WHERE identifier = $10;
+
+
+        `, [name, finalPrice, pricePerGram, pricePerOz,pricePerQp, pricePerHalfP, pricePer1Lb, mediaData, description,id]);
+
+        res.status(200).json({ message: 'Product successfully updated.' });
+    } catch (err) {
+        console.error('Detailed error:', err);
+        res.status(500).json({ error: 'Error saving product.' });
+    }
+});
+
+
+
+
+
 app.get('/api/search-category', async (req, res) => {
     const { name } = req.query;
 
