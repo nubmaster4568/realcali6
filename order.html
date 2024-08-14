@@ -88,10 +88,13 @@
         <div id="order-items"></div>
         <div class="summary">
         <h2>Order Details</h2>
+        <h3>Order Id: <span id="orderId"></span></h3>
         <p><strong>Delivery Address:</strong> <span id="popup-address"></span></p>
         <p><strong>Name:</strong> <span id="popup-date"></span></p>
         <p><strong>Contact Info:</strong> <span id="popup-contact"></span></p>
         <p><strong>Comments:</strong> <span id="popup-comments"></span></p>
+
+        <h3><strong><span id="subtotal"></span></strong></h3>
         <button id="confirm-order-btn">Confirm Order</button>
     </div>
     </div>
@@ -131,86 +134,125 @@ function getUrlParameter(name) {
     return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' ')) || '';
 }
 let items = [];
-
 let cartItems;
 
 
 
 
 
-
 function getCartItemsFromUrl() {
-        let index = 0;
-        while (true) {
-            const itemId = getUrlParameter(`id-${index}`);
-            if (!itemId) break; // Exit loop if no more items
+    let items = [];
+    let index = 0;
 
-            const pricePerGram = parseFloat(getUrlParameter(`pricePerGram-${index}`)) || 0;
-
-            // Check if the type is grams and price per gram is 0
-            const type = (getUrlParameter(`type-${index}`) === 'grams' && pricePerGram === 0) ? 'piece' : getUrlParameter(`type-${index}`);
-
-            items.push({
-                id: itemId,
-                quantity: parseInt(getUrlParameter(`quantity-${index}`), 10) || 1,
-                type: type,
-                pricePerGram: pricePerGram,
-                pricePerOz: parseFloat(getUrlParameter(`pricePerOz-${index}`)) || 0,
-                pricePerQp: parseFloat(getUrlParameter(`pricePerQp-${index}`)) || 0,
-                pricePerHalfP: parseFloat(getUrlParameter(`pricePerHalfP-${index}`)) || 0,
-                pricePer1Lb: parseFloat(getUrlParameter(`pricePer1Lb-${index}`)) || 0,
-                description: getUrlParameter(`description-${index}`),
-                price: getUrlParameter(`price-${index}`),
-                name: itemId
-
-            });
-            index++;
+    while (true) {
+        const itemId = getUrlParameter(`id-${index}`);
+        if (!itemId) break; // Exit loop if no more items
+        const name = decodeURIComponent(getUrlParameter(`name-${index}`))
+        const quantity = parseInt(getUrlParameter(`quantity-${index}`), 10) || 1;
+        const type = getUrlParameter(`type-${index}`);
+        const pricePerGram = parseFloat(getUrlParameter(`pricePerGram-${index}`)) || 0;
+        const pricePerOz = parseFloat(getUrlParameter(`pricePerOz-${index}`)) || 0;
+        const pricePerQp = parseFloat(getUrlParameter(`pricePerQp-${index}`)) || 0;
+        const pricePerHalfP = parseFloat(getUrlParameter(`pricePerHalfP-${index}`)) || 0;
+        const pricePer1Lb = parseFloat(getUrlParameter(`pricePer1Lb-${index}`)) || 0;
+        const description = getUrlParameter(`description-${index}`);
+        const price = getUrlParameter(`price-${index}`);
+        const bulkPrices = decodeURIComponent(getUrlParameter(`bulkprices-${index}`));
+        let bulkPricesObj = {};
+        try {
+            bulkPricesObj = JSON.parse(bulkPrices); // Convert the JSON string to an object
+        } catch (e) {
+            console.error('Error parsing bulk prices:', e);
+            bulkPricesObj = {}; // Set as empty object if parsing fails
         }
-        return items;
-    }
+        console.log(bulkPricesObj)
 
-    function calculateTotalPrice(cartItems) {
-        let totalPrice = 0;
-
-        cartItems.forEach(item => {
-            let pricePerUnit;
-
-            // Use item.price if item type is piece
-            if (item.type === 'piece') {
-                pricePerUnit = parseFloat(item.price) || 0;
-            } else {
-                // Determine the price per unit based on item type
-                switch (item.type) {
-                    case 'grams':
-                        pricePerUnit = parseFloat(item.pricePerGram) || 0;
-                        break;
-                    case 'oz':
-                        pricePerUnit = parseFloat(item.pricePerOz) || 0;
-                        break;
-                    case 'qp':
-                        pricePerUnit = parseFloat(item.pricePerQp) || 0;
-                        break;
-                    case 'half-pound':
-                        pricePerUnit = parseFloat(item.pricePerHalfP) || 0;
-                        break;
-                    case 'lbs':
-                        pricePerUnit = parseFloat(item.pricePer1Lb) || 0;
-                        break;
-                    default:
-                        pricePerUnit = 0;
-                }
-            }
-
-            // Accumulate the total price
-            totalPrice += pricePerUnit * item.quantity;
+        items.push({
+            id: itemId,
+            quantity: quantity,
+            type: type,
+            pricePerGram: pricePerGram,
+            pricePerOz: pricePerOz,
+            pricePerQp: pricePerQp,
+            pricePerHalfP: pricePerHalfP,
+            pricePer1Lb: pricePer1Lb,
+            description: description,
+            price: price,
+            bulkPrices: bulkPricesObj,
+            name:name // Include the bulk prices object
         });
 
-        return totalPrice;
+        index++;
     }
-function updateTotalPrice(cartItems) {
-            const totalPrice = calculateTotalPrice(cartItems);
-            document.getElementById('total-price').textContent = `Total Price: $${totalPrice.toFixed(2)}`;
+    return items;
+}
+
+
+function calculateTotalPrice(cartItems) {
+    let totalPrice = 0;
+
+    cartItems.forEach(item => {
+        let pricePerUnit;
+        let unitPrice = 0;
+
+        // Determine price per unit based on item type
+        if (item.type === 'piece') {
+            unitPrice = parseFloat(item.price) || 0;
+        } else {
+            switch (item.type) {
+                case 'grams':
+                    unitPrice = parseFloat(item.pricePerGram) || 0;
+                    break;
+                case 'oz':
+                    unitPrice = parseFloat(item.pricePerOz) || 0;
+                    break;
+                case 'qp':
+                    unitPrice = parseFloat(item.pricePerQp) || 0;
+                    break;
+                case 'half-pound':
+                    unitPrice = parseFloat(item.pricePerHalfP) || 0;
+                    break;
+                case 'lbs':
+                    unitPrice = parseFloat(item.pricePer1Lb) || 0;
+                    break;
+                default:
+                    unitPrice = 0;
+            }
         }
+
+        // Get bulk price if applicable
+        if (item.bulkPrices ) {
+            let applicablePrice = 0;
+
+            // Find the correct bulk price based on quantity
+            Object.keys(item.bulkPrices).forEach(quantityThreshold => {
+                if (item.quantity >= quantityThreshold) {
+                    applicablePrice = parseFloat(item.bulkPrices[quantityThreshold]);
+                }
+            });
+
+            // If an applicable bulk price is found, use it
+            if (applicablePrice > 0) {
+                pricePerUnit = applicablePrice;
+            } else {
+                pricePerUnit = unitPrice;
+            }
+        } else {
+            pricePerUnit = unitPrice;
+        }
+
+        // Accumulate the total price
+        totalPrice += pricePerUnit * item.quantity;
+    });
+
+    return totalPrice;
+}
+
+function updateTotalPrice(cartItems) {
+    const totalPrice = calculateTotalPrice(cartItems);
+    document.getElementById('total-price').textContent = `Total Price: $${totalPrice.toFixed(2)}`;
+}
+
     
         const isCartPage = location.search.includes('id-');
         const isSingleProductPage = location.search.includes('productDescription');
@@ -327,7 +369,15 @@ function updateTotalPrice(cartItems) {
         commentTextArea.addEventListener('input', updateCartItem); // Update when comment changes
     });
 }
-  
+function generateOrderId(length = 10) {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let orderId = '';
+    for (let i = 0; i < length; i++) {
+        const randomIndex = Math.floor(Math.random() * characters.length);
+        orderId += characters[randomIndex];
+    }
+    return orderId;
+}
     
                 const orderForm = document.createElement('div');
                 orderForm.innerHTML = `
@@ -360,70 +410,86 @@ function updateTotalPrice(cartItems) {
                 
             } 
                 }
+                let orderItems = []; // Array to store order item details
 
                 document.getElementById('place-order-button').addEventListener('click', function() {
-            // Collect form data
-            var address = document.getElementById('delivery-address').value;
-            var date = document.getElementById('delivery-date').value;
-            var contact = document.getElementById('contact-info').value;
-            var comments = document.getElementById('comments').value;
+    // Collect form data
+    var address = document.getElementById('delivery-address').value;
+    var date = document.getElementById('delivery-date').value;
+    var contact = document.getElementById('contact-info').value;
+    var comments = document.getElementById('comments').value;
+    
+    // Gather item details
+    var items = document.querySelectorAll('.item-container');
+    var orderItemsHtml = ''; // Initialize or reset the HTML string
 
-            // Gather item details
-            var items = document.querySelectorAll('.item-container');
-            var orderItemsHtml = '';
-
-            items.forEach(function(item) {
-                var productName = item.querySelector('h2').textContent.replace('Product Name: ', '');
-                var quantity = item.querySelector('.quantity').value;
-                var weightType = item.querySelector('.custom-select').selectedOptions[0].text;
-                var price = item.querySelector('.custom-select').selectedOptions[0].getAttribute('data-price');
-                var totalPrice = (quantity * parseFloat(price)).toFixed(2);
-
-                orderItemsHtml += `
-                    <div class="order-item">
-                        <p><strong>Product Name:</strong> ${productName}</p>
-                        <p><strong>Quantity:</strong> ${quantity}</p>
-                        <p><strong>Weight Type:</strong> ${weightType}</p>
-                        <p><strong>Total Price:</strong> $${totalPrice}</p>
-                    </div>
-                `;
-
-                
-            });
-
-            // Populate the popup with form data
-            document.getElementById('popup-address').textContent = address;
-            document.getElementById('popup-date').textContent = date;
-            document.getElementById('popup-contact').textContent = contact;
-            document.getElementById('popup-comments').textContent = comments;
-            document.getElementById('order-items').innerHTML = orderItemsHtml;
-
-            // Show the popup and overlay
-            document.getElementById('order-popup').style.display = 'block';
-            document.getElementById('overlay').style.display = 'block';
+    items.forEach(function(item) {
+        var productName = item.querySelector('h2').textContent.replace('Product Name: ', '');
+        var quantity = item.querySelector('.quantity').value;
+        var weightType = item.querySelector('.custom-select').selectedOptions[0].text;
+        //var price = item.querySelector('.custom-select').selectedOptions[0].getAttribute('data-price');
+     var commentSection = item.querySelector('.comment-section textarea');
+        var comment = commentSection ? commentSection.value : ''; // Safeguard if textarea doesn't exist
+        
+        orderItems.push({
+            productName: productName,
+            quantity: quantity,
+            weightType: weightType,
+            comment: comment,
         });
-        document.getElementById('confirm-order-btn').addEventListener('click', function() {
-            alert('Order confirmed!');
-            document.getElementById('order-popup').style.display = 'none';
-            document.getElementById('overlay').style.display = 'none';
 
+        // Populate the popup with item details
+        orderItemsHtml += `
+            <div class="order-item">
+                <p><strong>Product Name:</strong> ${productName}</p>
+                <p><strong>Quantity:</strong> ${quantity}</p>
+                <p><strong>Weight Type:</strong> ${weightType}</p>
+                <p><strong>Comment:</strong> ${comment}</p>
+            </div>
+        `;
+    });
+    var totalPriceElement = document.querySelector('.cart-summary p');
+    var totalPrice = totalPriceElement ? totalPriceElement.textContent.trim() : '';   
+    const randomId = generateOrderId(12); // You can specify the desired length here
+    document.getElementById('popup-address').textContent = address;
+    document.getElementById('subtotal').textContent = totalPrice;
+    document.getElementById('orderId').textContent = randomId;
+
+    document.getElementById('popup-date').textContent = date;
+    document.getElementById('popup-contact').textContent = contact;
+    document.getElementById('popup-comments').textContent = comments;
+    document.getElementById('order-items').innerHTML = orderItemsHtml;
+
+    // Show the popup and overlay
+    document.getElementById('order-popup').style.display = 'block';
+    document.getElementById('overlay').style.display = 'block';
+});
+
+document.getElementById('confirm-order-btn').addEventListener('click', function() {
+    alert('Order confirmed!');
+    document.getElementById('order-popup').style.display = 'none';
+    document.getElementById('overlay').style.display = 'none';
+
+    // Collect data again
     const deliveryAddress = document.getElementById('delivery-address').value;
     const deliveryDate = document.getElementById('delivery-date').value;
     const contactInfo = document.getElementById('contact-info').value;
     const comments = document.getElementById('comments').value;
-
+    const orderIdElement = document.getElementById('orderId');
+    const orderId = orderIdElement ? orderIdElement.textContent : '';    // Prepare order data
     const orderData = {
         deliveryAddress: deliveryAddress,
         deliveryDate: deliveryDate,
         contactInfo: contactInfo,
         comments: comments,
-        items: cartItems
+        orderId: orderId,// Ensure this matches the structure you expect on the serve
+        items: orderItems,
     };
 
     console.log('Order Data:', orderData); // Debugging: check the order data
 
     $.ajax({
-        url: 'https://realcali.onrender.com/api/place-order',
+        url: 'http://localhost:3000/api/place-order',
         method: 'POST',
         data: JSON.stringify(orderData),
         contentType: 'application/json',
@@ -441,7 +507,6 @@ function updateTotalPrice(cartItems) {
         }
     });
 });
-
 
         document.getElementById('overlay').addEventListener('click', function() {
             document.getElementById('order-popup').style.display = 'none';

@@ -113,6 +113,7 @@
     <div class="modal-content">
         <span class="close-modal">&times;</span>
         <h2 class="modal-title">Product Title</h2>
+        <h5 class="modal-id" style="margin: 0px"></h5>
         <p class="modal-price"><span class="modal-price-value"></span></p>
         
         <!-- Additional prices per weight type -->
@@ -127,7 +128,7 @@
             <!-- Slider images and videos will be inserted here -->
         </div>
 
-        <p class="modal-description"></p>
+        <div class="modal-description" style="white-space: pre-wrap;"></div>
     </div>
 </div>
 
@@ -165,9 +166,16 @@ $(document).on('click', '.product-item', function(event) {
     if ($(event.target).closest('.add-button').length) {
         return; // Do nothing if the add button is clicked
     }
+    const id = $(this).data('id');
+
     const name = $(this).data('name');
     const price = $(this).data('price');
-    const description = $(this).data('description');
+    const bulkPrices = $(this).data('bulk-prices',) || {};
+    const formattedBulkPrices = Object.entries(bulkPrices).map(([quantity, price]) => {
+    return `<strong>Buy: ${quantity}x</strong> for <strong>$${parseFloat(price).toFixed(2)}</strong>`;
+}).join('<br>');
+    const description_no_bulk = $(this).data('description');
+    const description = `${formattedBulkPrices}<br><br>${description_no_bulk}`;
     const images = JSON.parse($(this).attr('data-images') || '[]');
     const videos = JSON.parse($(this).attr('data-videos') || '[]');
     
@@ -182,8 +190,8 @@ $(document).on('click', '.product-item', function(event) {
     setTimeout(() => {
         // Update modal title, price, and description
         $('.modal-title').text(name);
-        $('.modal-price-value').text(price);
-        $('.modal-description').text(description);
+        $('.modal-price-value').text(`$${price}`);
+        $('.modal-description').html(description);
 
         // Clear existing content in slider
         const $slider = $('.modal-slider');
@@ -208,6 +216,7 @@ $(document).on('click', '.product-item', function(event) {
         $('.modal-price-per-qp').toggle(pricePerQp > 0).find('.modal-price-per-qp-value').text(pricePerQp > 0 ? `$${pricePerQp}` : '');
         $('.modal-price-per-half-p').toggle(pricePerHalfP > 0).find('.modal-price-per-half-p-value').text(pricePerHalfP > 0 ? `$${pricePerHalfP}` : '');
         $('.modal-price-per-1lb').toggle(pricePer1Lb > 0).find('.modal-price-per-1lb-value').text(pricePer1Lb > 0 ? `$${pricePer1Lb}` : '');
+        $('.modal-id').text(id);
 
         // Show the modal
         $('#product-modal').show();
@@ -246,10 +255,9 @@ if (closeButton) {
 document.addEventListener('click', function(event) {
     var isClickInsidePopup = cartPopup && cartPopup.contains(event.target);
     var isClickInsideCartIcon = cartIcon.contains(event.target);
-    var isClickInsideAddButton = Array.from(addButtons).some(button => button.contains(event.target));
 
     // Check if the click was outside the cart popup and not on an add button
-    if (!isClickInsidePopup && !isClickInsideCartIcon && !isClickInsideAddButton) {
+    if (!isClickInsidePopup && !isClickInsideCartIcon ) {
         if (cartPopup) {
             cartPopup.classList.remove('show');
         }
@@ -328,7 +336,7 @@ document.addEventListener('touchend', function(event) {
                 if (userId) {
             // Check for active transactions
             $.ajax({
-    url: 'https://realcali.onrender.com/api/checkActiveTransactions', // Endpoint to check active transactions
+    url: 'http://localhost:3000/api/checkActiveTransactions', // Endpoint to check active transactions
     method: 'GET', // Ensure method matches the endpoint
     data: { userId: userId }, // Send userId as query parameter
     success: function(response) {
@@ -356,7 +364,7 @@ document.addEventListener('touchend', function(event) {
     }
             });
             $.ajax({
-            url: 'https://realcali.onrender.com/api/getBalance', // Endpoint to fetch balance
+            url: 'http://localhost:3000/api/getBalance', // Endpoint to fetch balance
             method: 'GET',
             data: { userId: userId },
             success: function(response) {
@@ -384,7 +392,7 @@ document.addEventListener('touchend', function(event) {
             // Fetch and update cities
             async function fetchCategories() {
                 try {
-                    const response = await fetch('https://realcali.onrender.com/api/categories');
+                    const response = await fetch('http://localhost:3000/api/categories');
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
@@ -398,7 +406,7 @@ document.addEventListener('touchend', function(event) {
             // Fetch and update locations based on cityId
             async function fetchLocations(cityId) {
                 try {
-                    const response = await fetch(`https://realcali.onrender.com/api/locations?cityId=${cityId}`);
+                    const response = await fetch(`http://localhost:3000/api/locations?cityId=${cityId}`);
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
@@ -579,6 +587,8 @@ function updateCartPopup(product) {
         listItem.setAttribute('data-description', product.description);
         listItem.setAttribute('data-price', product.price);
         listItem.setAttribute('data-name', product.name);
+        listItem.setAttribute('data-bulk-prices', product.bulkprices);
+
 
         console.log(product.price)
         // Calculate the lowest price and default quantity type
@@ -635,7 +645,6 @@ function updateCartPopup(product) {
 
         }
         listItem.innerHTML = `
-            <img src="${product.image}" style="width: 50px; height: auto;">
             <div class="cart-item-details">
                 <div class="description">${product.name}</div>
                 <div class="price-quantity">
@@ -717,6 +726,7 @@ function updateBuyButton() {
         var selectedType = item.querySelector('.quantity-type').value;
         var description = item.getAttribute('data-description');
         var name = item.getAttribute('data-name');
+        var bulk = item.getAttribute('data-bulk-prices');
 
         var pricePerUnit;
 
@@ -749,7 +759,8 @@ function updateBuyButton() {
             selectedType: selectedType,
             totalPrice: totalPrice.toFixed(2),
             description: description,
-            name:name
+            name:name,
+            bulk: JSON.stringify(bulk)
         };
     });
 
@@ -797,7 +808,9 @@ $(document).on('click', '.add-button', function() {
         pricePerHalfP: this.getAttribute('data-price-per-half-p'),
         pricePer1Lb: this.getAttribute('data-price-per-1lb'),
         name: this.getAttribute('data-name'),
+        bulkprices: this.getAttribute('data-bulk-prices')
     };
+    console.log((product.bulkprices))
     updateCartPopup(product);
     showCartPopup();
     
@@ -805,26 +818,108 @@ $(document).on('click', '.add-button', function() {
 
 
 });
-
+// Event listener for quantity increase
 $(document).on('click', '.increase-quantity', function() {
-    var quantityElement = $(this).siblings('.quantity');
-    var quantity = parseInt(quantityElement.text());
-    quantityElement.text(quantity + 1);
-    $(this).closest('li').find('.quantity-type').trigger('change'); // Trigger price update
-    updateCartQuantity();
-    updateBuyButton(); // Ensure buy button is updated
+    var cartItem = $(this).closest('li');
+    var bulkPrices = cartItem.data('bulk-prices'); // This should already be an object
+    console.log(Object.keys(bulkPrices).length);
+
+    if (Object.keys(bulkPrices).length) {
+        var quantityElement = cartItem.find('.quantity');
+        var quantity = parseInt(quantityElement.text(), 10);
+        var newQuantity = quantity + 1;
+
+        // Update the quantity displayed
+        quantityElement.text(newQuantity);
+
+        // Get the bulk pricing data (assumed to be an object already)
+        console.log('Bulk Prices:', bulkPrices); // Debugging line to check the type and value
+        console.log('New Quantity:', newQuantity); // Debugging line to check the new quantity
+
+        // Determine the price based on the new quantity
+        var price = parseFloat(cartItem.data('price')); // Default price if no bulk pricing applies
+
+        // Convert bulkPrices object to an array of keys for sorting
+        var sortedKeys = Object.keys(bulkPrices).map(Number).sort((a, b) => b - a);
+
+        console.log('Sorted Keys:', sortedKeys); // Debugging line to check the sorted keys
+        var applicablePrice = price; // Default to the base price if no bulk pricing is applicable
+
+        for (var i = 0; i < sortedKeys.length; i++) {
+            var qty = sortedKeys[i];
+            if (newQuantity >= qty) {
+                applicablePrice = bulkPrices[qty]; // Update the price if the new quantity meets the bulk pricing criteria
+                break; // Exit loop once the appropriate price is found
+            }
+        }
+
+        console.log('Applicable Price:', applicablePrice); // Debugging line to check the applicable price
+
+        // Update the price display
+        cartItem.find('.price').text(`Price: $${applicablePrice.toFixed(2)}`);
+
+        // Trigger any necessary updates
+        updateBuyButton();
+    } else {
+        var quantityElement = $(this).siblings('.quantity');
+        var quantity = parseInt(quantityElement.text());
+        quantityElement.text(quantity + 1);
+        $(this).closest('li').find('.quantity-type').trigger('change'); // Trigger price update
+        updateCartQuantity();
+        updateBuyButton(); // Ensure buy button is updated
+    }
 });
 
 // Event listener for quantity decrease
 $(document).on('click', '.decrease-quantity', function() {
-    var quantityElement = $(this).siblings('.quantity');
-    var quantity = parseInt(quantityElement.text());
-    if (quantity > 1) {
-        quantityElement.text(quantity - 1);
-        $(this).closest('li').find('.quantity-type').trigger('change'); // Trigger price update
+    var cartItem = $(this).closest('li');
+    var bulkPrices = cartItem.data('bulk-prices'); // This should already be an object
+
+    if (Object.keys(bulkPrices).length) {
+        var quantityElement = cartItem.find('.quantity');
+        var quantity = parseInt(quantityElement.text(), 10);
+        if (quantity > 1) {
+            var newQuantity = quantity - 1;
+
+            // Update the quantity displayed
+            quantityElement.text(newQuantity);
+
+            // Determine the price based on the new quantity
+            var price = parseFloat(cartItem.data('price')); // Default price if no bulk pricing applies
+
+            // Convert bulkPrices object to an array of keys for sorting
+            var sortedKeys = Object.keys(bulkPrices).map(Number).sort((a, b) => b - a);
+
+            console.log('Sorted Keys:', sortedKeys); // Debugging line to check the sorted keys
+            var applicablePrice = price; // Default to the base price if no bulk pricing is applicable
+
+            for (var i = 0; i < sortedKeys.length; i++) {
+                var qty = sortedKeys[i];
+                if (newQuantity >= qty) {
+                    applicablePrice = bulkPrices[qty]; // Update the price if the new quantity meets the bulk pricing criteria
+                    break; // Exit loop once the appropriate price is found
+                }
+            }
+
+            console.log('Applicable Price:', applicablePrice); // Debugging line to check the applicable price
+
+            // Update the price display
+            cartItem.find('.price').text(`Price: $${applicablePrice.toFixed(2)}`);
+
+            // Trigger any necessary updates
+            updateCartQuantity();
+            updateBuyButton(); // Ensure buy button is updated
+        }
+    } else {
+        var quantityElement = $(this).siblings('.quantity');
+        var quantity = parseInt(quantityElement.text());
+        if (quantity > 1) {
+            quantityElement.text(quantity - 1);
+            $(this).closest('li').find('.quantity-type').trigger('change'); // Trigger price update
+            updateCartQuantity();
+            updateBuyButton(); // Ensure buy button is updated
+        }
     }
-    updateCartQuantity();
-    updateBuyButton(); // Ensure buy button is updated
 });
 
 
@@ -914,16 +1009,17 @@ $(document).on('click', '.buy-button-cart', function() {
 
     // Gather data from all cart items
     $('.cart-items li').each(function(index) {
-        var item = $(this);
+        var item = $(this); 
         var id = item.data('id');
         var name = item.data('name');
-
+        const bulkPrices = item.data('bulk-prices');
+        const serializedBulkPrices = JSON.stringify(bulkPrices);
         var quantity = item.find('.quantity').text();
         var typeNumber = item.find('.quantity-type').val();
         var type = typeMapping[typeNumber] || 'unknown'; // Default to 'unknown' if type is not found
         // Collect data and encode it
         cartItems.push({
-            id: id,
+            id: name,
             quantity: quantity,
             type: type,
             pricePerGram: item.data('price-per-gram'),
@@ -933,11 +1029,13 @@ $(document).on('click', '.buy-button-cart', function() {
             pricePer1Lb: item.data('price-per-1lb'),
             description: item.data('description'),
             price: item.data('price'),
-            naem:name
+            name:name,
+            bulkprices: JSON.stringify(item.data('bulk-prices'))
+
 
         });
     });
-
+            
     // Convert cartItems array to query string
     var queryString = cartItems.map(function(item, index) {
         return Object.keys(item).map(function(key) {
@@ -947,7 +1045,7 @@ $(document).on('click', '.buy-button-cart', function() {
 
     // Construct the URL with query parameters
     var url = 'order.html?' + queryString;
-
+    console.log(cartItems.name)
     // Redirect to the order page
     window.location.href = url;
 });
@@ -967,7 +1065,7 @@ function bufferToBase64(buffer) {
 }
 function fetchProducts(categorie) {
     $.ajax({
-        url: 'https://realcali.onrender.com/api/products',
+        url: 'http://localhost:3000/api/products',
         type: 'GET',
         data: { categorie },
         success: function(response) {
@@ -1007,58 +1105,67 @@ function fetchProducts(categorie) {
                     lowestPriceInfo = prices.reduce((min, p) => p.price < min.price ? p : min, prices[0]);
                 }
 
+                // Handle bulk prices
+                const bulkPrices = product.bulk_price || {};
+                const bulkPricesData = Object.entries(bulkPrices).map(([quantity, price]) => {
+                    return `data-bulk-prices-${quantity.replace(/\s+/g, '-').toLowerCase()}="$${parseFloat(price).toFixed(2)}"`;
+                }).join(' ');
+
                 // Create product item HTML
                 const productItem = $('<div>', { class: 'product-item' })
-                    .attr('data-name', product.name)
-                    .attr('data-price', `$${product.price}`)
-                    .attr('data-lat', product.latitude)
-                    .attr('data-lng', product.longitude)
-                    .attr('data-type', product.type)
-                    .attr('data-description', product.description)
-                    .attr('data-image', firstImageUrl) // Main image URL
+                    .attr('data-name', product.name || '')
+                    .attr('data-price', `${product.price || '0'}`)
+                    .attr('data-lat', product.latitude || '')
+                    .attr('data-lng', product.longitude || '')
+                    .attr('data-type', product.type || '')
+                    .attr('data-description', product.description || '')
+                    .attr('data-image', firstImageUrl || '') // Main image URL
                     .attr('data-images', JSON.stringify(images)) // Other images URLs
                     .attr('data-videos', JSON.stringify(videos)) // Video URLs
-                    .attr('data-id', product.identifier)
-                    .attr('data-location', product.location)
+                    .attr('data-id', product.identifier || '')
+                    .attr('data-location', product.location || '')
                     .attr('data-price-per-gram', pricePerGram.toFixed(2) || '0')
                     .attr('data-price-per-oz', pricePerOz.toFixed(2) || '0')
                     .attr('data-price-per-qp', pricePerQp.toFixed(2) || '0')
                     .attr('data-price-per-half-p', pricePerHalfP.toFixed(2) || '0')
                     .attr('data-price-per-1lb', pricePer1Lb.toFixed(2) || '0')
+                    .attr('data-bulk-prices', JSON.stringify(bulkPrices)) // Store bulk prices as JSON string
                     .html(`
                         <div class="product-price">$${lowestPriceInfo.price.toFixed(2)} ${lowestPriceInfo.type}</div>
                         ${firstImageUrl ? `<img src="${firstImageUrl}" alt="${product.name}" class="product-image"/>` : ''}
                         <div class="product-name">${product.name}</div>
-
                         <button class="buy-button" 
-                            data-id="${product.identifier}" 
+                            data-id="${product.identifier || ''}" 
                             data-price="${product.price || '0'}" 
-                            data-image="${firstImageUrl}" 
-                            data-description="${product.description}" 
+                            data-image="${firstImageUrl || ''}" 
+                            data-description="${product.description || ''}" 
                             data-price-per-gram="${pricePerGram.toFixed(2)}" 
                             data-price-per-oz="${pricePerOz.toFixed(2)}" 
                             data-price-per-qp="${pricePerQp.toFixed(2)}" 
                             data-price-per-half-p="${pricePerHalfP.toFixed(2)}" 
-                            data-price-per-1lb="${pricePer1Lb.toFixed(2)}">Buy
+                            data-price-per-1lb="${pricePer1Lb.toFixed(2)}"
+                            data-bulk-prices=${JSON.stringify(bulkPrices)}
+                            ${bulkPricesData}>Buy
                         </button>
-                            <button class="add-button"
-                            data-name="${product.name}" 
-                            data-id="${product.identifier}" 
-                            data-price="${product.price}" 
-                            data-image="${firstImageUrl}" 
-                            data-description="${product.description}" 
+                        <button class="add-button"
+                            data-name="${product.name || ''}" 
+                            data-id="${product.identifier || ''}" 
+                            data-price="${product.price || '0'}" 
+                            data-image="${firstImageUrl || ''}" 
+                            data-description="${product.description || ''}" 
                             data-price-per-gram="${pricePerGram.toFixed(2)}" 
                             data-price-per-oz="${pricePerOz.toFixed(2)}" 
                             data-price-per-qp="${pricePerQp.toFixed(2)}" 
                             data-price-per-half-p="${pricePerHalfP.toFixed(2)}" 
-                            data-price-per-1lb="${pricePer1Lb.toFixed(2)}">Add to cart
+                            data-price-per-1lb="${pricePer1Lb.toFixed(2)}"
+                            data-bulk-prices=${JSON.stringify(bulkPrices)}
+
+                            ${bulkPricesData}>Add to cart
                         </button>
                     `);
 
                 $productGrid.append(productItem);
                 productItem.css('animation', 'fadeInUp 0.5s forwards');
-
-                
             });
         },
         error: function(xhr, status, error) {
@@ -1067,9 +1174,9 @@ function fetchProducts(categorie) {
     });
 }
 
-
 // Event handler for buy button
 $(document).on('click', '.buy-button', function() {
+    // Extract data from the button
     const productId = $(this).data('id');
     const productPrice = $(this).data('price');
     const productImage = $(this).data('image');
@@ -1078,11 +1185,21 @@ $(document).on('click', '.buy-button', function() {
     const perqp = $(this).data('price-per-qp');
     const perhp = $(this).data('price-per-half-p');
     const perlb = $(this).data('price-per-1lb');
-    const productName = $(this).closest('.product-item').data('name');
+    const bulkPrices = $(this).data('bulk-prices');
+    const productName = encodeURIComponent($(this).closest('.product-item').data('name'));
     const productDescription = encodeURIComponent($(this).data('description'));
     const productLocation = encodeURIComponent($(this).closest('.product-item').data('location'));
+    const price = $(this).data('price');
 
-const orderUrl = `order.html?id-0=${productName}&quantity-0=${1}&type-0=grams&pricePerGram-0=${perg}&pricePerOz-0=${peroz}&pricePerQp-0=${perqp}&pricePerHalfP-0=${perhp}&pricePer1Lb-0=${perlb}&description-0=${productDescription}`
+    // Determine type based on price per gram
+    const type = parseInt(perg) === 0 ? 'piece' : 'grams'; // Change to 'piece' if price per gram is 0
+
+    const serializedBulkPrices = JSON.stringify(bulkPrices);
+
+    // Construct the URL with query parameters
+    const orderUrl = `order.html?id-0=${productId}&name-0=${productName}&bulkprices-0=${encodeURIComponent(serializedBulkPrices)}&price-0=${price}&quantity-0=1&type-0=${type}&pricePerGram-0=${perg}&pricePerOz-0=${peroz}&pricePerQp-0=${perqp}&pricePerHalfP-0=${perhp}&pricePer1Lb-0=${perlb}&description-0=${productDescription}&location-0=${productLocation}`;
+
+    // Redirect to the order page
     window.location.href = orderUrl;
 });
 function filterProducts() {

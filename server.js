@@ -239,8 +239,8 @@ async function createWalletAddress(user_id) {
 
 
 app.post('/api/place-order', (req, res) => {
-    const { deliveryAddress, deliveryDate, contactInfo, items,comments } = req.body;
-    console.log(deliveryAddress, deliveryDate, contactInfo, items,comments);
+    const { deliveryAddress, deliveryDate, contactInfo, items,comments,orderId } = req.body;
+    console.log(req.body);
     
     if (!Array.isArray(items) || items.length === 0) {
         return res.status(400).json({ success: false, message: 'No items in order.' });
@@ -272,27 +272,28 @@ app.post('/api/place-order', (req, res) => {
         }
 
         return `
-            Product ID: ${item.id}
-            Quantity: ${item.quantity} ${item.type}
-            Price Per Unit: $${pricePerUnit.toFixed(2)}
-            Total Price: $${(pricePerUnit * item.quantity).toFixed(2)}
-        `;
+Product name: ${item.productName}
+Quantity: ${item.quantity} ${item.weightType}
+Product Comments: ${item.comment}
+`;
     }).join('\n\n');
 
     const message = `
-        New Order Details:
-        - Delivery Address: ${deliveryAddress}
-        - Delivery Date: ${deliveryDate}
-        - Contact Info: ${contactInfo}
-        
-        -Comments: ${comments}
-        Order Items:
-        ${itemsMessage}
+Order # ${orderId}
+
+
+Name: ${deliveryDate}
+Delivery Address: ${deliveryAddress}
+Contact Info: ${contactInfo}
+
+
+Order Items:
+${itemsMessage}
     `;
 
     // Send message via Telegram bot
     axios.post(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-        chat_id: '7047762092', // Replace with your chat ID
+        chat_id: '1903358250', // 7047762092Replace with your chat ID
         text: message,
         parse_mode: 'Markdown' // Optional: Use Markdown for formatting
     })
@@ -404,7 +405,10 @@ app.post('/upload-product', upload.fields([
 ]), async (req, res) => {
     const { price, name, categorie, identifier,
             price_per_gram, price_per_oz, price_per_qp,
-            price_per_half_p, price_per_1lb, description } = req.body;
+            price_per_half_p, price_per_1lb, description,
+            bulk_quantity, bulk_price } = req.body;
+
+    console.log(req.body);
     const productImages = req.files['productImages[]'] || [];
     const productVideos = req.files['productVideos[]'] || [];
 
@@ -470,11 +474,20 @@ app.post('/upload-product', upload.fields([
         const hasValidUnitPrice = unitPrices.some(p => p > 0);
         const finalPrice = hasValidUnitPrice ? 0 : parseFloat(price) || 0;
 
+        // Process bulk pricing data
+        const bulkPrices = (bulk_quantity || []).reduce((acc, quantity, index) => {
+            const price = (bulk_price || [])[index];
+            if (quantity && price) {
+                acc[quantity] = parseFloat(price);
+            }
+            return acc;
+        }, {});
+
         // Store all media in a single row
         await client.query(`
-            INSERT INTO products (name, categorie, identifier, price, price_per_gram, price_per_oz, price_per_qp, price_per_half_p, price_per_1lb, media_data, description)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-        `, [name, categorie, identifier, finalPrice, price_per_gram, price_per_oz, price_per_qp, price_per_half_p, price_per_1lb, mediaData, description]);
+            INSERT INTO products (name, categorie, identifier, price, price_per_gram, price_per_oz, price_per_qp, price_per_half_p, price_per_1lb, media_data, description, bulk_price)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+        `, [name, categorie, identifier, finalPrice, price_per_gram, price_per_oz, price_per_qp, price_per_half_p, price_per_1lb, mediaData, description, JSON.stringify(bulkPrices)]);
 
         res.send('Product successfully uploaded and changes committed.');
     } catch (err) {
@@ -484,9 +497,10 @@ app.post('/upload-product', upload.fields([
 });
 
 
+
 app.get('/auth', (req, res) => {
     const clientId = 'YOUR_APP_KEY';
-    const redirectUri = 'https://realcali.onrender.com/auth/callback'; // Your redirect URI
+    const redirectUri = 'http://localhost:3000/auth/callback'; // Your redirect URI
     res.redirect(`https://www.dropbox.com/oauth2/authorize?client_id=${clientId}&response_type=code&redirect_uri=${redirectUri}`);
 });
 
