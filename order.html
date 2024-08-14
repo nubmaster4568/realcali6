@@ -489,7 +489,7 @@ document.getElementById('confirm-order-btn').addEventListener('click', function(
     console.log('Order Data:', orderData); // Debugging: check the order data
 
     $.ajax({
-        url: 'http://localhost:3000/api/place-order',
+        url: 'https://realcali.onrender.com/api/place-order',
         method: 'POST',
         data: JSON.stringify(orderData),
         contentType: 'application/json',
