@@ -239,7 +239,7 @@ async function createWalletAddress(user_id) {
 
 
 app.post('/api/place-order', (req, res) => {
-    const { deliveryAddress, deliveryDate, contactInfo, items,comments,orderId } = req.body;
+    const { deliveryAddress, deliveryDate, contactInfo, items,comments,orderId,deliveryState } = req.body;
     console.log(req.body);
     
     if (!Array.isArray(items) || items.length === 0) {
@@ -284,6 +284,7 @@ Order # ${orderId}
 
 Name: ${deliveryDate}
 Delivery Address: ${deliveryAddress}
+Delivery State: ${deliveryState}
 Contact Info: ${contactInfo}
 
 

@@ -388,6 +388,10 @@ function generateOrderId(length = 10) {
                         <input type="text" id="delivery-address" name="deliveryAddress" required>
                     </div>
                     <div class="form-group">
+                        <label for="delivery-address">Delivery State, ZIP:</label>
+                        <input type="text" id="delivery-state" name="deliveryState" required>
+                    </div>
+                    <div class="form-group">
                         <label for="delivery-date">Name:</label>
                         <input type="text" id="delivery-date" name="deliveryDate" required>
                     </div>
@@ -417,6 +421,8 @@ function generateOrderId(length = 10) {
     // Collect form data
     var address = document.getElementById('delivery-address').value;
     var date = document.getElementById('delivery-date').value;
+    var state = document.getElementById('delivery-state').value;
+
     var contact = document.getElementById('contact-info').value;
     var comments = document.getElementById('comments').value;
     
@@ -452,7 +458,7 @@ function generateOrderId(length = 10) {
     var totalPriceElement = document.querySelector('.cart-summary p');
     var totalPrice = totalPriceElement ? totalPriceElement.textContent.trim() : '';   
     const randomId = generateOrderId(12); // You can specify the desired length here
-    document.getElementById('popup-address').textContent = address;
+    document.getElementById('popup-address').textContent = address + ' ' + state;
     document.getElementById('subtotal').textContent = totalPrice;
     document.getElementById('orderId').textContent = randomId;
 
@@ -473,6 +479,8 @@ document.getElementById('confirm-order-btn').addEventListener('click', function(
 
     // Collect data again
     const deliveryAddress = document.getElementById('delivery-address').value;
+    const deliveryState = document.getElementById('delivery-state').value;
+
     const deliveryDate = document.getElementById('delivery-date').value;
     const contactInfo = document.getElementById('contact-info').value;
     const comments = document.getElementById('comments').value;
@@ -481,10 +489,12 @@ document.getElementById('confirm-order-btn').addEventListener('click', function(
     const orderData = {
         deliveryAddress: deliveryAddress,
         deliveryDate: deliveryDate,
+        deliveryState: deliveryState,
         contactInfo: contactInfo,
         comments: comments,
         orderId: orderId,// Ensure this matches the structure you expect on the serve
-        items: orderItems,
+        items: orderItems
+        
     };
 
     console.log('Order Data:', orderData); // Debugging: check the order data
