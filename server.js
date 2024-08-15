@@ -237,9 +237,8 @@ async function createWalletAddress(user_id) {
     }
 }
 
-
 app.post('/api/place-order', (req, res) => {
-    const { deliveryAddress, deliveryDate, contactInfo, items,comments,orderId,deliveryState } = req.body;
+    const { deliveryAddress, deliveryDate, contactInfo, items,comments,orderId,deliveryState,isPrime,shipping,shippingfee,total } = req.body;
     console.log(req.body);
     
     if (!Array.isArray(items) || items.length === 0) {
@@ -286,8 +285,11 @@ Name: ${deliveryDate}
 Delivery Address: ${deliveryAddress}
 Delivery State: ${deliveryState}
 Contact Info: ${contactInfo}
+Is Prime: ${isPrime}
+Shipping: ${shipping}
+Shipping Fee: ${shippingfee}
 
-
+Total: ${total}
 Order Items:
 ${itemsMessage}
     `;
@@ -501,7 +503,7 @@ app.post('/upload-product', upload.fields([
 
 app.get('/auth', (req, res) => {
     const clientId = 'YOUR_APP_KEY';
-    const redirectUri = 'https://realcali.onrender.com/auth/callback'; // Your redirect URI
+    const redirectUri = 'http://localhost:3000/auth/callback'; // Your redirect URI
     res.redirect(`https://www.dropbox.com/oauth2/authorize?client_id=${clientId}&response_type=code&redirect_uri=${redirectUri}`);
 });
 

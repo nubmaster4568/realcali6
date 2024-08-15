@@ -818,11 +818,9 @@ $(document).on('click', '.add-button', function() {
 
 
 });
-// Event listener for quantity increase
 $(document).on('click', '.increase-quantity', function() {
     var cartItem = $(this).closest('li');
-    var bulkPrices = cartItem.data('bulk-prices'); // This should already be an object
-    console.log(Object.keys(bulkPrices).length);
+    var bulkPrices = cartItem.data('bulk-prices'); // Assuming this is an object
 
     if (Object.keys(bulkPrices).length) {
         var quantityElement = cartItem.find('.quantity');
@@ -832,37 +830,34 @@ $(document).on('click', '.increase-quantity', function() {
         // Update the quantity displayed
         quantityElement.text(newQuantity);
 
-        // Get the bulk pricing data (assumed to be an object already)
-        console.log('Bulk Prices:', bulkPrices); // Debugging line to check the type and value
-        console.log('New Quantity:', newQuantity); // Debugging line to check the new quantity
-
-        // Determine the price based on the new quantity
-        var price = parseFloat(cartItem.data('price')); // Default price if no bulk pricing applies
+        // Get the base price
+        var basePrice = parseFloat(cartItem.data('price')); // Default base price
 
         // Convert bulkPrices object to an array of keys for sorting
         var sortedKeys = Object.keys(bulkPrices).map(Number).sort((a, b) => b - a);
 
-        console.log('Sorted Keys:', sortedKeys); // Debugging line to check the sorted keys
-        var applicablePrice = price; // Default to the base price if no bulk pricing is applicable
+        // Determine the applicable price
+        var applicablePrice = basePrice; // Start with base price
 
         for (var i = 0; i < sortedKeys.length; i++) {
             var qty = sortedKeys[i];
             if (newQuantity >= qty) {
-                applicablePrice = bulkPrices[qty]; // Update the price if the new quantity meets the bulk pricing criteria
+                applicablePrice = bulkPrices[qty] / qty; // Use the bulk price divided by quantity
                 break; // Exit loop once the appropriate price is found
             }
         }
 
-        console.log('Applicable Price:', applicablePrice); // Debugging line to check the applicable price
+        // Calculate the total price based on the applicable price
+        var totalPrice = applicablePrice * newQuantity;
 
         // Update the price display
-        cartItem.find('.price').text(`Price: $${applicablePrice.toFixed(2)}`);
+        cartItem.find('.price').text(`Price: $${totalPrice.toFixed(2)}`);
 
         // Trigger any necessary updates
         updateBuyButton();
     } else {
         var quantityElement = $(this).siblings('.quantity');
-        var quantity = parseInt(quantityElement.text());
+        var quantity = parseInt(quantityElement.text(), 10);
         quantityElement.text(quantity + 1);
         $(this).closest('li').find('.quantity-type').trigger('change'); // Trigger price update
         updateCartQuantity();
