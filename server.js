@@ -342,6 +342,59 @@ app.post('/admins', async (req, res) => {
     }
 });
 
+app.get('/get-promocodes', async (req, res) => {
+    try {
+        const result = await client.query('SELECT code, amount FROM promo');
+        const promocodes = result.rows;
+
+        res.json({
+            success: true,
+            promocodes: promocodes
+        });
+    } catch (err) {
+        console.error('Error fetching promocodes:', err);
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching promocodes'
+        });
+    }
+});
+
+app.get('/promocodes', async (req, res) => {
+    try {
+        const result = await client.query('SELECT code, amount FROM promo');
+        res.json({ success: true, promocodes: result.rows });
+    } catch (error) {
+        console.error('Error fetching promocodes:', error.message);
+        res.status(500).json({ success: false, message: 'Failed to fetch promocodes.' });
+    }
+});
+
+// Route to add a promocode
+app.post('/promocodes', async (req, res) => {
+    const { code, amount } = req.body;
+    try {
+        await client.query('INSERT INTO promo (code, amount) VALUES ($1, $2)', [code, amount]);
+        res.json({ success: true, message: 'Promocode added successfully.' });
+    } catch (error) {
+        console.error('Error adding promocode:', error.message);
+        res.status(500).json({ success: false, message: 'Failed to add promocode.' });
+    }
+});
+
+// Route to delete a promocode
+app.delete('/promocodes', async (req, res) => {
+    const { code } = req.body;
+    try {
+        await client.query('DELETE FROM promo WHERE code = $1', [code]);
+        res.json({ success: true, message: 'Promocode deleted successfully.' });
+    } catch (error) {
+        console.error('Error deleting promocode:', error.message);
+        res.status(500).json({ success: false, message: 'Failed to delete promocode.' });
+    }
+})
+
+
 // Route to list admin users
 app.get('/admins', async (req, res) => {
     try {

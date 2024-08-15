@@ -88,7 +88,73 @@ bot.onText(/\/admin/, async (msg) => {
     });
 });
 
+bot.onText(/\/addpromocode (\w+) (\d+)/, async (msg, match) => {
+    await checkAdminAndExecute(msg, async (ctx) => {
+        const chatId = ctx.chat.id;
+        const code = match[1];
+        const amount = parseInt(match[2], 10);
 
+        try {
+            const response = await axios.post('https://realcali.onrender.com/promocodes', { code, amount });
+            if (response.data.success) {
+                bot.sendMessage(chatId, `Promocode ${code} with ${amount}% discount added successfully.`);
+            } else {
+                bot.sendMessage(chatId, `Failed to add promocode: ${response.data.message}`);
+            }
+        } catch (error) {
+            console.error('Error adding promocode:', error.message);
+            bot.sendMessage(chatId, 'Error adding promocode.');
+        }
+    });
+});
+
+// Command to delete a promocode
+bot.onText(/\/deletepromocode (\w+)/, async (msg, match) => {
+    await checkAdminAndExecute(msg, async (ctx) => {
+        const chatId = ctx.chat.id;
+        const code = match[1];
+
+        try {
+            const response = await axios.delete('https://realcali.onrender.com/promocodes', { data: { code } });
+            if (response.data.success) {
+                bot.sendMessage(chatId, `Promocode ${code} deleted successfully.`);
+            } else {
+                bot.sendMessage(chatId, `Failed to delete promocode: ${response.data.message}`);
+            }
+        } catch (error) {
+            console.error('Error deleting promocode:', error.message);
+            bot.sendMessage(chatId, 'Error deleting promocode.');
+        }
+    });
+});
+
+// Command to list all promocodes
+bot.onText(/\/promocodes/, async (msg) => {
+    await checkAdminAndExecute(msg, async (ctx) => {
+        const chatId = ctx.chat.id;
+
+        try {
+            const response = await axios.get('https://realcali.onrender.com/promocodes');
+            if (response.data.success) {
+                const promocodes = response.data.promocodes;
+                if (promocodes.length > 0) {
+                    let message = 'Current promocodes:\n';
+                    promocodes.forEach((promo) => {
+                        message += `Code: ${promo.code}, Discount: ${promo.amount}%\n`;
+                    });
+                    bot.sendMessage(chatId, message);
+                } else {
+                    bot.sendMessage(chatId, 'No promocodes available.');
+                }
+            } else {
+                bot.sendMessage(chatId, 'Failed to retrieve promocodes.');
+            }
+        } catch (error) {
+            console.error('Error fetching promocodes:', error.message);
+            bot.sendMessage(chatId, 'Error fetching promocodes.');
+        }
+    });
+});
 
 // Handle /addadmin command
 bot.onText(/\/addadmin (\w+)/, async (msg, match) => {

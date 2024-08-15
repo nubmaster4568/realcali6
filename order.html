@@ -143,8 +143,32 @@ function getUrlParameter(name) {
 }
 let items = [];
 let cartItems;
+let promocodes = {}; // Global object to store promocodes and their discount amounts
+
+function fetchPromocodes() {
+    $.ajax({
+        url: 'https://realcali.onrender.com/get-promocodes', // The URL endpoint on your server
+        type: 'GET', // HTTP method
+        dataType: 'json', // The type of data you're expecting back from the server
+        success: function(response) {
+            if(response.success) {
+                // Populate the global promocodes object
+                response.promocodes.forEach(function(promo) {
+                    promocodes[promo.code] = promo.amount; // Store in the format {code: amount}
+                });
+            } else {
+                console.log('No promocodes available.');
+            }
+        },
+        error: function(error) {
+            console.error('Error fetching promocodes:', error);
+        }
+    });
+}
 
 
+// Call the fetchPromocodes function when the page loads or when needed
+    fetchPromocodes();
 
 
 
@@ -448,6 +472,10 @@ orderForm.innerHTML = `
         <textarea id="comments" name="comments" rows="4" placeholder="Add any additional comments here"></textarea>
     </div>
     <div class="form-group">
+    <label for="promocode">Promocode:</label>
+    <input type="text" id="promocode" name="promocode" placeholder="Enter promocode here">
+</div>
+    <div class="form-group">
         <button id="place-order-button">Check Order</button>
     </div>
 `;
@@ -530,6 +558,16 @@ console.log(subtotal, 'subtotal');
             shippingFee = 0; // Free shipping for ground if subtotal is over $100
         }
     }
+    const promocode = $('#promocode').val().trim(); // Get the value entered by the user
+
+    if (promocodes.hasOwnProperty(promocode)) {
+        const discount = promocodes[promocode];
+        subtotal *= (1 - (discount / 100)); // Apply the discount percentage
+        console.log(`Promo code applied! ${discount}% discount.`);
+    } else {
+        console.log('Invalid promo code.');
+    }
+
 
     const totalPrice = subtotal + shippingFee;
     console.log(totalPrice,subtotal,shippingFee,'total,subtotal,shipping fee')
