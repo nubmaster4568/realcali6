@@ -284,8 +284,28 @@ function updateTotalPrice(cartItems) {
         itemTitle.textContent = `Product Name: ${item.name}`;
         itemContainer.appendChild(itemTitle);
 
+
+        function insertLineBreaks(text, maxLength) {
+    const words = text.split(' ');
+    let line = '';
+    let result = '';
+
+    words.forEach(word => {
+        if ((line + word).length > maxLength) {
+            result += line + '<br>';
+            line = word + ' ';
+        } else {
+            line += word + ' ';
+        }
+    });
+
+    result += line; // Add remaining text
+    return result;
+}
+
         const itemDescription = document.createElement('p');
-        itemDescription.textContent = `Description: ${item.description}`;
+        itemDescription.innerHTML = insertLineBreaks(item.description, 40); // Adjust maxLength as needed
+
         itemContainer.appendChild(itemDescription);
 
         const quantityInput = document.createElement('input');
