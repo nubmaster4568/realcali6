@@ -418,8 +418,8 @@ function generateOrderId(length = 10) {
                 let orderItems = []; // Array to store order item details
 
                 document.getElementById('place-order-button').addEventListener('click', function() {
-    // Collect form data
-    var address = document.getElementById('delivery-address').value;
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    var address = document.getElementById('delivery-address').value;
     var date = document.getElementById('delivery-date').value;
     var state = document.getElementById('delivery-state').value;
 
@@ -471,6 +471,8 @@ function generateOrderId(length = 10) {
     document.getElementById('order-popup').style.display = 'block';
     document.getElementById('overlay').style.display = 'block';
 });
+
+
 
 document.getElementById('confirm-order-btn').addEventListener('click', function() {
     alert('Order confirmed!');
