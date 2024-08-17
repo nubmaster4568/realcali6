@@ -24,6 +24,7 @@ body {
     bottom: 0px;
     font-size: 16px;
     margin-top: 20px;
+    margin-bottom: 100px;
 }
 .navbar {
     display: flex;
@@ -1545,18 +1546,7 @@ body {
     font-weight: bold;
 }
 
-.cart-popup {
-    position: fixed;
-    border-radius: 15px;
-    top: 0;
-    right: -100%; /* Hide off-screen initially */
-    width: 300px; /* Adjust width as needed */
-    height: 100%;
-    background-color: #fff;
-    box-shadow: -100px 0 5px rgba(0, 0, 0, 0.3);
-    transition: right 0.3s ease-in-out; /* Slide-in animation */
-    z-index: 1000;
-}
+
 /* Popup content */
 .cart-popup-content {
     padding: 20px;

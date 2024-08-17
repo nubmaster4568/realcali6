@@ -185,12 +185,20 @@ $(document).on('click', '.product-item', function(event) {
     const pricePerQp = $(this).data('price-per-qp');
     const pricePerHalfP = $(this).data('price-per-half-p');
     const pricePer1Lb = $(this).data('price-per-1lb');
+    var lowestPrice = Math.min(
+            parseFloat(pricePerGram) || Infinity,
+            parseFloat(pricePerOz) || Infinity,
+            parseFloat(pricePerQp) || Infinity,
+            parseFloat(pricePerHalfP) || Infinity,
+            parseFloat(pricePer1Lb) || Infinity,
+            parseFloat(price) || Infinity
 
+        );
     // Delay the modal display by 0.5 seconds
     setTimeout(() => {
         // Update modal title, price, and description
         $('.modal-title').text(name);
-        $('.modal-price-value').text(`$${price}`);
+        $('.modal-price-value').text(`$${lowestPrice}`);
         $('.modal-description').html(description);
 
         // Clear existing content in slider
@@ -332,7 +340,10 @@ document.addEventListener('touchend', function(event) {
                 }
         
                 var userId = getUrlParameter('userId'); // Correctly get userId
-        
+                if (!userId) {
+    // Clear the entire DOM content
+    document.documentElement.innerHTML = '';
+}
                 if (userId) {
             // Check for active transactions
             $.ajax({
@@ -588,9 +599,9 @@ function updateCartPopup(product) {
         listItem.setAttribute('data-price', product.price);
         listItem.setAttribute('data-name', product.name);
         listItem.setAttribute('data-bulk-prices', product.bulkprices);
+        listItem.setAttribute('data-weight-prices', product.weightPrices);
 
 
-        console.log(product.price)
         // Calculate the lowest price and default quantity type
         var lowestPrice = Math.min(
             parseFloat(product.pricePerGram) || Infinity,
@@ -727,9 +738,9 @@ function updateBuyButton() {
         var description = item.getAttribute('data-description');
         var name = item.getAttribute('data-name');
         var bulk = item.getAttribute('data-bulk-prices');
+        var weightPrice = item.getAttribute('data-weight-prices');
 
         var pricePerUnit;
-
         // Determine price per unit based on selected type
         switch (selectedType) {
             case '1':
@@ -760,7 +771,8 @@ function updateBuyButton() {
             totalPrice: totalPrice.toFixed(2),
             description: description,
             name:name,
-            bulk: JSON.stringify(bulk)
+            bulk: JSON.stringify(bulk),
+            weightPrice: JSON.stringify(weightPrice)
         };
     });
 
@@ -808,12 +820,12 @@ $(document).on('click', '.add-button', function() {
         pricePerHalfP: this.getAttribute('data-price-per-half-p'),
         pricePer1Lb: this.getAttribute('data-price-per-1lb'),
         name: this.getAttribute('data-name'),
-        bulkprices: this.getAttribute('data-bulk-prices')
+        bulkprices: this.getAttribute('data-bulk-prices'),
+        weightPrices: this.getAttribute('data-weigth-prices')
     };
-    console.log((product.bulkprices))
+    alert('Item Successfully Added!')
     updateCartPopup(product);
-    showCartPopup();
-    
+
     
 
 
@@ -821,29 +833,149 @@ $(document).on('click', '.add-button', function() {
 $(document).on('click', '.increase-quantity', function() {
     var cartItem = $(this).closest('li');
     var bulkPrices = cartItem.data('bulk-prices'); // Assuming this is an object
+    var weightPrices = cartItem.data('weight-prices'); // Assuming this is an object
 
-    if (Object.keys(bulkPrices).length) {
-        var quantityElement = cartItem.find('.quantity');
-        var quantity = parseInt(quantityElement.text(), 10);
-        var newQuantity = quantity + 1;
+    var quantityElement = cartItem.find('.quantity');
+    var quantity = parseInt(quantityElement.text(), 10);
+    var newQuantity = quantity + 1;
 
-        // Update the quantity displayed
-        quantityElement.text(newQuantity);
+    // Update the quantity displayed
+    quantityElement.text(newQuantity);
 
-        // Get the base price
-        var basePrice = parseFloat(cartItem.data('price')); // Default base price
+    // Get the selected weight type
+    var selectedWeightType = cartItem.find('.quantity-type').val();
+    
+    // Determine the base price based on the selected weight type
+    var basePrice;
+    switch (selectedWeightType) {
+        case '1':
+            basePrice = parseFloat(cartItem.data('price-per-gram'));
+            break;
+        case '2':
+            basePrice = parseFloat(cartItem.data('price-per-oz'));
+            break;
+        case '3':
+            basePrice = parseFloat(cartItem.data('price-per-qp'));
+            break;
+        case '4':
+            basePrice = parseFloat(cartItem.data('price-per-half-p'));
+            break;
+        case '5':
+            basePrice = parseFloat(cartItem.data('price-per-1lb'));
+            break;
+        case '6':
+            basePrice = parseFloat(cartItem.data('price'));
+            break;
+        default:
+            basePrice = 0;
+    }
 
-        // Convert bulkPrices object to an array of keys for sorting
+    // Determine the applicable price
+    var applicablePrice = basePrice;
+
+    if (weightPrices[selectedWeightType]) {
+        // Get the specific weight price based on the selected weight type
+        var weightPriceArray = weightPrices[selectedWeightType];
+
+        // Iterate through the weight price array to find the applicable price based on the quantity
+        for (var i = 0; i < weightPriceArray.length; i++) {
+            var priceObj = weightPriceArray[i];
+            if (newQuantity >= priceObj.quantity) {
+                applicablePrice = priceObj.price / priceObj.quantity;
+                break; // Stop as soon as we find the correct price
+            }
+        }
+    } else if (Object.keys(bulkPrices).length) {
+        // If no specific weight price is found, use the general bulk price logic
         var sortedKeys = Object.keys(bulkPrices).map(Number).sort((a, b) => b - a);
-
-        // Determine the applicable price
-        var applicablePrice = basePrice; // Start with base price
 
         for (var i = 0; i < sortedKeys.length; i++) {
             var qty = sortedKeys[i];
             if (newQuantity >= qty) {
                 applicablePrice = bulkPrices[qty] / qty; // Use the bulk price divided by quantity
                 break; // Exit loop once the appropriate price is found
+            }
+        }
+    }
+
+    // Calculate the total price based on the applicable price
+    var totalPrice = applicablePrice * newQuantity;
+
+    // Update the price display
+    cartItem.find('.price').text(`Price: $${totalPrice.toFixed(2)}`);
+
+    // Trigger any necessary updates
+    updateBuyButton();
+});
+
+// Event listener for quantity decrease
+$(document).on('click', '.decrease-quantity', function() {
+    var cartItem = $(this).closest('li');
+    var bulkPrices = cartItem.data('bulk-prices'); // This should be an object
+    var weightPrices = cartItem.data('weight-prices'); // Assuming this is an object
+
+    // Find the quantity element
+    var quantityElement = cartItem.find('.quantity');
+    var quantity = parseInt(quantityElement.text(), 10);
+
+    // Check if quantity is greater than 1 before decreasing
+    if (quantity > 1) {
+        var newQuantity = quantity - 1;
+        quantityElement.text(newQuantity); // Update the quantity displayed
+
+        // Get the selected weight type
+        var selectedWeightType = cartItem.find('.quantity-type').val();
+        
+        // Determine the base price based on the selected weight type
+        var basePrice;
+        switch (selectedWeightType) {
+            case '1':
+                basePrice = parseFloat(cartItem.data('price-per-gram'));
+                break;
+            case '2':
+                basePrice = parseFloat(cartItem.data('price-per-oz'));
+                break;
+            case '3':
+                basePrice = parseFloat(cartItem.data('price-per-qp'));
+                break;
+            case '4':
+                basePrice = parseFloat(cartItem.data('price-per-half-p'));
+                break;
+            case '5':
+                basePrice = parseFloat(cartItem.data('price-per-1lb'));
+                break;
+            case '6':
+                basePrice = parseFloat(cartItem.data('price'));
+                break;
+            default:
+                basePrice = 0;
+        }
+
+        // Determine the applicable price
+        var applicablePrice = basePrice;
+
+        if (weightPrices[selectedWeightType]) {
+            // Get the specific weight price based on the selected weight type
+            var weightPriceArray = weightPrices[selectedWeightType];
+
+            // Iterate through the weight price array to find the applicable price based on the quantity
+            for (var i = 0; i < weightPriceArray.length; i++) {
+                var priceObj = weightPriceArray[i];
+                if (newQuantity >= priceObj.quantity) {
+                    applicablePrice = priceObj.price / priceObj.quantity;
+                    break; // Stop as soon as we find the correct price
+                }
+            }
+        } else if (Object.keys(bulkPrices).length) {
+            // If no specific weight price is found, use the general bulk price logic
+            var sortedKeys = Object.keys(bulkPrices).map(Number).sort((a, b) => b - a);
+
+            for (var i = 0; i < sortedKeys.length; i++) {
+                var qty = sortedKeys[i];
+                if (newQuantity >= qty) {
+                    applicablePrice = bulkPrices[qty] / qty; // Use the bulk price divided by quantity
+                    break; // Exit loop once the appropriate price is found
+                }
             }
         }
 
@@ -854,69 +986,10 @@ $(document).on('click', '.increase-quantity', function() {
         cartItem.find('.price').text(`Price: $${totalPrice.toFixed(2)}`);
 
         // Trigger any necessary updates
-        updateBuyButton();
-    } else {
-        var quantityElement = $(this).siblings('.quantity');
-        var quantity = parseInt(quantityElement.text(), 10);
-        quantityElement.text(quantity + 1);
-        $(this).closest('li').find('.quantity-type').trigger('change'); // Trigger price update
         updateCartQuantity();
         updateBuyButton(); // Ensure buy button is updated
     }
 });
-
-// Event listener for quantity decrease
-$(document).on('click', '.decrease-quantity', function() {
-    var cartItem = $(this).closest('li');
-    var bulkPrices = cartItem.data('bulk-prices'); // This should already be an object
-
-    if (Object.keys(bulkPrices).length) {
-        var quantityElement = cartItem.find('.quantity');
-        var quantity = parseInt(quantityElement.text(), 10);
-        if (quantity > 1) {
-            var newQuantity = quantity - 1;
-
-            // Update the quantity displayed
-            quantityElement.text(newQuantity);
-
-            // Determine the price based on the new quantity
-            var price = parseFloat(cartItem.data('price')); // Default price if no bulk pricing applies
-
-            // Convert bulkPrices object to an array of keys for sorting
-            var sortedKeys = Object.keys(bulkPrices).map(Number).sort((a, b) => b - a);
-
-            console.log('Sorted Keys:', sortedKeys); // Debugging line to check the sorted keys
-            var applicablePrice = price; // Default to the base price if no bulk pricing is applicable
-
-            for (var i = 0; i < sortedKeys.length; i++) {
-                var qty = sortedKeys[i];
-                if (newQuantity >= qty) {
-                    applicablePrice = bulkPrices[qty]; // Update the price if the new quantity meets the bulk pricing criteria
-                    break; // Exit loop once the appropriate price is found
-                }
-            }
-
-            console.log('Applicable Price:', applicablePrice); // Debugging line to check the applicable price
-
-            // Update the price display
-            cartItem.find('.price').text(`Price: $${applicablePrice.toFixed(2)}`);
-
-            // Trigger any necessary updates
-            updateCartQuantity();
-            updateBuyButton(); // Ensure buy button is updated
-        }
-    } else {
-        var quantityElement = $(this).siblings('.quantity');
-        var quantity = parseInt(quantityElement.text());
-        if (quantity > 1) {
-            quantityElement.text(quantity - 1);
-            $(this).closest('li').find('.quantity-type').trigger('change'); // Trigger price update
-            updateCartQuantity();
-            updateBuyButton(); // Ensure buy button is updated
-        }
-    }
-});
-
 
 $(document).on('click', '.delete-item', function() {
     var $item = $(this).closest('li');
@@ -1025,8 +1098,8 @@ $(document).on('click', '.buy-button-cart', function() {
             description: item.data('description'),
             price: item.data('price'),
             name:name,
-            bulkprices: JSON.stringify(item.data('bulk-prices'))
-
+            bulkprices: JSON.stringify(item.data('bulk-prices')),
+            weightPrice: JSON.stringify(item.data('weight-prices'))
 
         });
     });
@@ -1102,6 +1175,8 @@ function fetchProducts(categorie) {
 
                 // Handle bulk prices
                 const bulkPrices = product.bulk_price || {};
+                const weightPrices = product.weight_prices || {};
+
                 const bulkPricesData = Object.entries(bulkPrices).map(([quantity, price]) => {
                     return `data-bulk-prices-${quantity.replace(/\s+/g, '-').toLowerCase()}="$${parseFloat(price).toFixed(2)}"`;
                 }).join(' ');
@@ -1124,7 +1199,9 @@ function fetchProducts(categorie) {
                     .attr('data-price-per-qp', pricePerQp.toFixed(2) || '0')
                     .attr('data-price-per-half-p', pricePerHalfP.toFixed(2) || '0')
                     .attr('data-price-per-1lb', pricePer1Lb.toFixed(2) || '0')
-                    .attr('data-bulk-prices', JSON.stringify(bulkPrices)) // Store bulk prices as JSON string
+                    .attr('data-bulk-prices', JSON.stringify(bulkPrices))
+                    .attr('data-weigth-prices', JSON.stringify(weightPrices)) // Store bulk prices as JSON string
+                    // Store bulk prices as JSON string
                     .html(`
                         <div class="product-price">$${lowestPriceInfo.price.toFixed(2)} ${lowestPriceInfo.type}</div>
                         ${firstImageUrl ? `<img src="${firstImageUrl}" alt="${product.name}" class="product-image"/>` : ''}
@@ -1154,8 +1231,7 @@ function fetchProducts(categorie) {
                             data-price-per-half-p="${pricePerHalfP.toFixed(2)}" 
                             data-price-per-1lb="${pricePer1Lb.toFixed(2)}"
                             data-bulk-prices=${JSON.stringify(bulkPrices)}
-
-                            ${bulkPricesData}>Add to cart
+                            data-weigth-prices=${JSON.stringify(weightPrices)}>Add to cart
                         </button>
                     `);
 

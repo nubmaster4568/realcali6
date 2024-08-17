@@ -462,8 +462,9 @@ app.post('/upload-product', upload.fields([
     const { price, name, categorie, identifier,
             price_per_gram, price_per_oz, price_per_qp,
             price_per_half_p, price_per_1lb, description,
-            bulk_quantity, bulk_price } = req.body;
-
+            bulk_quantity, bulk_price,weight_type,custom_quantity,custom_bulk_price} = req.body;
+    
+    
     console.log(req.body);
     const productImages = req.files['productImages[]'] || [];
     const productVideos = req.files['productVideos[]'] || [];
@@ -539,11 +540,33 @@ app.post('/upload-product', upload.fields([
             return acc;
         }, {});
 
+
+        const weightPrices = {};
+
+        // Populate the weightPrices object
+        weight_type.forEach((type, index) => {
+            const quantity = custom_quantity[index];
+            const price = custom_bulk_price[index];
+            
+            // Initialize the type key if it does not exist
+            if (!weightPrices[type]) {
+                weightPrices[type] = [];
+            }
+            
+            // Add quantity and price if they are valid
+            if (quantity && price) {
+                weightPrices[type].push({
+                    quantity: parseFloat(quantity),
+                    price: parseFloat(price)
+                });
+            }
+        })
+        console.log(weightPrices)
         // Store all media in a single row
         await client.query(`
-            INSERT INTO products (name, categorie, identifier, price, price_per_gram, price_per_oz, price_per_qp, price_per_half_p, price_per_1lb, media_data, description, bulk_price)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
-        `, [name, categorie, identifier, finalPrice, price_per_gram, price_per_oz, price_per_qp, price_per_half_p, price_per_1lb, mediaData, description, JSON.stringify(bulkPrices)]);
+            INSERT INTO products (name, categorie, identifier, price, price_per_gram, price_per_oz, price_per_qp, price_per_half_p, price_per_1lb, media_data, description, bulk_price,weight_prices)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12,$13)
+        `, [name, categorie, identifier, finalPrice, price_per_gram, price_per_oz, price_per_qp, price_per_half_p, price_per_1lb, mediaData, description, JSON.stringify(bulkPrices),JSON.stringify(weightPrices)]);
 
         res.send('Product successfully uploaded and changes committed.');
     } catch (err) {
