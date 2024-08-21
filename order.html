@@ -101,7 +101,7 @@
         <p><strong>Shipping:</strong> <span id="shipping"></span></p>
         <p><strong>Shipping Fee:</strong> <span id="shipping-fee"></span></p>
         <p><strong>Subtotal:</strong> <span id="total"></span></p>
-
+        <p><strong></strong> <span id="additional-text"></span></p>
         <h3>Total: <strong><span id="subtotal"></span></strong></h3>
         <button id="confirm-order-btn">Confirm Order</button>
     </div>
@@ -369,25 +369,37 @@ function calculateTotalPrice(cartItems) {
         
         
                 function insertLineBreaks(text, maxLength) {
-            const words = text.split(' ');
-            let line = '';
-            let result = '';
-        
-            words.forEach(word => {
-                if ((line + word).length > maxLength) {
-                    result += line + '<br>';
-                    line = word + ' ';
-                } else {
-                    line += word + ' ';
-                }
-            });
-        
-            result += line; // Add remaining text
-            return result;
+    // Remove all text before "Available strains:"
+    const startIndex = text.indexOf("Available Strains:");
+    if (startIndex === -1) {
+        return ''; // Return empty string if the phrase is not found
+    }
+
+    // Get the trimmed text starting from "Available Strains:"
+    const trimmedText = text.substring(startIndex);
+    const words = trimmedText.split(' '); // Split into words
+    let line = ''; // Start with an empty line
+    let result = '';
+
+    words.forEach(word => {
+        line += word + ' ';
+
+        // Check if the word ends with a closing parenthesis
+        if (word.endsWith(')')) {
+            // If the line exceeds maxLength, break the line
+            if (line.length > maxLength) {
+                result += line.trim() + '<br>'; // Add the line and break
+                line = ''; // Reset line for the next strain
+            }
         }
-        
+    });
+
+    result += line.trim(); // Add any remaining text
+    return result.replace(/\n+/g, '<br>'); // Replace newline characters with <br>
+}
+
                 const itemDescription = document.createElement('p');
-                itemDescription.innerHTML = insertLineBreaks(item.description, 40); // Adjust maxLength as needed
+                itemDescription.innerHTML = insertLineBreaks(item.description, 30); // Adjust maxLength as needed
         
                 itemContainer.appendChild(itemDescription);
         
@@ -488,11 +500,12 @@ function calculateTotalPrice(cartItems) {
             
         const orderForm = document.createElement('div');
         orderForm.innerHTML = `
-            <div class="form-group">
+
+            <h1>Order Details</h1>
+                        <div class="form-group">
                 <label for="delivery-date">Name:</label>
                 <input type="text" id="delivery-date" name="deliveryDate" required>
             </div>
-            <h1>Order Details</h1>
             <div class="form-group">
                 <label for="delivery-address">Street Address:</label>
                 <input type="text" id="delivery-address" name="deliveryAddress" required>
@@ -605,21 +618,31 @@ function calculateTotalPrice(cartItems) {
             });
             let price_before_discount = subtotal + shippingFee
             let isDiscount = false;
+            let discount_text = ''
+            let shipping_text = ''
             if (isPrime) {
+                discount_text += 'Prime Member 20% Discount!'
                 subtotal *= 0.8; // Apply 20% discount
                 additionalItemHtml = '<div class="order-item"><p><strong>Item:</strong> Add double mystery gifts</p></div>';
                 if (subtotal >= 50) {
+                    shipping_text = 'Free Shipping Applied'
+
                     shippingFee = 0; // Free shipping for prime members if subtotal is over $50
                     shippingOption = 'Priority Shipping'; // Ensure priority shipping
                 }
             } else {
                 if (subtotal >= 250) {
+                    shipping_text = 'Free Shipping Applied'
                     shippingFee = 0; // Free shipping if subtotal is over $250
                     shippingOption = 'Priority Shipping'; // Ensure priority shipping
                 } else if (shippingOption === 'ground' && subtotal >= 100) {
-                    shippingFee = 0; // Free shipping for ground if subtotal is over $100
+                    shippingFee = 0; 
+                    shipping_text= 'Free Shipping Applied'
+                    // Free shipping for ground if subtotal is over $100
                 }
             }
+
+            console.log(shipping_text,'TEXT')
             const promocode = $('#promocode').val().trim(); // Get the value entered by the user
         
             if (promocodes.hasOwnProperty(promocode)) {
@@ -643,9 +666,9 @@ function calculateTotalPrice(cartItems) {
             document.getElementById('popup-comments').textContent = comments;
             document.getElementById('order-items').innerHTML = orderItemsHtml + additionalItemHtml;
             document.getElementById('shipping').textContent = shippingOption;
-            document.getElementById('shipping-fee').textContent = `$${shippingFee.toFixed(2)}`;
+            document.getElementById('shipping-fee').textContent = `$${shippingFee.toFixed(2)} ${shipping_text}`;
+            document.getElementById('additional-text').textContent = `${discount_text} ${shipping_text}`;
             document.getElementById('total').textContent = `$${price_before_discount.toFixed(2)}`;
-            // Show the popup and overlay
             document.getElementById('order-popup').style.display = 'block';
             document.getElementById('overlay').style.display = 'block';
         });
