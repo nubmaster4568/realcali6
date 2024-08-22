@@ -606,13 +606,13 @@ function calculateTotalPrice(cartItems) {
                     comment: comment,
                     totalPrice: totalPrice
                 });
-                
+                weightType = weightType.split(' - ')[0];
                 // Populate the popup with item details
                 orderItemsHtml += `
                     <div class="order-item">
                         <p><strong>Product Name:</strong> ${productName}</p>
-                        <p><strong>Quantity:</strong> ${quantity}</p>
-                        <p><strong>Total:</strong> ${totalPrice}</p>
+                        <p><strong>Quantity:</strong> ${quantity} ${weightType}</p>
+                        <p><strong>Total:</strong> $${totalPrice}</p>
                         <p><strong>Comment:</strong> ${comment}</p>
                     </div>
                 `;
