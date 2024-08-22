@@ -592,7 +592,8 @@ function calculateTotalPrice(cartItems) {
                 var weightType = item.querySelector('.custom-select').selectedOptions[0].text;
                 //var price = item.querySelector('.custom-select').selectedOptions[0].getAttribute('data-price');
                 var commentSection = item.querySelector('.comment-section textarea');
-                var comment = commentSection ? commentSection.value : ''; // Safeguard if textarea doesn't exist
+                var formatedComment = commentSection ? commentSection.value : ''; // Safeguard if textarea doesn't exist
+                var comment = formatedComment.replace(/\n/g, '<br>');
                 var price = parseFloat(item.querySelector('.custom-select').selectedOptions[0].getAttribute('data-price')) || 0;
         
                 let totalPrice = parseInt(extractPrice(weightType)) * quantity ;
