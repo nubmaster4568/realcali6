@@ -524,6 +524,67 @@ app.post('/upload-product', upload.fields([
         const pricePerQp = parseFloat(price_per_qp) || 0;
         const pricePerHalfP = parseFloat(price_per_half_p) || 0;
         const pricePer1Lb = parseFloat(price_per_1lb) || 0;
+        const weightPrices = {};
+
+
+        if (pricePerGram > 0) { 
+            weightPrices[1] = []
+            weightPrices[1].push({
+                quantity: 32,
+                price: pricePerQp
+            });
+            weightPrices[1].push({
+                quantity: 8,
+                price: pricePerOz
+            });
+            weightPrices[1].push({
+                quantity: 64,
+                price: pricePerHalfP
+            });
+            weightPrices[1].push({
+                quantity: 128,
+                price: pricePer1Lb
+            });
+        }
+
+        if (pricePerOz > 0) { 
+            weightPrices[2] = []
+
+            weightPrices[2].push({
+                quantity: 4,
+                price: pricePerQp
+            });
+            weightPrices[2].push({
+                quantity: 16,
+                price: pricePer1Lb
+            });
+            weightPrices[2].push({
+                quantity: 8,
+                price: pricePerHalfP
+            });
+        }
+        if (pricePerQp > 0) { 
+            weightPrices[3] = []
+
+            weightPrices[3].push({
+                quantity: 4,
+                price: pricePer1Lb
+            });
+            weightPrices[3].push({
+                quantity: 2,
+                price: pricePerHalfP
+            });
+        }
+
+        if (pricePerHalfP > 0) { 
+            weightPrices[4] = []
+
+            weightPrices[4].push({
+                quantity: 2,
+                price: pricePer1Lb
+            });
+            
+        }
 
         // Array of price per unit
         const unitPrices = [pricePerGram, pricePerOz, pricePerQp, pricePerHalfP, pricePer1Lb];
@@ -541,7 +602,6 @@ app.post('/upload-product', upload.fields([
             return acc;
         }, {});
 
-        const weightPrices = {};
 
         // Populate the weightPrices object only if weight_type is provided
         if (weight_type && custom_quantity && custom_bulk_price) {
