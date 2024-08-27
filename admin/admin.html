@@ -47,6 +47,7 @@
         <button id="upload-btn">Add Product</button>
         <button id="search-btn">Search Product</button>
         <button id="categories-btn">Add Categorie</button>
+        <button id="csv-btn">Add CSV</button>
 
     </div>
     
@@ -62,13 +63,7 @@
                 <label for="bulk-prices">Bulk Prices:</label>
                 <div id="bulk-prices-container">
                     <!-- Initial row for bulk pricing -->
-                    <div class="bulk-price-row">
-                        <label for="bulk_quantity_1">Quantity:</label>
-                        <input type="number" id="bulk_quantity_1" name="bulk_quantity[]" step="1" value="1" required>
-                        <label for="bulk_price_1">Price ($):</label>
-                        <input type="number" id="bulk_price_1" name="bulk_price[]" step="0.01" value="0" required>
-                        <button type="button" class="remove-bulk-price-row">-</button>
-                    </div>
+                    
                 </div>
                 <button type="button" id="add-bulk-price-row">+ Add Another Row</button>
             </div>
@@ -208,7 +203,14 @@
 
     <div id="categories-form-container" class="categories-form-container">
         <h1>Manage Categories</h1>
-    
+        <form id="csv-upload-form">
+            <div class="form-group">
+                <label for="csvFile">CSV File:</label>
+                <input type="file" id="csvFile" name="csvFile" accept=".csv" required>
+            </div>
+            <div class = 'csv-response'></div>
+            <button type="submit">Upload</button>
+        </form>
         <!-- Form to Add New Categories -->
         <form id="add-category-form" action="/upload-category" method="post" enctype="multipart/form-data">
             <div class="form-group">
@@ -254,13 +256,61 @@
         <!-- Display Results -->
         <div id="results"></div>
     </div>
+
+
     
+
     <div class="loading-spinner"></div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
+document.getElementById('csv-upload-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        console.log('hit')
+        const fileInput = document.getElementById('csvFile');
+        const file = fileInput.files[0];
 
-        // Utility function to get URL parameters
+        if (file) {
+            Papa.parse(file, {
+                complete: function (results) {
+                    const parsedData = results.data;
+                    const members = parsedData.map(row => ({
+                        username: row[0],
+                        email: row[1],
+                    }));
+
+                    // Send parsed data to server as JSON
+                    fetch('/upload-prime-members', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(members),
+                    })
+                    .then(response => response.text())
+                    .then(data => {
+                        console.log('Success:', data);
+                        const csvResponseDiv = document.querySelector('.csv-response');
+
+// Append text to the div
+csvResponseDiv.textContent += data;
+
+                    })
+                    .catch((error) => {
+                        console.error('Error:', error);
+                        const csvResponseDiv = document.querySelector('.csv-response');
+
+// Append text to the div
+csvResponseDiv.textContent += error;
+                    });
+                },
+            });
+        }
+    });
+
+    
+    // Utility function to get URL parameters
         function getUrlParameter(name) {
 
             name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
@@ -417,6 +467,7 @@ function generateIdentifier(length) {
             document.getElementById('categories-form-container').classList.add('active');
 
         });
+        
     
 // Handle product form submission
 document.getElementById('product-form').addEventListener('submit', function (event) {

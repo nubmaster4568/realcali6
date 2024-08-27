@@ -23,7 +23,7 @@ const botToken = '6943135495:AAG_43_g0BJYcpsPdFliJSXVQz-dit-iyhY'
 // PostgreSQL connection
 
 const client = new Pool({
-    connectionString: 'postgresql://wifi_db_user:yGEtjMFrhK3m0oG8Tc8hglOqn9CaIhLT@dpg-cqj2e9mehbks73c4mh60-a.oregon-postgres.render.com/wifi_db',
+    connectionString: 'postgres://realcali:2IiXdAejkdp5WWBnTWI0qIK52VxU2hR8@dpg-cr6vpk23esus73947js0-a.oregon-postgres.render.com/realcali',
     ssl: { rejectUnauthorized: false }
 });
 client.connect();
@@ -459,12 +459,13 @@ app.post('/upload-product', upload.fields([
     { name: 'productImages[]', maxCount: 10 },
     { name: 'productVideos[]', maxCount: 5 }
 ]), async (req, res) => {
-    const { price, name, categorie, identifier,
-            price_per_gram, price_per_oz, price_per_qp,
-            price_per_half_p, price_per_1lb, description,
-            bulk_quantity, bulk_price,weight_type,custom_quantity,custom_bulk_price} = req.body;
-    
-    
+    const {
+        price, name, categorie, identifier,
+        price_per_gram, price_per_oz, price_per_qp,
+        price_per_half_p, price_per_1lb, description,
+        bulk_quantity, bulk_price, weight_type, custom_quantity, custom_bulk_price
+    } = req.body;
+
     console.log(req.body);
     const productImages = req.files['productImages[]'] || [];
     const productVideos = req.files['productVideos[]'] || [];
@@ -501,7 +502,7 @@ app.post('/upload-product', upload.fields([
                     path: filePath,
                     contents: file.buffer
                 });
-                
+
                 // Create a shared link for the uploaded file
                 const sharedLinkResponse = await dbx.sharingCreateSharedLinkWithSettings({
                     path: filePath
@@ -540,33 +541,35 @@ app.post('/upload-product', upload.fields([
             return acc;
         }, {});
 
-
         const weightPrices = {};
 
-        // Populate the weightPrices object
-        weight_type.forEach((type, index) => {
-            const quantity = custom_quantity[index];
-            const price = custom_bulk_price[index];
-            
-            // Initialize the type key if it does not exist
-            if (!weightPrices[type]) {
-                weightPrices[type] = [];
-            }
-            
-            // Add quantity and price if they are valid
-            if (quantity && price) {
-                weightPrices[type].push({
-                    quantity: parseFloat(quantity),
-                    price: parseFloat(price)
-                });
-            }
-        })
-        console.log(weightPrices)
+        // Populate the weightPrices object only if weight_type is provided
+        if (weight_type && custom_quantity && custom_bulk_price) {
+            weight_type.forEach((type, index) => {
+                const quantity = custom_quantity[index];
+                const price = custom_bulk_price[index];
+
+                // Initialize the type key if it does not exist
+                if (!weightPrices[type]) {
+                    weightPrices[type] = [];
+                }
+
+                // Add quantity and price if they are valid
+                if (quantity && price) {
+                    weightPrices[type].push({
+                        quantity: parseFloat(quantity),
+                        price: parseFloat(price)
+                    });
+                }
+            });
+        }
+
+        console.log(weightPrices);
         // Store all media in a single row
         await client.query(`
-            INSERT INTO products (name, categorie, identifier, price, price_per_gram, price_per_oz, price_per_qp, price_per_half_p, price_per_1lb, media_data, description, bulk_price,weight_prices)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12,$13)
-        `, [name, categorie, identifier, finalPrice, price_per_gram, price_per_oz, price_per_qp, price_per_half_p, price_per_1lb, mediaData, description, JSON.stringify(bulkPrices),JSON.stringify(weightPrices)]);
+            INSERT INTO products (name, categorie, identifier, price, price_per_gram, price_per_oz, price_per_qp, price_per_half_p, price_per_1lb, media_data, description, bulk_price, weight_prices)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+        `, [name, categorie, identifier, finalPrice, price_per_gram, price_per_oz, price_per_qp, price_per_half_p, price_per_1lb, mediaData, description, JSON.stringify(bulkPrices), JSON.stringify(weightPrices)]);
 
         res.send('Product successfully uploaded and changes committed.');
     } catch (err) {
@@ -574,6 +577,85 @@ app.post('/upload-product', upload.fields([
         res.status(500).send('Error saving product.');
     }
 });
+app.post('/upload-prime-members', (req, res) => {
+    const members = req.body;
+    const errors = [];
+    const promises = [];
+
+    if (!Array.isArray(members) || members.length === 0) {
+        return res.status(400).send('Invalid data format');
+    }
+
+    members.forEach(member => {
+        const query = 'INSERT INTO contacts (username, email) VALUES ($1, $2)';
+        const values = [member.username, member.email];
+
+        const promise = client.query(query, values)
+            .catch(err => {
+                console.error('Error saving to database:', err);
+                errors.push(`Error for user ${member.username}: ${err.message}`);
+            });
+
+        promises.push(promise);
+    });
+
+    Promise.all(promises)
+        .then(() => {
+            if (errors.length > 0) {
+                res.status(500).send(errors.join('; '));
+            } else {
+                res.send('Members uploaded successfully');
+            }
+        });
+});
+
+
+
+app.post('/check-prime-email', async (req, res) => {
+    const { email } = req.body; // Get the email from the request body
+    console.log('Received email:', email);
+
+    try {
+        // Query the database to check if the email exists for prime members
+        const result = await client.query('SELECT * FROM contacts WHERE email = $1', [email]);
+        console.log('Query result:', result);
+
+        // Check if any user was found
+        if (result.rows && result.rows.length > 0) {
+            console.log('Valid prime member email:', result.rows[0]);
+            return res.json({ valid: true });
+        } else {
+            console.log('Invalid prime member email');
+            return res.json({ valid: false });
+        }
+    } catch (error) {
+        console.error('Error checking email:', error);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+});
+app.post('/check-username', async (req, res) => {
+    const { username } = req.body;
+    console.log('Received username:', username);
+
+    try {
+        // Query the database to check if the username exists
+        const result = await client.query('SELECT * FROM contacts WHERE LOWER(username) = LOWER($1)', [username]);
+        console.log('Query result:', result);
+
+        // Check if any user was found
+        if (result.rows && result.rows.length > 0) {
+            console.log('User exists:', result.rows[0]);
+            return res.json({ exists: true });
+        } else {
+            console.log('User does not exist');
+            return res.json({ exists: false });
+        }
+    } catch (error) {
+        console.error('Error checking username:', error);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
 
 
 

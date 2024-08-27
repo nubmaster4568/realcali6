@@ -11,6 +11,9 @@ body {
 .slick-slide img, .slick-slide video {
     height:300px !important;
 }
+.primetext {
+    margin-bottom: 10px;
+}
 .buy-button-cart {
     border: solid 2px rgb(55 86 60);
     background-color: #2158129e;

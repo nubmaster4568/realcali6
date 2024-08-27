@@ -166,11 +166,36 @@
             });
         }
         
-        
+        let isPrime;
         // Call the fetchPromocodes function when the page loads or when needed
             fetchPromocodes();
         
-        
+            const username = getUrlParameter(`username-0`)
+            if (username) {
+    $.ajax({
+        url: '/check-username', // The endpoint on your server to check the username
+        method: 'POST', // or 'GET' depending on your server implementation
+        contentType: 'application/json',
+        data: JSON.stringify({ username: username }), // Send the username as JSON
+        success: function(response) {
+            // Handle the successful response from the server
+            if (response.exists) {
+                // User is a prime member
+                isPrime = true
+                $('.form-group.prime').remove(); // Remove the prime question
+                $('.primetext').append('<div class="prime-message">We know you are a prime member! You will get 20% discount</div>');
+            } else {
+                console.log(`User ${username} does not exist.`);
+                // Additional logic for when the user does not exist
+                isPrime = false
+            }
+        },
+        error: function(err) {
+            console.error('Error checking username:', err);
+            // Handle any errors that occurred during the request
+        }
+    });
+}
         
             function getCartItemsFromUrl() {
     let items = [];
@@ -192,7 +217,7 @@
         const price = getUrlParameter(`price-${index}`);
         const bulkPrices = decodeURIComponent(getUrlParameter(`bulkprices-${index}`));
         const weightPrices = decodeURIComponent(getUrlParameter(`weightPrice-${index}`));
-
+       
         let bulkPricesObj = {};
         let weightPricesObj = {};
 
@@ -502,6 +527,7 @@ function calculateTotalPrice(cartItems) {
         orderForm.innerHTML = `
 
             <h1>Order Details</h1>
+            <div class='primetext'></div>
                         <div class="form-group">
                 <label for="delivery-date">Name:</label>
                 <input type="text" id="delivery-date" name="deliveryDate" required>
@@ -515,15 +541,21 @@ function calculateTotalPrice(cartItems) {
                 <input type="text" id="delivery-state" name="deliveryState" required>
             </div>
 
-            <div class="form-group">
-                <label>Are you a prime member?</label>
-                <div class="radio-group">
-                    <input type="radio" id="prime-yes" name="primeMember" value="yes">
-                    <label for="prime-yes">Yes</label>
-                    <input type="radio" id="prime-no" name="primeMember" value="no">
-                    <label for="prime-no">No</label>
-                </div>
-            </div>
+<div class="form-group prime">
+    <label>Are you a prime member?</label>
+    <div class="radio-group">
+        <input type="radio" id="prime-yes" name="primeMember" value="yes">
+        <label for="prime-yes">Yes</label>
+        <input type="radio" id="prime-no" name="primeMember" value="no">
+        <label for="prime-no">No</label>
+    </div>
+    <div id="email-input" style="display: none;">
+        <label for="prime-email" class='prime-email'>Please enter your email address:</label>
+        <input type="email" class ='prime-email-input'id="prime-email" name="primeEmail" placeholder="you@example.com">
+        <button id="check-email-btn" class="check-email-btn" type="button" style="width: 50%; margin-top: 10px; ">Check Email</button>
+        <div id="email-response" style="color: white;"></div>
+    </div>
+</div>
             <div class="form-group">
                 <label for="shipping-option">Choose your shipping option:</label>
                 <select id="shipping-option" name="shippingOption">
@@ -552,7 +584,42 @@ function calculateTotalPrice(cartItems) {
         } 
         }
         let orderItems = []; // Array to store order item details
-        
+        $('input[name="primeMember"]').change(function() {
+        if ($('#prime-yes').is(':checked')) {
+            $('#email-input').show();
+        } else {
+            $('#email-input').hide();
+            $('#email-response').text(''); // Clear any previous messages
+        }
+    });
+    $('#check-email-btn').on('click', function() {
+    const primeEmail = $('#prime-email').val();
+
+    // Check if email is provided
+    if (primeEmail) {
+        // Make an AJAX request to check if the email is a valid prime member email
+        $.post('/check-prime-email', { email: primeEmail })
+            .done(function(response) {
+                if (response.valid) {
+
+                    $('#email-response').text('Valid prime member email.');
+                    $('.check-email-btn').remove(); // Remove the prime question
+                    $('.prime-email-input').remove(); // Remove the prime question
+                    $('.prime-email').remove(); // Remove the prime question
+                    isPrime = true
+                } else {
+                    $('#email-response').text('Wrong email. Please enter a valid prime member email.');
+                    isPrime = false
+
+                }
+            })
+            .fail(function() {
+                $('#email-response').text('Error checking email. Please try again.');
+            });
+    } else {
+        $('#email-response').text('Please enter your email address.');
+    }
+});
         // Add the event listener here
         document.getElementById('place-order-button').addEventListener('click', function() {
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -576,7 +643,6 @@ function calculateTotalPrice(cartItems) {
         
         console.log(subtotal, 'subtotal');
             let primeMember = document.querySelector('input[name="primeMember"]:checked');
-            let isPrime = primeMember && primeMember.value === 'yes';
         
             let shippingOption = document.getElementById('shipping-option').value;
             let shippingFee = parseFloat(document.querySelector(`#shipping-option option[value="${shippingOption}"]`).getAttribute('data-price'));
@@ -681,7 +747,6 @@ function calculateTotalPrice(cartItems) {
             document.getElementById('order-popup').style.display = 'none';
             document.getElementById('overlay').style.display = 'none';
             let primeMember = document.querySelector('input[name="primeMember"]:checked');
-            let isPrime = primeMember && primeMember.value === 'yes';
             // Collect data again
             const deliveryAddress = document.getElementById('delivery-address').value;
             const deliveryState = document.getElementById('delivery-state').value;
