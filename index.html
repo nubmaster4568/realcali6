@@ -349,7 +349,7 @@ document.addEventListener('touchend', function(event) {
                 if (userId) {
             // Check for active transactions
             $.ajax({
-    url: 'https://realcali.onrender.com/api/checkActiveTransactions', // Endpoint to check active transactions
+    url: 'http://localhost:3000/api/checkActiveTransactions', // Endpoint to check active transactions
     method: 'GET', // Ensure method matches the endpoint
     data: { userId: userId }, // Send userId as query parameter
     success: function(response) {
@@ -380,7 +380,7 @@ document.addEventListener('touchend', function(event) {
     }
             });
             $.ajax({
-            url: 'https://realcali.onrender.com/api/getBalance', // Endpoint to fetch balance
+            url: 'http://localhost:3000/api/getBalance', // Endpoint to fetch balance
             method: 'GET',
             data: { userId: userId },
             success: function(response) {
@@ -408,7 +408,7 @@ document.addEventListener('touchend', function(event) {
             // Fetch and update cities
             async function fetchCategories() {
                 try {
-                    const response = await fetch('https://realcali.onrender.com/api/categories');
+                    const response = await fetch('http://localhost:3000/api/categories');
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
@@ -422,7 +422,7 @@ document.addEventListener('touchend', function(event) {
             // Fetch and update locations based on cityId
             async function fetchLocations(cityId) {
                 try {
-                    const response = await fetch(`https://realcali.onrender.com/api/locations?cityId=${cityId}`);
+                    const response = await fetch(`http://localhost:3000/api/locations?cityId=${cityId}`);
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
@@ -837,8 +837,8 @@ $(document).on('click', '.add-button', function() {
 });
 $(document).on('click', '.increase-quantity', function() {
     var cartItem = $(this).closest('li');
-    var bulkPrices = cartItem.data('bulk-prices'); // Assuming this is an object
-    var weightPrices = cartItem.data('weight-prices'); // Assuming this is an object
+    var bulkPrices = cartItem.data('bulk-prices');
+    var weightPrices = cartItem.data('weight-prices');
 
     var quantityElement = cartItem.find('.quantity');
     var quantity = parseInt(quantityElement.text(), 10);
@@ -868,9 +868,6 @@ $(document).on('click', '.increase-quantity', function() {
         case '5':
             basePrice = parseFloat(cartItem.data('price-per-1lb'));
             break;
-        case '6':
-            basePrice = parseFloat(cartItem.data('price'));
-            break;
         default:
             basePrice = 0;
     }
@@ -886,8 +883,9 @@ $(document).on('click', '.increase-quantity', function() {
         for (var i = 0; i < weightPriceArray.length; i++) {
             var priceObj = weightPriceArray[i];
             if (newQuantity >= priceObj.quantity) {
-                applicablePrice = priceObj.price / priceObj.quantity;
-                break; // Stop as soon as we find the correct price
+                applicablePrice = priceObj.price;
+            } else {
+                break; // Stop if the quantity is less than the current threshold
             }
         }
     } else if (Object.keys(bulkPrices).length) {
@@ -897,7 +895,7 @@ $(document).on('click', '.increase-quantity', function() {
         for (var i = 0; i < sortedKeys.length; i++) {
             var qty = sortedKeys[i];
             if (newQuantity >= qty) {
-                applicablePrice = bulkPrices[qty] / qty; // Use the bulk price divided by quantity
+                applicablePrice = bulkPrices[qty];
                 break; // Exit loop once the appropriate price is found
             }
         }
@@ -916,8 +914,8 @@ $(document).on('click', '.increase-quantity', function() {
 // Event listener for quantity decrease
 $(document).on('click', '.decrease-quantity', function() {
     var cartItem = $(this).closest('li');
-    var bulkPrices = cartItem.data('bulk-prices'); // This should be an object
-    var weightPrices = cartItem.data('weight-prices'); // Assuming this is an object
+    var bulkPrices = cartItem.data('bulk-prices'); // Object containing bulk prices
+    var weightPrices = cartItem.data('weight-prices'); // Object containing weight-specific prices
 
     // Find the quantity element
     var quantityElement = cartItem.find('.quantity');
@@ -949,9 +947,6 @@ $(document).on('click', '.decrease-quantity', function() {
             case '5':
                 basePrice = parseFloat(cartItem.data('price-per-1lb'));
                 break;
-            case '6':
-                basePrice = parseFloat(cartItem.data('price'));
-                break;
             default:
                 basePrice = 0;
         }
@@ -967,8 +962,9 @@ $(document).on('click', '.decrease-quantity', function() {
             for (var i = 0; i < weightPriceArray.length; i++) {
                 var priceObj = weightPriceArray[i];
                 if (newQuantity >= priceObj.quantity) {
-                    applicablePrice = priceObj.price / priceObj.quantity;
-                    break; // Stop as soon as we find the correct price
+                    applicablePrice = priceObj.price;
+                } else {
+                    break; // Stop if the quantity is less than the current threshold
                 }
             }
         } else if (Object.keys(bulkPrices).length) {
@@ -978,7 +974,7 @@ $(document).on('click', '.decrease-quantity', function() {
             for (var i = 0; i < sortedKeys.length; i++) {
                 var qty = sortedKeys[i];
                 if (newQuantity >= qty) {
-                    applicablePrice = bulkPrices[qty] / qty; // Use the bulk price divided by quantity
+                    applicablePrice = bulkPrices[qty];
                     break; // Exit loop once the appropriate price is found
                 }
             }
@@ -1139,7 +1135,7 @@ function bufferToBase64(buffer) {
 }
 function fetchProducts(categorie) {
     $.ajax({
-        url: 'https://realcali.onrender.com/api/products',
+        url: 'http://localhost:3000/api/products',
         type: 'GET',
         data: { categorie },
         success: function(response) {

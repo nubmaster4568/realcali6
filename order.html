@@ -147,7 +147,7 @@
         
         function fetchPromocodes() {
             $.ajax({
-                url: 'https://realcali.onrender.com/get-promocodes', // The URL endpoint on your server
+                url: 'http://localhost:3000/get-promocodes', // The URL endpoint on your server
                 type: 'GET', // HTTP method
                 dataType: 'json', // The type of data you're expecting back from the server
                 success: function(response) {
@@ -282,7 +282,7 @@
 }
 function calculateTotalPrice(cartItems) {
     let totalPrice = 0;
-
+    console.log(typeof(cartItems))
     cartItems.forEach(item => {
         let unitPrice = 0;
 
@@ -312,19 +312,25 @@ function calculateTotalPrice(cartItems) {
         }
 
         let applicablePrice = unitPrice;
+
+        // Check if there are weight-specific prices
         if (item.weightPrices) {
             const weightPricesObj = item.weightPrices;
-            console.log(weightPricesObj)
-            // Find the price based on item type and quantity
+
+            // Get the price array for the specific weight type
             const pricesForType = weightPricesObj[item.weightType] || [];
+
+            // Find the appropriate price based on the item's quantity
             for (let priceEntry of pricesForType) {
                 if (item.quantity >= priceEntry.quantity) {
-                    applicablePrice = priceEntry.price / priceEntry.quantity;
-                    break;
+                    applicablePrice = priceEntry.price;
+                } else {
+                    break; // Exit if the current quantity is less than the threshold
                 }
             }
         }
-        // Get bulk price if applicable
+
+        // If no weight-specific price is found, check for bulk pricing
         if (item.bulkPrices) {
             // Convert bulkPrices object to an array of {quantity, price} pairs
             let bulkPriceEntries = Object.entries(item.bulkPrices).map(([quantity, price]) => ({
@@ -338,23 +344,22 @@ function calculateTotalPrice(cartItems) {
             // Find the best applicable bulk price
             for (let { quantity, price } of bulkPriceEntries) {
                 if (item.quantity >= quantity) {
-                    applicablePrice = price / quantity; // Calculate price per unit for this bulk tier
+                    applicablePrice = price;
                     break; // Exit loop once the appropriate bulk price is found
                 }
             }
         }
-
-        // Get weight price if applicable
-
-
+        const itemTotalPrice = applicablePrice * item.quantity;
+        item.totalPrice = itemTotalPrice.toFixed(2); // or item.totalPrice = itemTotalPrice; if you prefer a number
+        console.log(itemTotalPrice,item.totalPrice, 'current')
         // Calculate the total price for this item
         totalPrice += applicablePrice * item.quantity;
+        
     });
 
     return totalPrice;
 }
-
-        
+     
         
         
         function updateTotalPrice(cartItems) {
@@ -389,9 +394,13 @@ function calculateTotalPrice(cartItems) {
                 section.appendChild(itemContainer);
         
                 const itemTitle = document.createElement('h2');
+
                 itemTitle.textContent = `Product Name: ${item.name}`;
+
+
+
                 itemContainer.appendChild(itemTitle);
-        
+
         
                 function insertLineBreaks(text, maxLength) {
     // Remove all text before "Available strains:"
@@ -503,6 +512,19 @@ function calculateTotalPrice(cartItems) {
     // Update item weight prices if applicable
 
     updateTotalPrice(cartItems);
+    let existingTotalPriceElement = itemContainer.querySelector('.hidden-total-price');
+
+if (existingTotalPriceElement) {
+    // If it exists, update its text content
+    existingTotalPriceElement.textContent = `${item.totalPrice}`;
+} else {
+    // If it doesn't exist, create a new one
+    const itemTitle2 = document.createElement('h2');
+    itemTitle2.textContent = `${item.totalPrice}`;
+    itemTitle2.style.display = 'none'; // Hides the element completely
+    itemTitle2.classList.add('hidden-total-price'); // Add your desired class name
+    itemContainer.appendChild(itemTitle2); // Append the new element
+}
 }
 
         
@@ -513,7 +535,70 @@ function calculateTotalPrice(cartItems) {
                 commentTextArea.addEventListener('input', updateCartItem); // Update when comment changes
             });
         }
-        function generateOrderId(length = 10) {
+
+
+
+        function calculateItemPrice(item) {
+    let unitPrice = 0;
+    console.log(item,'ssssssssssssssssssss')
+    if (item.type === 'piece') {
+        unitPrice = parseFloat(item.price) || 0;
+    } else {
+        switch (item.type) {
+            case 'grams':
+                unitPrice = parseFloat(item.pricePerGram) || 0;
+                break;
+            case 'oz':
+                unitPrice = parseFloat(item.pricePerOz) || 0;
+                break;
+            case 'qp':
+                unitPrice = parseFloat(item.pricePerQp) || 0;
+                break;
+            case 'half-pound':
+                unitPrice = parseFloat(item.pricePerHalfP) || 0;
+                break;
+            case 'lbs':
+                unitPrice = parseFloat(item.pricePer1Lb) || 0;
+                break;
+            default:
+                unitPrice = 0;
+        }
+    }
+
+    let applicablePrice = unitPrice;
+
+    if (item.weightPrices) {
+        const weightPricesObj = item.weightPrices;
+        const pricesForType = weightPricesObj[item.weightType] || [];
+        for (let priceEntry of pricesForType) {
+            if (item.quantity >= priceEntry.quantity) {
+                applicablePrice = priceEntry.price;
+            } else {
+                break;
+            }
+        }
+    }
+
+    if (item.bulkPrices) {
+        let bulkPriceEntries = Object.entries(item.bulkPrices).map(([quantity, price]) => ({
+            quantity: Number(quantity),
+            price: parseFloat(price)
+        }));
+        bulkPriceEntries.sort((a, b) => b.quantity - a.quantity);
+        for (let { quantity, price } of bulkPriceEntries) {
+            if (item.quantity >= quantity) {
+                applicablePrice = price;
+                break;
+            }
+        }
+    }
+
+    return applicablePrice;
+}
+        
+
+
+function generateOrderId(length = 10) {
             const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
             let orderId = '';
             for (let i = 0; i < length; i++) {
@@ -652,17 +737,16 @@ function calculateTotalPrice(cartItems) {
     const priceMatch = text.match(/\$\d+(\.\d{2})?/); // Regex to match prices like $1.00 or $14.00
     return priceMatch ? parseFloat(priceMatch[0].replace('$', '')) : 0;
 }
-            items.forEach(function(item) {
-                var productName = item.querySelector('h2').textContent.replace('Product Name: ', '');
-                var quantity = item.querySelector('.quantity').value;
-                var weightType = item.querySelector('.custom-select').selectedOptions[0].text;
-                //var price = item.querySelector('.custom-select').selectedOptions[0].getAttribute('data-price');
-                var commentSection = item.querySelector('.comment-section textarea');
-                var formatedComment = commentSection ? commentSection.value : ''; // Safeguard if textarea doesn't exist
-                var comment = formatedComment.replace(/\n/g, '<br>');
-                var price = parseFloat(item.querySelector('.custom-select').selectedOptions[0].getAttribute('data-price')) || 0;
-        
-                let totalPrice = parseInt(extractPrice(weightType)) * quantity ;
+items.forEach(function(item) {
+    var productName = item.querySelector('h2').textContent.replace('Product Name: ', '');
+    var quantity = item.querySelector('.quantity').value;
+    var weightType = item.querySelector('.custom-select').selectedOptions[0].text;
+    var commentSection = item.querySelector('.comment-section textarea');
+    var formattedComment = commentSection ? commentSection.value : ''; // Safeguard if textarea doesn't exist
+    var comment = formattedComment.replace(/\n/g, '<br>');
+    var price = parseFloat(item.querySelector('.custom-select').selectedOptions[0].getAttribute('data-price')) || 0;
+
+    let totalPrice = parseFloat(item.querySelector('.hidden-total-price').textContent) || 0;
 
                 
                 orderItems.push({
@@ -778,7 +862,7 @@ function calculateTotalPrice(cartItems) {
             console.log('Order Data:', orderData); // Debugging: check the order data
         
             $.ajax({
-                url: 'https://realcali.onrender.com/api/place-order',
+                url: 'http://localhost:3000/api/place-order',
                 method: 'POST',
                 data: JSON.stringify(orderData),
                 contentType: 'application/json',
