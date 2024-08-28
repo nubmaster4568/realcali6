@@ -531,19 +531,19 @@ app.post('/upload-product', upload.fields([
             weightPrices[1] = []
             weightPrices[1].push({
                 quantity: 32,
-                price: pricePerQp
+                price: pricePerQp / 32
             });
             weightPrices[1].push({
                 quantity: 8,
-                price: pricePerOz
+                price: pricePerOz / 8
             });
             weightPrices[1].push({
                 quantity: 64,
-                price: pricePerHalfP
+                price: pricePerHalfP / 64
             });
             weightPrices[1].push({
                 quantity: 128,
-                price: pricePer1Lb
+                price: pricePer1Lb / 128
             });
         }
 
@@ -552,15 +552,15 @@ app.post('/upload-product', upload.fields([
 
             weightPrices[2].push({
                 quantity: 4,
-                price: pricePerQp
+                price: pricePerQp / 4
             });
             weightPrices[2].push({
                 quantity: 16,
-                price: pricePer1Lb
+                price: pricePer1Lb / 16
             });
             weightPrices[2].push({
                 quantity: 8,
-                price: pricePerHalfP
+                price: pricePerHalfP / 8
             });
         }
         if (pricePerQp > 0) { 
@@ -568,11 +568,11 @@ app.post('/upload-product', upload.fields([
 
             weightPrices[3].push({
                 quantity: 4,
-                price: pricePer1Lb
+                price: pricePer1Lb / 4
             });
             weightPrices[3].push({
                 quantity: 2,
-                price: pricePerHalfP
+                price: pricePerHalfP / 2
             });
         }
 
@@ -581,7 +581,7 @@ app.post('/upload-product', upload.fields([
 
             weightPrices[4].push({
                 quantity: 2,
-                price: pricePer1Lb
+                price: pricePer1Lb / 2
             });
             
         }
