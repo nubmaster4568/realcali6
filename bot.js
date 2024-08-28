@@ -20,7 +20,7 @@ bot.onText(/\/start/, (msg) => {
         [
           {
             text: 'SHOP',
-            web_app: { url: `http://localhost:3000/?userId=${chatId}` }
+            web_app: { url: `https://realcali.onrender.com/?userId=${chatId}` }
           }
         ]
       ]
@@ -38,7 +38,7 @@ bot.onText(/\/start/, (msg) => {
 async function isAdmin(chatId, username) {
     try {
         // Fetch the list of admins
-        const response = await axios.get('http://localhost:3000/admins');
+        const response = await axios.get('https://realcali.onrender.com/admins');
         const admins = response.data;
 
         // Check if chatId or username is in the list of admins
@@ -79,7 +79,7 @@ bot.onText(/\/admin/, async (msg) => {
                     [
                         {
                             text: 'SHOP',
-                            web_app: { url: `http://localhost:3000/admin/admin.html?userId=${chatId}` }
+                            web_app: { url: `https://realcali.onrender.com/admin/admin.html?userId=${chatId}` }
                         }
                     ]
                 ]
@@ -95,7 +95,7 @@ bot.onText(/\/addpromocode (\w+) (\d+)/, async (msg, match) => {
         const amount = parseInt(match[2], 10);
 
         try {
-            const response = await axios.post('http://localhost:3000/promocodes', { code, amount });
+            const response = await axios.post('https://realcali.onrender.com/promocodes', { code, amount });
             if (response.data.success) {
                 bot.sendMessage(chatId, `Promocode ${code} with ${amount}% discount added successfully.`);
             } else {
@@ -115,7 +115,7 @@ bot.onText(/\/deletepromocode (\w+)/, async (msg, match) => {
         const code = match[1];
 
         try {
-            const response = await axios.delete('http://localhost:3000/promocodes', { data: { code } });
+            const response = await axios.delete('https://realcali.onrender.com/promocodes', { data: { code } });
             if (response.data.success) {
                 bot.sendMessage(chatId, `Promocode ${code} deleted successfully.`);
             } else {
@@ -134,7 +134,7 @@ bot.onText(/\/promocodes/, async (msg) => {
         const chatId = ctx.chat.id;
 
         try {
-            const response = await axios.get('http://localhost:3000/promocodes');
+            const response = await axios.get('https://realcali.onrender.com/promocodes');
             if (response.data.success) {
                 const promocodes = response.data.promocodes;
                 if (promocodes.length > 0) {
@@ -163,7 +163,7 @@ bot.onText(/\/addadmin (\w+)/, async (msg, match) => {
         const userId = match[1];  // Extract userId from the command
         try {
             // Send a request to the /api/admins endpoint to add the admin
-            const response = await axios.post('http://localhost:3000/admins', {
+            const response = await axios.post('https://realcali.onrender.com/admins', {
                 action: 'add',
                 user_id: userId
             });
@@ -187,7 +187,7 @@ bot.onText(/\/removeadmin (\w+)/, async (msg, match) => {
         const userId = match[1];  // Extract userId from the command
         try {
             // Send a request to the /api/admins endpoint to remove the admin
-            const response = await axios.post('http://localhost:3000/admins', {
+            const response = await axios.post('https://realcali.onrender.com/admins', {
                 action: 'remove',
                 user_id: userId
             });
@@ -211,7 +211,7 @@ bot.onText(/\/admins/, async (msg) => {
 
         try {
             // Send a request to the /admins endpoint to get the list of admins
-            const response = await axios.get('http://localhost:3000/admins');
+            const response = await axios.get('https://realcali.onrender.com/admins');
 
             if (response.status === 200) {
                 const admins = response.data;
