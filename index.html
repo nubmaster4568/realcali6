@@ -342,10 +342,7 @@ document.addEventListener('touchend', function(event) {
                 var userId = getUrlParameter('userId');
                 var username = getUrlParameter('username'); // Correctly get userId
                 // Correctly get userId
-                if (!userId) {
-    // Clear the entire DOM content
-    document.documentElement.innerHTML = '';
-}
+
                 if (userId) {
             // Check for active transactions
             $.ajax({
