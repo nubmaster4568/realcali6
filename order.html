@@ -147,7 +147,7 @@
         
         function fetchPromocodes() {
             $.ajax({
-                url: 'https://realcali.onrender.com/get-promocodes', // The URL endpoint on your server
+                url: 'http://localhost:3000/get-promocodes', // The URL endpoint on your server
                 type: 'GET', // HTTP method
                 dataType: 'json', // The type of data you're expecting back from the server
                 success: function(response) {
@@ -315,11 +315,11 @@ function calculateTotalPrice(cartItems) {
 
         // Check if there are weight-specific prices
         if (item.weightPrices) {
+            const selectedOption = document.querySelector('.custom-select option:checked');
+    const value2 = selectedOption.dataset.value2; // or use selectedOption.getAttribute('data-value2');
+
     const weightPricesObj = item.weightPrices;
-
-    // Get the price array for the specific weight type
-    const pricesForType = weightPricesObj[item.weightType] || [];
-
+    const pricesForType = weightPricesObj[value2] || [];
     // Sort the prices array by quantity in ascending order
     pricesForType.sort((a, b) => a.quantity - b.quantity);
 
@@ -457,28 +457,31 @@ function calculateTotalPrice(cartItems) {
                 const quantityUnitSelect = document.createElement('select');
                 quantityUnitSelect.classList.add('custom-select');
                 const units = [
-                    { value: 'grams', text: ` 3.5 Grams - $${item.pricePerGram.toFixed(2)}`, price: item.pricePerGram },
-                    { value: 'oz', text: `Ounces (oz) - $${item.pricePerOz.toFixed(2)}`, price: item.pricePerOz },
-                    { value: 'qp', text: `Quarter Pound (QP) - $${item.pricePerQp.toFixed(2)}`, price: item.pricePerQp },
-                    { value: 'half-pound', text: `Half Pound - $${item.pricePerHalfP.toFixed(2)}`, price: item.pricePerHalfP },
-                    { value: 'lbs', text: `Pounds (lbs) - $${item.pricePer1Lb.toFixed(2)}`, price: item.pricePer1Lb },
-                    { value: 'piece', text: `Piece - $${item.price}`, price: item.price }
-                ];
-        
-                units.forEach(unit => {
-            // Only add options for units with a non-zero price or if it is the default type
-            if (unit.price > 0 || unit.value === item.type) {
-                const option = document.createElement('option');
-                option.value = unit.value;
-                option.textContent = unit.text;
-        
-                // Set data attributes
-                option.dataset.price = unit.price;
-                option.dataset.value = unit.value;
-                // Add other data attributes as needed
-        
-                quantityUnitSelect.appendChild(option);
-            }
+    { value: 'grams', text: `3.5 Grams - $${item.pricePerGram.toFixed(2)}`, price: item.pricePerGram, value2: 1 },
+    { value: 'oz', text: `Ounces (oz) - $${item.pricePerOz.toFixed(2)}`, price: item.pricePerOz, value2: 2 },
+    { value: 'qp', text: `Quarter Pound (QP) - $${item.pricePerQp.toFixed(2)}`, price: item.pricePerQp, value2: 3 },
+    { value: 'half-pound', text: `Half Pound - $${item.pricePerHalfP.toFixed(2)}`, price: item.pricePerHalfP, value2: 4 },
+    { value: 'lbs', text: `Pounds (lbs) - $${item.pricePer1Lb.toFixed(2)}`, price: item.pricePer1Lb, value2: 5 },
+    { value: 'piece', text: `Piece - $${item.price}`, price: item.price, value2: 5 }
+];
+
+units.forEach(unit => {
+    // Only add options for units with a non-zero price or if it is the default type
+    if (unit.price > 0 || unit.value === item.type) {
+        const option = document.createElement('option');
+        option.value = unit.value;
+        option.textContent = unit.text;
+
+        // Set data attributes
+        option.dataset.price = unit.price;
+        option.dataset.value = unit.value;
+        option.dataset.value2 = unit.value2; // Assign the value2 based on the unit
+
+        // Add other data attributes as needed
+
+        quantityUnitSelect.appendChild(option);
+    }
+
         });
         
                 // Determine default value
@@ -530,7 +533,7 @@ if (existingTotalPriceElement) {
 } else {
     // If it doesn't exist, create a new one
     const itemTitle2 = document.querySelector('.hidden-total-price');
-    itemTitle2.textContent = `$${item.totalPrice}`;
+    itemTitle2.textContent = `$ ${item.totalPrice}`;
  // Hides the element completely
     itemContainer.appendChild(itemTitle2); // Append the new element
 }
@@ -577,8 +580,11 @@ if (existingTotalPriceElement) {
     let applicablePrice = unitPrice;
 
     if (item.weightPrices) {
+    const selectedOption = document.querySelector('.custom-select option:checked');
+    const value2 = selectedOption.dataset.value2; // or use selectedOption.getAttribute('data-value2');
+
     const weightPricesObj = item.weightPrices;
-    const pricesForType = weightPricesObj[item.weightType] || [];
+    const pricesForType = weightPricesObj[value2] || [];
 
     // Sort the array by quantity in ascending order to ensure correct logic
     pricesForType.sort((a, b) => a.quantity - b.quantity);
@@ -878,7 +884,7 @@ items.forEach(function(item) {
             console.log('Order Data:', orderData); // Debugging: check the order data
         
             $.ajax({
-                url: 'https://realcali.onrender.com/api/place-order',
+                url: 'http://localhost:3000/api/place-order',
                 method: 'POST',
                 data: JSON.stringify(orderData),
                 contentType: 'application/json',

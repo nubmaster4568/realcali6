@@ -148,6 +148,8 @@
             </div>
             <button type="submit">Search</button>
         </form>
+        <button type="button" id="list-all-products">List All Products</button> <!-- Added button -->
+
         <div id="search-results"></div>
         <!-- Edit Product Form -->
 <!-- Edit Product Form -->
@@ -396,7 +398,7 @@ document.getElementById('bulk-prices-container').addEventListener('click', funct
 
 
         function fetchCitiesAndLocations() {
-    fetch('https://realcali.onrender.com/api/categories')
+    fetch('http://localhost:3000/api/categories')
         .then(response => response.json())
         .then(data => {
             console.log(data); // Inspect the data structure
@@ -479,7 +481,7 @@ document.getElementById('product-form').addEventListener('submit', function (eve
         console.log(pair[0] + ': ' + pair[1]);
     }
 
-    fetch('https://realcali.onrender.com/upload-product', {
+    fetch('http://localhost:3000/upload-product', {
         method: 'POST',
         body: formData
     })
@@ -519,7 +521,7 @@ document.getElementById('product-form').addEventListener('submit', function (eve
     event.preventDefault();
     const identifier = document.getElementById('search-identifier').value;
 
-    fetch(`https://realcali.onrender.com/product/${identifier}`)
+    fetch(`http://localhost:3000/product/${identifier}`)
         .then(response => response.json())
         .then(data => {
             if (data && data.identifier) {
@@ -560,7 +562,7 @@ document.getElementById('product-form').addEventListener('submit', function (eve
     fetchCitiesAndLocations(); // Assuming this function also populates the edit form's dropdown
 });
                 document.getElementById('delete-btn').addEventListener('click', function () {
-                    fetch(`https://realcali.onrender.com/product/${data.identifier}`, {
+                    fetch(`http://localhost:3000/product/${data.identifier}`, {
                         method: 'DELETE'
                     })
                     .then(response => {
@@ -622,7 +624,7 @@ document.getElementById('edit-product-form').addEventListener('submit', function
     }
 
     // Send the form data
-    fetch('https://realcali.onrender.com/edit-products', {
+    fetch('http://localhost:3000/edit-products', {
         method: 'POST',
         body: formData
     })
