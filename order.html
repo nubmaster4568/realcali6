@@ -402,7 +402,8 @@ function calculateTotalPrice(cartItems) {
                 section.appendChild(itemContainer);
         
                 const itemTitle = document.createElement('h2');
-
+                const itemprice = document.createElement('div');
+                itemprice.classList.add('hidden-total-price');
                 itemTitle.textContent = `Product Name: ${item.name}`;
 
 
@@ -455,7 +456,7 @@ function calculateTotalPrice(cartItems) {
                 const quantityUnitSelect = document.createElement('select');
                 quantityUnitSelect.classList.add('custom-select');
                 const units = [
-                    { value: 'grams', text: `Grams - $${item.pricePerGram.toFixed(2)}`, price: item.pricePerGram },
+                    { value: 'grams', text: ` 3.5 Grams - $${item.pricePerGram.toFixed(2)}`, price: item.pricePerGram },
                     { value: 'oz', text: `Ounces (oz) - $${item.pricePerOz.toFixed(2)}`, price: item.pricePerOz },
                     { value: 'qp', text: `Quarter Pound (QP) - $${item.pricePerQp.toFixed(2)}`, price: item.pricePerQp },
                     { value: 'half-pound', text: `Half Pound - $${item.pricePerHalfP.toFixed(2)}`, price: item.pricePerHalfP },
@@ -527,10 +528,9 @@ if (existingTotalPriceElement) {
     existingTotalPriceElement.textContent = `${item.totalPrice}`;
 } else {
     // If it doesn't exist, create a new one
-    const itemTitle2 = document.createElement('h2');
+    const itemTitle2 = document.querySelector('.hidden-total-price');
     itemTitle2.textContent = `${item.totalPrice}`;
-    itemTitle2.style.display = 'none'; // Hides the element completely
-    itemTitle2.classList.add('hidden-total-price'); // Add your desired class name
+ // Hides the element completely
     itemContainer.appendChild(itemTitle2); // Append the new element
 }
 }
