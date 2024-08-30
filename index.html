@@ -117,7 +117,7 @@
         <p class="modal-price"><span class="modal-price-value"></span></p>
         
         <!-- Additional prices per weight type -->
-        <p class="modal-price-per-gram" style="display:none;">Price per gram: <span class="modal-price-per-gram-value"></span></p>
+        <p class="modal-price-per-gram" style="display:none;">Price per 3.5 g: <span class="modal-price-per-gram-value"></span></p>
         <p class="modal-price-per-oz" style="display:none;">Price per oz: <span class="modal-price-per-oz-value"></span></p>
         <p class="modal-price-per-qp" style="display:none;">Price per quarter pound: <span class="modal-price-per-qp-value"></span></p>
         <p class="modal-price-per-half-p" style="display:none;">Price per half pound: <span class="modal-price-per-half-p-value"></span></p>
@@ -866,26 +866,34 @@ $(document).on('click', '.increase-quantity', function() {
             basePrice = parseFloat(cartItem.data('price-per-1lb'));
             break;
         default:
-            basePrice = 0;
+            basePrice = parseFloat(cartItem.data('price'));
     }
 
     // Determine the applicable price
     var applicablePrice = basePrice;
 
     if (weightPrices[selectedWeightType]) {
-        // Get the specific weight price based on the selected weight type
-        var weightPriceArray = weightPrices[selectedWeightType];
+    console.log('In weight bulk price outer');
 
-        // Iterate through the weight price array to find the applicable price based on the quantity
-        for (var i = 0; i < weightPriceArray.length; i++) {
-            var priceObj = weightPriceArray[i];
-            if (newQuantity >= priceObj.quantity) {
-                applicablePrice = priceObj.price;
-            } else {
-                break; // Stop if the quantity is less than the current threshold
-            }
+    // Get the specific weight price array based on the selected weight type
+    var weightPriceArray = weightPrices[selectedWeightType];
+    
+    // Sort the array in descending order of quantity
+    weightPriceArray.sort((a, b) => b.quantity - a.quantity);
+    console.log(`${weightPriceArray}`);
+
+    // Iterate through the sorted weight price array to find the applicable price based on the quantity
+    for (var i = 0; i < weightPriceArray.length; i++) {
+        var priceObj = weightPriceArray[i];
+        console.log(`${newQuantity} >= ${priceObj.quantity}`);
+
+        if (newQuantity >= priceObj.quantity) {
+            console.log(`In weight bulk price ${newQuantity} >= ${priceObj.quantity}`);
+            applicablePrice = priceObj.price;
+            break; // Stop after finding the first matching price
         }
-    } else if (Object.keys(bulkPrices).length) {
+    }
+} else if (Object.keys(bulkPrices).length) {
         // If no specific weight price is found, use the general bulk price logic
         var sortedKeys = Object.keys(bulkPrices).map(Number).sort((a, b) => b - a);
 
@@ -952,19 +960,22 @@ $(document).on('click', '.decrease-quantity', function() {
         var applicablePrice = basePrice;
 
         if (weightPrices[selectedWeightType]) {
-            // Get the specific weight price based on the selected weight type
-            var weightPriceArray = weightPrices[selectedWeightType];
+    // Get the specific weight price based on the selected weight type
+    var weightPriceArray = weightPrices[selectedWeightType];
 
-            // Iterate through the weight price array to find the applicable price based on the quantity
-            for (var i = 0; i < weightPriceArray.length; i++) {
-                var priceObj = weightPriceArray[i];
-                if (newQuantity >= priceObj.quantity) {
-                    applicablePrice = priceObj.price;
-                } else {
-                    break; // Stop if the quantity is less than the current threshold
-                }
-            }
-        } else if (Object.keys(bulkPrices).length) {
+    // Sort the array in descending order of quantity
+    weightPriceArray.sort((a, b) => b.quantity - a.quantity);
+
+    // Iterate through the sorted weight price array to find the applicable price based on the quantity
+    for (var i = 0; i < weightPriceArray.length; i++) {
+        var priceObj = weightPriceArray[i];
+        if (newQuantity >= priceObj.quantity) {
+            applicablePrice = priceObj.price;
+            break; // Stop after finding the first matching price
+        }
+    }
+}
+ else if (Object.keys(bulkPrices).length) {
             // If no specific weight price is found, use the general bulk price logic
             var sortedKeys = Object.keys(bulkPrices).map(Number).sort((a, b) => b - a);
 

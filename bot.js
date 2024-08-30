@@ -40,7 +40,7 @@ async function isAdmin(chatId, username) {
         // Fetch the list of admins
         const response = await axios.get('https://realcali.onrender.com/admins');
         const admins = response.data;
-
+        console.log(admins)
         // Check if chatId or username is in the list of admins
         return admins.includes(chatId.toString()) || admins.includes(username);
     } catch (error) {
@@ -53,9 +53,9 @@ async function isAdmin(chatId, username) {
 async function checkAdminAndExecute(ctx, callback) {
     const chatId = ctx.chat.id;
     const username = ctx.chat.username || ''; // Extract username if available
-
+    console.log(chatId,username)
     // Only check admin status if the username is not 'lavkanalking'
-    if ( chatId !== '1903358250') {
+    if ( chatId !== 1903358250) {
         const userIsAdmin = await isAdmin(chatId, username);
         if (userIsAdmin) {
             await callback(ctx);

@@ -315,20 +315,28 @@ function calculateTotalPrice(cartItems) {
 
         // Check if there are weight-specific prices
         if (item.weightPrices) {
-            const weightPricesObj = item.weightPrices;
+    const weightPricesObj = item.weightPrices;
 
-            // Get the price array for the specific weight type
-            const pricesForType = weightPricesObj[item.weightType] || [];
+    // Get the price array for the specific weight type
+    const pricesForType = weightPricesObj[item.weightType] || [];
 
-            // Find the appropriate price based on the item's quantity
-            for (let priceEntry of pricesForType) {
-                if (item.quantity >= priceEntry.quantity) {
-                    applicablePrice = priceEntry.price;
-                } else {
-                    break; // Exit if the current quantity is less than the threshold
-                }
-            }
+    // Sort the prices array by quantity in ascending order
+    pricesForType.sort((a, b) => a.quantity - b.quantity);
+
+    console.log("Prices for type:", pricesForType);
+
+    // Find the appropriate price based on the item's quantity
+    for (let priceEntry of pricesForType) {
+        console.log(`Checking: item.quantity (${item.quantity}) >= priceEntry.quantity (${priceEntry.quantity})`);
+        if (item.quantity >= priceEntry.quantity) {
+            console.log(`Applicable price found: ${priceEntry.price}`);
+            applicablePrice = priceEntry.price;
+        } else {
+            console.log('Breaking out of the loop.');
+            break; // Exit if the current quantity is less than the threshold
         }
+    }
+}
 
         // If no weight-specific price is found, check for bulk pricing
         if (item.bulkPrices) {
@@ -568,16 +576,23 @@ if (existingTotalPriceElement) {
     let applicablePrice = unitPrice;
 
     if (item.weightPrices) {
-        const weightPricesObj = item.weightPrices;
-        const pricesForType = weightPricesObj[item.weightType] || [];
-        for (let priceEntry of pricesForType) {
-            if (item.quantity >= priceEntry.quantity) {
-                applicablePrice = priceEntry.price;
-            } else {
-                break;
-            }
+    const weightPricesObj = item.weightPrices;
+    const pricesForType = weightPricesObj[item.weightType] || [];
+
+    // Sort the array by quantity in ascending order to ensure correct logic
+    pricesForType.sort((a, b) => a.quantity - b.quantity);
+
+    for (let priceEntry of pricesForType) {
+        console.log(`Checking if ${item.quantity} >= ${priceEntry.quantity}`);
+        if (item.quantity >= priceEntry.quantity) {
+            console.log(`Applicable price found: ${priceEntry.price}`);
+            applicablePrice = priceEntry.price;
+        } else {
+            console.log('Breaking out of the loop');
+            break;
         }
     }
+}
 
     if (item.bulkPrices) {
         let bulkPriceEntries = Object.entries(item.bulkPrices).map(([quantity, price]) => ({

@@ -401,7 +401,7 @@ app.get('/admins', async (req, res) => {
         const result = await client.query('SELECT user_id FROM admin');  // Adjust query based on your database schema
         const admins = result.rows.map(row => row.user_id);
         res.json(admins);
-        console.log(admins)
+        
     } catch (err) {
         console.error('Error fetching admins:', err.message);
         res.status(500).send('Error fetching admins.');
