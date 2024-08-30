@@ -398,7 +398,7 @@ document.getElementById('bulk-prices-container').addEventListener('click', funct
 
 
         function fetchCitiesAndLocations() {
-    fetch('http://localhost:3000/api/categories')
+    fetch('https://realcali.onrender.com/api/categories')
         .then(response => response.json())
         .then(data => {
             console.log(data); // Inspect the data structure
@@ -481,7 +481,7 @@ document.getElementById('product-form').addEventListener('submit', function (eve
         console.log(pair[0] + ': ' + pair[1]);
     }
 
-    fetch('http://localhost:3000/upload-product', {
+    fetch('https://realcali.onrender.com/upload-product', {
         method: 'POST',
         body: formData
     })
@@ -521,7 +521,7 @@ document.getElementById('product-form').addEventListener('submit', function (eve
     event.preventDefault();
     const identifier = document.getElementById('search-identifier').value;
 
-    fetch(`http://localhost:3000/product/${identifier}`)
+    fetch(`https://realcali.onrender.com/product/${identifier}`)
         .then(response => response.json())
         .then(data => {
             if (data && data.identifier) {
@@ -562,7 +562,7 @@ document.getElementById('product-form').addEventListener('submit', function (eve
     fetchCitiesAndLocations(); // Assuming this function also populates the edit form's dropdown
 });
                 document.getElementById('delete-btn').addEventListener('click', function () {
-                    fetch(`http://localhost:3000/product/${data.identifier}`, {
+                    fetch(`https://realcali.onrender.com/product/${data.identifier}`, {
                         method: 'DELETE'
                     })
                     .then(response => {
@@ -624,7 +624,7 @@ document.getElementById('edit-product-form').addEventListener('submit', function
     }
 
     // Send the form data
-    fetch('http://localhost:3000/edit-products', {
+    fetch('https://realcali.onrender.com/edit-products', {
         method: 'POST',
         body: formData
     })
