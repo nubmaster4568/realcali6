@@ -140,6 +140,19 @@ app.get('/', (req, res) => {
     const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
     res.send(`Your IP address is: ${ip}`);
 });
+
+app.get('/api/products-list', async (req, res) => {
+    try {
+        // Query to get product names and identifiers from the product table
+        const result = await client.query('SELECT name, identifier FROM products');
+        
+        // Send the results back as JSON
+        res.json(result.rows);
+    } catch (err) {
+        console.error('Error querying the database:', err);
+        res.status(500).json({ error: 'Failed to fetch products' });
+    }
+});
 app.get('/api/locations', async (req, res) => {
     try {
         // Log the start of the request

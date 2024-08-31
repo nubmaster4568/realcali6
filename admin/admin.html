@@ -151,9 +151,7 @@
         <button type="button" id="list-all-products">List All Products</button> <!-- Added button -->
 
         <div id="search-results"></div>
-        <!-- Edit Product Form -->
-<!-- Edit Product Form -->
-<!-- Edit Product Form -->
+
 <div id="edit-form-container" class="form-container">
     <h2>Edit Product</h2>
     <form id="edit-product-form">
@@ -266,6 +264,23 @@
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
+document.getElementById('list-all-products').addEventListener('click', function() {
+    fetch('/api/products-list')
+        .then(response => response.json())
+        .then(data => {
+            const searchResultsDiv = document.getElementById('search-results');
+            searchResultsDiv.innerHTML = '';
+
+            data.forEach(product => {
+                const productElement = document.createElement('div');
+                productElement.textContent = `ID: ${product.identifier} - Name: ${product.name}`;
+                searchResultsDiv.appendChild(productElement);
+            });
+        })
+        .catch(error => {
+            console.error('Error fetching product list:', error);
+        });
+});
 document.getElementById('csv-upload-form').addEventListener('submit', function (e) {
         e.preventDefault();
         console.log('hit')
