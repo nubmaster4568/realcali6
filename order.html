@@ -768,8 +768,8 @@ items.forEach(function(item) {
     var comment = formattedComment.replace(/\n/g, '<br>');
     var price = parseFloat(item.querySelector('.custom-select').selectedOptions[0].getAttribute('data-price')) || 0;
 
-    let totalPrice = parseFloat(item.querySelector('.hidden-total-price').textContent) || 0;
-
+    let totalPriceText = item.querySelector('.hidden-total-price').textContent.trim();
+    let totalPrice = parseFloat(totalPriceText.replace('$', '')) || 0;
                 
                 orderItems.push({
                     productName: productName,

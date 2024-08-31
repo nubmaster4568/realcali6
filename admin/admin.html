@@ -608,7 +608,7 @@ document.getElementById('product-form').addEventListener('submit', function (eve
     });
         let rowCount = 1; // To keep track of the row numbers
 
-    document.getElementById('add-bulk-price-row').addEventListener('click', function() {
+    $('#add-category-form').on('submit', function(event)  {
     rowCount++;
     const container = document.getElementById('bulk-prices-container');
     console.log('hit')
