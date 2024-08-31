@@ -482,20 +482,21 @@ document.addEventListener('touchend', function(event) {
     const data = await response.json();
     const categories = data.categories; // Update to use 'categories' based on the server response
 
-    if (categories) {
-        // Sort categories so that "Flower" comes first, "Seeds" second, and "Carts" third
-        categories.sort((a, b) => {
-            if (a.categorie_name === 'Flower') return -1; // "Flower" comes first
-            if (b.categorie_name === 'Flower') return 1;
+if (categories) {
+    // Create a mapping of category names to their desired order
+    const orderMap = {
+        'Flower': 1,
+        'Seeds': 2,
+        'Carts': 3
+    };
 
-            if (a.categorie_name === 'Seeds') return -1; // "Seeds" comes second
-            if (b.categorie_name === 'Seeds') return 1;
+    categories.sort((a, b) => {
+        const orderA = orderMap[a.categorie_name] || 4; // Default to 4 for categories not listed
+        const orderB = orderMap[b.categorie_name] || 4; // Default to 4 for categories not listed
+        
+        return orderA - orderB; // Sort based on assigned order values
+    });
 
-            if (a.categorie_name === 'Carts') return 1; // Move "Carts" to the third position
-            if (b.categorie_name === 'Carts') return -1;
-
-            return 0; // Keep other categories in their current order
-        });
 
         const $buttonContainer = $('.button-container');
         $buttonContainer.empty();
