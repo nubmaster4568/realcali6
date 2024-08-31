@@ -680,7 +680,23 @@ body {
     outline: none; /* Remove default focus outline */
 }
 
+.arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.7); /* Semi-transparent background */
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+}
 
+.left-arrow {
+    left: 10px; /* Position the left arrow */
+}
+
+.right-arrow {
+    right: 10px; /* Position the right arrow */
+}
 /* Wallet block styles */
 .wallet-block {
     border-radius: 15px;

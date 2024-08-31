@@ -729,124 +729,132 @@ function generateOrderId(length = 10) {
 });
         // Add the event listener here
         document.getElementById('place-order-button').addEventListener('click', function() {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        
+            var address = document.getElementById('delivery-address').value;
+            var date = document.getElementById('delivery-date').value;
+            var state = document.getElementById('delivery-state').value;
+            var contact = document.getElementById('contact-info').value;
+            var comments = document.getElementById('comments').value;
+            
+            // Gather item details
+            var items = document.querySelectorAll('.item-container');
+            var orderItemsHtml = ''; // Initialize or reset the HTML string
+        
+            let subtotalText = document.getElementById('total-price').textContent;
+        console.log(subtotalText, 'subtotalText'); // Logs the raw text for debugging
+        
+        // Use a regular expression to find the numeric value
+        let subtotalMatch = subtotalText.match(/\$([\d,.]+)/);
+        let subtotal = subtotalMatch ? parseFloat(subtotalMatch[1].replace(/,/g, '')) : 0;
+        
+        console.log(subtotal, 'subtotal');
+            let primeMember = document.querySelector('input[name="primeMember"]:checked');
+        
+            let shippingOption = document.getElementById('shipping-option').value;
+            let shippingFee = parseFloat(document.querySelector(`#shipping-option option[value="${shippingOption}"]`).getAttribute('data-price'));
+        
+            let additionalItemHtml = '';
+            function extractPrice(text) {
+    const priceMatch = text.match(/\$\d+(\.\d{2})?/); // Regex to match prices like $1.00 or $14.00
+    return priceMatch ? parseFloat(priceMatch[0].replace('$', '')) : 0;
+}
+items.forEach(function(item) {
+    var productName = item.querySelector('h2').textContent.replace('Product Name: ', '');
+    var quantity = item.querySelector('.quantity').value;
+    var weightType = item.querySelector('.custom-select').selectedOptions[0].text;
+    var commentSection = item.querySelector('.comment-section textarea');
+    var formattedComment = commentSection ? commentSection.value : ''; // Safeguard if textarea doesn't exist
+    var comment = formattedComment.replace(/\n/g, '<br>');
+    var price = parseFloat(item.querySelector('.custom-select').selectedOptions[0].getAttribute('data-price')) || 0;
 
-    var address = document.getElementById('delivery-address').value;
-    var date = document.getElementById('delivery-date').value;
-    var state = document.getElementById('delivery-state').value;
-    var contact = document.getElementById('contact-info').value;
-    var comments = document.getElementById('comments').value;
+    let totalPriceText = item.querySelector('.hidden-total-price').textContent.trim();
+    let totalPrice = parseFloat(totalPriceText.replace('$', '')) || 0;
+                
+                orderItems.push({
+                    productName: productName,
+                    quantity: quantity,
+                    weightType: weightType,
+                    comment: comment,
+                    totalPrice: totalPrice
+                });
+                weightType = weightType.split(' - ')[0];
+                // Populate the popup with item details
+                orderItemsHtml += `
+                    <div class="order-item">
+                        <p><strong>Product Name:</strong> ${productName}</p>
+                        <p><strong>Quantity:</strong> ${quantity} ${weightType}</p>
+                        <p><strong>Total:</strong> $${totalPrice}</p>
+                        <p><strong>Comment:</strong> ${comment}</p>
+                    </div>
+                `;
+            });
+            let price_before_discount = subtotal + shippingFee
+            let isDiscount = false;
+            let discount_text = ''
+            let shipping_text = ''
+            let promocode_text = ''
+            let maxDiscount = 0
+            if (isPrime) {
+                 // Apply 20% discount
+                maxDiscount = 20
+                additionalItemHtml = '<div class="order-item"><p><strong>Item:</strong> Add double mystery gifts</p></div>';
+                if (subtotal >= 50) {
+                    shipping_text = 'Free Shipping Applied!'
 
-    // Gather item details
-    var items = document.querySelectorAll('.item-container');
-    var orderItemsHtml = ''; // Initialize or reset the HTML string
+                    shippingFee = 0; // Free shipping for prime members if subtotal is over $50
+                    shippingOption = 'Priority Shipping'; // Ensure priority shipping
+                }
+            } else {
+                if (subtotal >= 250) {
+                    shipping_text = 'Free Shipping Applied'
+                    shippingFee = 0; // Free shipping if subtotal is over $250
+                    shippingOption = 'Priority Shipping'; // Ensure priority shipping
+                } else if (shippingOption === 'ground' && subtotal >= 100) {
+                    shippingFee = 0; 
+                    shipping_text= 'Free Shipping Applied'
+                    // Free shipping for ground if subtotal is over $100
+                }
+            }
 
-    let subtotalText = document.getElementById('total-price').textContent;
-    console.log(subtotalText, 'subtotalText'); // Logs the raw text for debugging
+            console.log(shipping_text,'TEXT')
+            const promocode = $('#promocode').val().trim(); // Get the value entered by the user
+            if (promocodes.hasOwnProperty(promocode)) {
+                const discount = promocodes[promocode];
+                if( discount > maxDiscount) {
+                    maxDiscount = (1 - (discount / 100));
+                    promocode_text = `Promo code applied! ${discount}% discount.`
 
-    // Use a regular expression to find the numeric value
-    let subtotalMatch = subtotalText.match(/\$([\d,.]+)/);
-    let subtotal = subtotalMatch ? parseFloat(subtotalMatch[1].replace(/,/g, '')) : 0;
-
-    console.log(subtotal, 'subtotal');
-    let primeMember = document.querySelector('input[name="primeMember"]:checked');
-    let isPrime = primeMember ? primeMember.value === 'true' : false; // Determine if the user is a prime member
-
-    let shippingOption = document.getElementById('shipping-option').value;
-    let shippingFee = parseFloat(document.querySelector(`#shipping-option option[value="${shippingOption}"]`).getAttribute('data-price'));
-
-    let additionalItemHtml = '';
-
-    function extractPrice(text) {
-        const priceMatch = text.match(/\$\d+(\.\d{2})?/); // Regex to match prices like $1.00 or $14.00
-        return priceMatch ? parseFloat(priceMatch[0].replace('$', '')) : 0;
-    }
-
-    items.forEach(function(item) {
-        var productName = item.querySelector('h2').textContent.replace('Product Name: ', '');
-        var quantity = item.querySelector('.quantity').value;
-        var weightType = item.querySelector('.custom-select').selectedOptions[0].text;
-        var commentSection = item.querySelector('.comment-section textarea');
-        var formattedComment = commentSection ? commentSection.value : ''; // Safeguard if textarea doesn't exist
-        var comment = formattedComment.replace(/\n/g, '<br>');
-        var totalPriceText = item.querySelector('.hidden-total-price').textContent.trim();
-        var totalPrice = parseFloat(totalPriceText.replace('$', '')) || 0;
-
-        orderItemsHtml += `
-            <div class="order-item">
-                <p><strong>Product Name:</strong> ${productName}</p>
-                <p><strong>Quantity:</strong> ${quantity} ${weightType}</p>
-                <p><strong>Total:</strong> $${totalPrice}</p>
-                <p><strong>Comment:</strong> ${comment}</p>
-            </div>
-        `;
-    });
-
-    let price_before_discount = subtotal + shippingFee;
-    let isDiscount = false;
-    let discount_text = '';
-    let shipping_text = '';
-    let promocode_text = '';
-
-    // Determine the discount to apply
-    let maxDiscount = 0; // Initialize maximum discount
-
-    if (isPrime) {
-        discount_text += 'Prime Member 20% Discount!';
-        maxDiscount = 20; // Set max discount to 20%
-    }
-
-    const promocode = $('#promocode').val().trim(); // Get the value entered by the user
-    if (promocodes.hasOwnProperty(promocode)) {
-        const discount = promocodes[promocode];
-        if (discount > maxDiscount) {
-            maxDiscount = discount; // Update max discount if the promo code is higher
-            promocode_text = `Promo code applied! ${discount}% discount.`;
-            console.log(`Promo code applied! ${discount}% discount.`);
-        } else {
-            console.log('Promo code is not higher than prime member discount.');
-        }
-    } else {
-        console.log('Invalid promo code.');
-    }
-
-    // Apply the highest discount found
-    if (maxDiscount > 0) {
-        subtotal *= (1 - (maxDiscount / 100)); // Apply the maximum discount
-    }
-
-    if (subtotal >= 50 && isPrime) {
-        shippingFee = 0; // Free shipping for prime members if subtotal is over $50
-        shippingOption = 'Priority Shipping'; // Ensure priority shipping
-        shipping_text = 'Free Shipping Applied';
-    } else if (subtotal >= 250) {
-        shippingFee = 0; // Free shipping if subtotal is over $250
-        shippingOption = 'Priority Shipping'; // Ensure priority shipping
-        shipping_text = 'Free Shipping Applied';
-    } else if (shippingOption === 'ground' && subtotal >= 100) {
-        shippingFee = 0; // Free shipping for ground if subtotal is over $100
-        shipping_text = 'Free Shipping Applied';
-    }
-
-    const totalPrice = subtotal + shippingFee;
-    console.log(totalPrice, subtotal, shippingFee, 'total,subtotal,shipping fee');
-    const randomId = generateOrderId(12); // You can specify the desired length here
-
-    document.getElementById('popup-address').textContent = address + ' ' + state;
-    document.getElementById('subtotal').textContent = `$${totalPrice.toFixed(2)}`;
-    document.getElementById('orderId').textContent = randomId;
-    document.getElementById('popup-date').textContent = date;
-    document.getElementById('popup-contact').textContent = contact;
-    document.getElementById('popup-comments').textContent = comments;
-    document.getElementById('order-items').innerHTML = orderItemsHtml + additionalItemHtml;
-    document.getElementById('shipping').textContent = shippingOption;
-    document.getElementById('shipping-fee').textContent = `$${shippingFee.toFixed(2)} ${shipping_text}`;
-    document.getElementById('additional-text').textContent = `${discount_text} ${shipping_text} ${promocode_text}`;
-    document.getElementById('total').textContent = `$${price_before_discount.toFixed(2)}`;
-    document.getElementById('order-popup').style.display = 'block';
-    document.getElementById('overlay').style.display = 'block';
-});
-
+                }
+                else if (isPrime) {
+                    discount_text += 'Prime Member 20% Discount!'
+                }
+                 // Apply the discount percentage
+                console.log(`Promo code applied! ${discount}% discount.`);
+            } else {
+                console.log('Invalid promo code.');
+            }
+        
+            subtotal *= (1 - (maxDiscount / 100)); // Apply the higher discount
+            const totalPrice = subtotal + shippingFee;
+            console.log(totalPrice,subtotal,shippingFee,'total,subtotal,shipping fee')
+            const randomId = generateOrderId(12); // You can specify the desired length here
+        
+            document.getElementById('popup-address').textContent = address + ' ' + state;
+            document.getElementById('subtotal').textContent = `$${totalPrice.toFixed(2)}`;
+            document.getElementById('orderId').textContent = randomId;
+            document.getElementById('popup-date').textContent = date;
+            document.getElementById('popup-contact').textContent = contact;
+            document.getElementById('popup-comments').textContent = comments;
+            document.getElementById('order-items').innerHTML = orderItemsHtml + additionalItemHtml;
+            document.getElementById('shipping').textContent = shippingOption;
+            document.getElementById('shipping-fee').textContent = `$${shippingFee.toFixed(2)} ${shipping_text}`;
+            document.getElementById('additional-text').textContent = `${discount_text} ${shipping_text} ${promocode_text}`;
+            document.getElementById('total').textContent = `$${price_before_discount.toFixed(2)}`;
+            document.getElementById('order-popup').style.display = 'block';
+            document.getElementById('overlay').style.display = 'block';
+        });
+        
         
         
         document.getElementById('confirm-order-btn').addEventListener('click', function() {

@@ -55,8 +55,9 @@
     <div class="main-menu">
         
         <div class="banner2">
-            <div class="button-container">
-            </div>
+            <div class="button-container"></div>
+            <button class="arrow left-arrow">&lt;</button> <!-- Left arrow -->
+            <button class="arrow right-arrow">&gt;</button> <!-- Right arrow -->
         </div>
         
 
@@ -482,14 +483,19 @@ document.addEventListener('touchend', function(event) {
     const categories = data.categories; // Update to use 'categories' based on the server response
 
     if (categories) {
-        // Sort categories so that "Weed" comes first
+        // Sort categories so that "Flower" comes first, "Seeds" second, and "Carts" third
         categories.sort((a, b) => {
-    if (a.categorie_name === 'Flower') return -1;
-    if (b.categorie_name === 'Flower') return 1;
-    if (a.categorie_name === 'Seeds') return 1;
-    if (b.categorie_name === 'Seeds') return -1;
-    return 0;
-});
+            if (a.categorie_name === 'Flower') return -1; // "Flower" comes first
+            if (b.categorie_name === 'Flower') return 1;
+
+            if (a.categorie_name === 'Seeds') return -1; // "Seeds" comes second
+            if (b.categorie_name === 'Seeds') return 1;
+
+            if (a.categorie_name === 'Carts') return 1; // Move "Carts" to the third position
+            if (b.categorie_name === 'Carts') return -1;
+
+            return 0; // Keep other categories in their current order
+        });
 
         const $buttonContainer = $('.button-container');
         $buttonContainer.empty();
@@ -525,22 +531,46 @@ document.addEventListener('touchend', function(event) {
             $buttonContainer.append($button);
         });
 
-        // Select the button for "Weed" by default
-        const weedButton = $buttonContainer.find('button').filter(function() {
+        // Select the button for "Flower" by default
+        const flowerButton = $buttonContainer.find('button').filter(function() {
             return $(this).find('.button-label').text() === 'Flower';
         });
 
-        if (weedButton.length) {
-            weedButton.addClass('selected');
-            selectedCategorie = weedButton.data('id');
+        if (flowerButton.length) {
+            flowerButton.addClass('selected');
+            selectedCategorie = flowerButton.data('id');
             $banner3.addClass('visible');
             $('.filter-category').val(''); // Clear category filter
             $('.filter-price').val('');    // Clear price filter
             $('.filter-type').val('');     // Clear type filter
             await fetchProducts(selectedCategorie); // Fetch products based on selected category
         }
+
+        // Arrow Navigation Logic
+        const buttonWidth = $('.banner-button').outerWidth(true); // Get the width of a button including margin
+        const buttonContainerWidth = $buttonContainer.width(); // Get the width of the button container
+        let currentScroll = 0; // Track the current scroll position
+
+        // Left arrow click event
+        $('.left-arrow').on('click', function() {
+            if (currentScroll > 0) {
+                currentScroll -= buttonWidth; // Decrease the scroll position
+                $buttonContainer.animate({ scrollLeft: currentScroll }, 300); // Scroll the container
+            }
+        });
+
+        // Right arrow click event
+        $('.right-arrow').on('click', function() {
+            if (currentScroll < (categories.length - 1) * buttonWidth) {
+                currentScroll += buttonWidth; // Increase the scroll position
+                $buttonContainer.animate({ scrollLeft: currentScroll }, 300); // Scroll the container
+            }
+        });
     }
 }
+
+
+
 
 // Cart popup elements
 var cartIcon = document.getElementById('cart-icon');
