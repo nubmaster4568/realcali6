@@ -689,8 +689,8 @@ app.post('/check-prime-email', async (req, res) => {
     console.log('Received email:', email);
 
     try {
-        // Query the database to check if the email exists for prime members
-        const result = await client.query('SELECT * FROM contacts WHERE email = $1', [email]);
+        // Query the database to check if the email exists for prime members (case-insensitive)
+        const result = await client.query('SELECT * FROM contacts WHERE LOWER(email) = LOWER($1)', [email]);
         console.log('Query result:', result);
 
         // Check if any user was found
@@ -706,6 +706,7 @@ app.post('/check-prime-email', async (req, res) => {
         return res.status(500).json({ error: 'Internal server error' });
     }
 });
+
 app.post('/check-username', async (req, res) => {
     const { username } = req.body;
     console.log('Received username:', username);

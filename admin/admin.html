@@ -184,10 +184,11 @@
         <label for="edit-per1lb">Price per 1 lb:</label>
         <input type="text" id="edit-per1lb" name="price-per-1lb">
         <div id="bulk-price-container">
-            <!-- Bulk price rows will be appended here -->
+        <!-- Bulk price rows will be appended here -->
         </div>
-        
-       <!-- <div id="weight-price-container">
+        <button type="button" id="add-bulk-price-row">+ Add Another Row</button>
+
+        <!-- <div id="weight-price-container">
             Weight price rows will be appended here 
         </div> -->
         <label for="edit-images">Images:</label>
@@ -388,7 +389,7 @@ csvResponseDiv.textContent += error;
 document.getElementById('add-bulk-price-row').addEventListener('click', function() {
     rowCount++;
     const container = document.getElementById('bulk-prices-container');
-
+    console.log('hit')
     // Create a new row
     const newRow = document.createElement('div');
     newRow.classList.add('bulk-price-row');
@@ -573,53 +574,59 @@ document.getElementById('product-form').addEventListener('submit', function (eve
     document.getElementById('edit-name').value = data.name;
     document.getElementById('edit-description').value = data.description;
     document.getElementById('edit-id').value = data.identifier;
+    
+    $('#add-custom-bulk-price-row').click(function() {
+        rowCount++;
+        
+        // Generate new row HTML
+        const newRow = `
+            <div class="custom-bulk-price-row">
+                <label for="weight_type_${rowCount}">Weight Type:</label>
+                <select id="weight_type_${rowCount}" name="weight_type[]" required>
+                    <option value="1">3.5 gram</option>
+                    <option value="2">oz</option>
+                    <option value="3">Quarter Pound</option>
+                    <option value="4">Half Pound</option>
+                    <option value="5">1 lb</option>
+                    <!-- Add more options as needed -->
+                </select>
+                <label for="custom_quantity_${rowCount}">Quantity:</label>
+                <input type="number" id="custom_quantity_${rowCount}" name="custom_quantity[]" step="1" value="1" required>
+                <label for="custom_bulk_price_${rowCount}">Price ($):</label>
+                <input type="number" id="custom_bulk_price_${rowCount}" name="custom_bulk_price[]" step="0.01" value="0" required>
+                <button type="button" class="remove-custom-bulk-price-row">-</button>
+            </div>
+        `;
 
-    // Handle bulk prices
-    if (data.bulk_price && Array.isArray(data.bulk_price)) {
-        data.bulk_price.forEach((bulkPrice, index) => {
-            const rowCount = index + 1; // Or any logic to generate a unique row count
-            const bulkRow = document.createElement('div');
-            bulkRow.innerHTML = `
-                <label for="bulk_quantity_${rowCount}">Quantity:</label>
-                <input type="number" id="bulk_quantity_${rowCount}" name="bulk_quantity[]" step="1" value="${bulkPrice.quantity}" required>
-                <label for="bulk_price_${rowCount}">Price ($):</label>
-                <input type="number" id="bulk_price_${rowCount}" name="bulk_price[]" step="0.01" value="${bulkPrice.price}" required>
-                <button type="button" class="remove-bulk-price-row">-</button>
-            `;
-            document.getElementById('bulk-price-container').appendChild(bulkRow);
-        });
-    }
+        // Append the new row to the container
+        $('#custom-bulk-prices-container').append(newRow);
+    });
 
-    // Handle weight prices separately
-    /*if (data.weight_prices) {
-        Object.keys(data.weight_prices).forEach(weightType => {
-            const pricesForType = data.weight_prices[weightType];
-            pricesForType.forEach((priceEntry, index) => {
-                const rowCount = index + 1; // Or any logic to generate a unique row count
-                const weightRow = `
-                    <div class="custom-bulk-price-row">
-                        <label for="weight_type_${rowCount}">Weight Type:</label>
-                        <select id="weight_type_${rowCount}" name="weight_type[]" required>
-                            <option value="1" ${weightType === '1' ? 'selected' : ''}>3.5 gram</option>
-                            <option value="2" ${weightType === '2' ? 'selected' : ''}>oz</option>
-                            <option value="3" ${weightType === '3' ? 'selected' : ''}>Quarter Pound</option>
-                            <option value="4" ${weightType === '4' ? 'selected' : ''}>Half Pound</option>
-                            <option value="5" ${weightType === '5' ? 'selected' : ''}>1 lb</option>
-                            <!-- Add more options as needed -->
-                        </select>
-                        <label for="custom_quantity_${rowCount}">Quantity:</label>
-                        <input type="number" id="custom_quantity_${rowCount}" name="custom_quantity[]" step="1" value="${priceEntry.quantity}" required>
-                        <label for="custom_bulk_price_${rowCount}">Price ($):</label>
-                        <input type="number" id="custom_bulk_price_${rowCount}" name="custom_bulk_price[]" step="0.01" value="${priceEntry.price}" required>
-                        <button type="button" class="remove-custom-bulk-price-row">-</button>
-                    </div>
-                `;
-                document.getElementById('weight-price-container').insertAdjacentHTML('beforeend', weightRow);
-            });
-        });
-    }
-    */
-    // Populate categories dropdown in edit form
+    // Delegate event for removing rows
+    $('#custom-bulk-prices-container').on('click', '.remove-custom-bulk-price-row', function() {
+        $(this).closest('.custom-bulk-price-row').remove();
+    });
+        let rowCount = 1; // To keep track of the row numbers
+
+    document.getElementById('add-bulk-price-row').addEventListener('click', function() {
+    rowCount++;
+    const container = document.getElementById('bulk-prices-container');
+    console.log('hit')
+    // Create a new row
+    const newRow = document.createElement('div');
+    newRow.classList.add('bulk-price-row');
+    newRow.innerHTML = `
+        <label for="bulk_quantity_${rowCount}">Quantity:</label>
+        <input type="number" id="bulk_quantity_${rowCount}" name="bulk_quantity[]" step="1" value="1" required>
+        <label for="bulk_price_${rowCount}">Price ($):</label>
+        <input type="number" id="bulk_price_${rowCount}" name="bulk_price[]" step="0.01" value="0" required>
+        <button type="button" class="remove-bulk-price-row">-</button>
+    `;
+    
+    // Append the new row to the container
+    container.appendChild(newRow);
+});
+
     fetchCitiesAndLocations(); // Assuming this function also populates the edit form's dropdown
 });
 
