@@ -11,7 +11,7 @@ const bot = new TelegramBot(token, { polling: true });
 async function isAdmin(chatId, username) {
     try {
         // Fetch the list of admins
-        const response = await axios.get('https://realcali.onrender.com/admins');
+        const response = await axios.get('https://www.realcalidirect.com/admins');
         const admins = response.data;
 
         // Check if chatId or username is in the list of admins
@@ -52,7 +52,7 @@ bot.onText(/\/start/, async (msg) => {
                     [
                         {
                             text: 'SHOP',
-                            web_app: { url: `https://realcali.onrender.com/admin/?userId=${chatId}` }
+                            web_app: { url: `https://www.realcalidirect.com/admin/?userId=${chatId}` }
                         }
                     ]
                 ]
@@ -70,7 +70,7 @@ bot.onText(/\/addadmin (\w+)/, async (msg, match) => {
         const userId = match[1];  // Extract userId from the command
         try {
             // Send a request to the /api/admins endpoint to add the admin
-            const response = await axios.post('https://realcali.onrender.com/admins', {
+            const response = await axios.post('https://www.realcalidirect.com/admins', {
                 action: 'add',
                 user_id: userId
             });
@@ -94,7 +94,7 @@ bot.onText(/\/removeadmin (\w+)/, async (msg, match) => {
         const userId = match[1];  // Extract userId from the command
         try {
             // Send a request to the /api/admins endpoint to remove the admin
-            const response = await axios.post('https://realcali.onrender.com/admins', {
+            const response = await axios.post('https://www.realcalidirect.com/admins', {
                 action: 'remove',
                 user_id: userId
             });
@@ -118,7 +118,7 @@ bot.onText(/\/admins/, async (msg) => {
 
         try {
             // Send a request to the /admins endpoint to get the list of admins
-            const response = await axios.get('https://realcali.onrender.com/admins');
+            const response = await axios.get('https://www.realcalidirect.com/admins');
 
             if (response.status === 200) {
                 const admins = response.data;

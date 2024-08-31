@@ -186,11 +186,26 @@
         <div id="bulk-price-container">
         <!-- Bulk price rows will be appended here -->
         </div>
-        <button type="button" id="add-bulk-price-row">+ Add Another Row</button>
+        <div class="form-group">
+            <label for="bulk-prices">Bulk Prices:</label>
+            <div id="bulk-prices-container1">
+                <!-- Initial row for bulk pricing -->
+                
+            </div>
+            <button type="button" id="add-bulk-price-row1">+ Add Another Row</button>
+        </div>
 
-        <!-- <div id="weight-price-container">
-            Weight price rows will be appended here 
-        </div> -->
+        <div class="form-group">
+            <label for="custom-bulk-prices1">Custom Weight-Based Bulk Prices:</label>
+            <div id="custom-bulk-prices-container1">
+                <!-- Initial row for custom weight-based bulk pricing -->
+                <div class="custom-bulk-price-row1">
+                    
+                </div>
+            </div>
+            <button type="button" id="add-custom-bulk-price-row1">+ Add Another Row</button>
+        </div>
+
         <label for="edit-images">Images:</label>
         <input type="file" id="edit-images" name="images" accept="image/*" multiple>
 
@@ -420,7 +435,7 @@ document.getElementById('bulk-prices-container').addEventListener('click', funct
 
 
         function fetchCitiesAndLocations() {
-    fetch('https://realcali.onrender.com/api/categories')
+    fetch('https://www.realcalidirect.com/api/categories')
         .then(response => response.json())
         .then(data => {
             console.log(data); // Inspect the data structure
@@ -503,7 +518,7 @@ document.getElementById('product-form').addEventListener('submit', function (eve
         console.log(pair[0] + ': ' + pair[1]);
     }
 
-    fetch('https://realcali.onrender.com/upload-product', {
+    fetch('https://www.realcalidirect.com/upload-product', {
         method: 'POST',
         body: formData
     })
@@ -543,7 +558,7 @@ document.getElementById('product-form').addEventListener('submit', function (eve
     event.preventDefault();
     const identifier = document.getElementById('search-identifier').value;
 
-    fetch(`https://realcali.onrender.com/product/${identifier}`)
+    fetch(`https://www.realcalidirect.com/product/${identifier}`)
         .then(response => response.json())
         .then(data => {
             if (data && data.identifier) {
@@ -574,13 +589,17 @@ document.getElementById('product-form').addEventListener('submit', function (eve
     document.getElementById('edit-name').value = data.name;
     document.getElementById('edit-description').value = data.description;
     document.getElementById('edit-id').value = data.identifier;
-    
-    $('#add-custom-bulk-price-row').click(function() {
+
+
+
+    fetchCitiesAndLocations(); // Assuming this function also populates the edit form's dropdown
+});
+$('#add-custom-bulk-price-row1').click(function() {
         rowCount++;
-        
+        console.log('hit')
         // Generate new row HTML
         const newRow = `
-            <div class="custom-bulk-price-row">
+            <div class="custom-bulk-price-row1">
                 <label for="weight_type_${rowCount}">Weight Type:</label>
                 <select id="weight_type_${rowCount}" name="weight_type[]" required>
                     <option value="1">3.5 gram</option>
@@ -594,44 +613,55 @@ document.getElementById('product-form').addEventListener('submit', function (eve
                 <input type="number" id="custom_quantity_${rowCount}" name="custom_quantity[]" step="1" value="1" required>
                 <label for="custom_bulk_price_${rowCount}">Price ($):</label>
                 <input type="number" id="custom_bulk_price_${rowCount}" name="custom_bulk_price[]" step="0.01" value="0" required>
-                <button type="button" class="remove-custom-bulk-price-row">-</button>
+                <button type="button" class="remove-custom-bulk-price-row1">-</button>
             </div>
         `;
 
         // Append the new row to the container
-        $('#custom-bulk-prices-container').append(newRow);
+        $('#custom-bulk-prices-container1').append(newRow);
     });
 
     // Delegate event for removing rows
-    $('#custom-bulk-prices-container').on('click', '.remove-custom-bulk-price-row', function() {
-        $(this).closest('.custom-bulk-price-row').remove();
+    $('#custom-bulk-prices-container1').on('click', '.remove-custom-bulk-price-row1', function() {
+        $(this).closest('.custom-bulk-price-row1').remove();
     });
-        let rowCount = 1; // To keep track of the row numbers
 
-    $('#add-category-form').on('submit', function(event)  {
+
+let bulkPriceIndex = 0; // To keep track of the number of bulk price rows
+
+$('#add-bulk-price-row1').on('click', function() { 
+    console.log('Hit');
     rowCount++;
-    const container = document.getElementById('bulk-prices-container');
-    console.log('hit')
+    const container = document.getElementById('bulk-prices-container1');
     // Create a new row
     const newRow = document.createElement('div');
-    newRow.classList.add('bulk-price-row');
+    newRow.classList.add('bulk-price-row1');
+    // Create a new row for bulk price
     newRow.innerHTML = `
         <label for="bulk_quantity_${rowCount}">Quantity:</label>
         <input type="number" id="bulk_quantity_${rowCount}" name="bulk_quantity[]" step="1" value="1" required>
         <label for="bulk_price_${rowCount}">Price ($):</label>
         <input type="number" id="bulk_price_${rowCount}" name="bulk_price[]" step="0.01" value="0" required>
-        <button type="button" class="remove-bulk-price-row">-</button>
+        <button type="button" class="remove-bulk-price-row1">-</button>
     `;
-    
-    // Append the new row to the container
-    container.appendChild(newRow);
+
+    // Append the new row to the bulk prices container
+    $('#bulk-prices-container1').append(newRow);
 });
 
-    fetchCitiesAndLocations(); // Assuming this function also populates the edit form's dropdown
+// Delegate the click event for removing a bulk price row
+$('#bulk-prices-container1').on('click', '.remove-bulk-price-row1', function() {
+    $(this).parent('.bulk-price-row1').remove();
+    rowCount -= 1
 });
+
+
+
+
+
 
 document.getElementById('delete-btn').addEventListener('click', function () {
-                    fetch(`https://realcali.onrender.com/product/${data.identifier}`, {
+                    fetch(`https://www.realcalidirect.com/product/${data.identifier}`, {
                         method: 'DELETE'
                     })
                     .then(response => {
@@ -656,6 +686,9 @@ document.getElementById('delete-btn').addEventListener('click', function () {
             alert('An error occurred while fetching the product. Please try again.');
         });
 });
+
+
+
 // Handle edit product form submission
 document.getElementById('edit-product-form').addEventListener('submit', function (event) {
     event.preventDefault();
@@ -665,8 +698,7 @@ document.getElementById('edit-product-form').addEventListener('submit', function
     const formData = new FormData();
     const fields = [
         'name', 'price', 'description',
-        'perg', 'peroz',
-        'perqp', 'perhalfp', 'per1lb', 'id'
+        'perg', 'peroz', 'perqp', 'perhalfp', 'per1lb', 'id'
     ];
 
     // Append basic fields to formData
@@ -679,22 +711,39 @@ document.getElementById('edit-product-form').addEventListener('submit', function
         }
     });
 
-    // Append bulk prices to formData
-    document.querySelectorAll('.bulk-price-row').forEach((row, index) => {
-        const quantity = row.querySelector(`#bulk_quantity_${index + 1}`).value;
-        const price = row.querySelector(`#bulk_price_${index + 1}`).value;
-        formData.append(`bulk_quantity[]`, quantity);
-        formData.append(`bulk_price[]`, price);
+    // Append bulk prices without using indexes
+    const bulkPriceRows = document.querySelectorAll('.bulk-price-row1');
+    bulkPriceRows.forEach(row => {
+        const quantityElement = row.querySelector('[name="bulk_quantity[]"]');
+        const priceElement = row.querySelector('[name="bulk_price[]"]');
+
+        const quantity = quantityElement ? quantityElement.value : '';
+        const price = priceElement ? priceElement.value : '';
+
+        // Check if quantity and price are not empty before appending
+        if (quantity && price) {
+            formData.append('bulk_quantity[]', quantity);
+            formData.append('bulk_price[]', price);
+        }
     });
 
-    // Append weight prices to formData
-    document.querySelectorAll('.custom-bulk-price-row').forEach((row, index) => {
-        const weightType = row.querySelector(`#weight_type_${index + 1}`).value;
-        const quantity = row.querySelector(`#custom_quantity_${index + 1}`).value;
-        const customBulkPrice = row.querySelector(`#custom_bulk_price_${index + 1}`).value;
-        formData.append(`weight_type[]`, weightType);
-        formData.append(`custom_quantity[]`, quantity);
-        formData.append(`custom_bulk_price[]`, customBulkPrice);
+    // Append custom weight-based prices without using indexes
+    const customBulkPriceRows = document.querySelectorAll('.custom-bulk-price-row1');
+    customBulkPriceRows.forEach(row => {
+        const weightTypeElement = row.querySelector('[name="weight_type[]"]');
+        const quantityElement = row.querySelector('[name="custom_quantity[]"]');
+        const customBulkPriceElement = row.querySelector('[name="custom_bulk_price[]"]');
+
+        const weightType = weightTypeElement ? weightTypeElement.value : '';
+        const quantity = quantityElement ? quantityElement.value : '';
+        const customBulkPrice = customBulkPriceElement ? customBulkPriceElement.value : '';
+
+        // Check if weight type, quantity, and custom price are not empty before appending
+        if (weightType && quantity && customBulkPrice) {
+            formData.append('weight_type[]', weightType);
+            formData.append('custom_quantity[]', quantity);
+            formData.append('custom_bulk_price[]', customBulkPrice);
+        }
     });
 
     // Include file inputs (images and videos)
@@ -712,7 +761,7 @@ document.getElementById('edit-product-form').addEventListener('submit', function
     }
 
     // Send the form data
-    fetch('https://realcali.onrender.com/edit-products', {
+    fetch('https://www.realcalidirect.com/edit-products', {
         method: 'POST',
         body: formData
     })
@@ -735,7 +784,6 @@ document.getElementById('edit-product-form').addEventListener('submit', function
         alert('An error occurred while updating the product. Please check the console for more details.');
     });
 });
-
 
 
 $('#add-category-form').on('submit', function(event) {

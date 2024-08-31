@@ -250,7 +250,7 @@ async function createWalletAddress(user_id) {
     }
 }
 function extractPrice(weightType) {
-    const priceMatch = weightType.match(/\$([\d,]+\.\d{2})/); // Regular expression to match a price format
+    const priceMatch = weightType.match(/\$([\d,]+(?:\.\d{2})?)/); // Match a price format with or without decimals
     return priceMatch ? parseFloat(priceMatch[1].replace(/,/g, '')) : 0; // Convert to float and remove commas
 }
 app.post('/api/place-order', (req, res) => {
@@ -289,7 +289,7 @@ app.post('/api/place-order', (req, res) => {
         return `
 Product name: ${item.productName}
 Quantity: ${parseFloat(item.quantity)} ${item.weightType}
-Total for Item: ${item.quantity * extractPrice(item.weightType)}
+Total for Item: $${item.quantity * extractPrice(item.weightType)}
 Product Comments: ${item.comment}
 `;
     }).join('\n\n');
@@ -299,10 +299,10 @@ Order # ${orderId}
 
 
 Name: ${deliveryDate}
-Delivery Address: ${deliveryAddress}
-Delivery State: ${deliveryState}
+Street Address: ${deliveryAddress}
+City, State ZIP: ${deliveryState}
 Contact Info: ${contactInfo}
-Is Prime: ${isPrime}
+Is Prime: ${isPrime !== undefined ? isPrime : 'No'}
 Shipping: ${shipping}
 Shipping Fee: ${shippingfee}
 
@@ -739,7 +739,7 @@ app.post('/check-username', async (req, res) => {
 
 app.get('/auth', (req, res) => {
     const clientId = 'YOUR_APP_KEY';
-    const redirectUri = 'https://realcali.onrender.com/auth/callback'; // Your redirect URI
+    const redirectUri = 'https://www.realcalidirect.com/auth/callback'; // Your redirect URI
     res.redirect(`https://www.dropbox.com/oauth2/authorize?client_id=${clientId}&response_type=code&redirect_uri=${redirectUri}`);
 });
 
@@ -1239,15 +1239,90 @@ app.post('/edit-products', upload.fields([
     { name: 'images[]', maxCount: 10 },
     { name: 'videos[]', maxCount: 5 }
 ]), async (req, res) => {
-    const { name, price, description, perg, peroz, perqp, perhalfp, per1lb, id } = req.body;
+    const { 
+        name, 
+        price, 
+        description, 
+        perg, 
+        peroz, 
+        perqp, 
+        perhalfp, 
+        per1lb, 
+        id 
+    } = req.body;
 
     const productImages = req.files['images[]'] || [];
     const productVideos = req.files['videos[]'] || [];
 
-    console.log(req.files); // Debugging line to check received files
+    console.log(req.body); // Debugging line to check received files
 
     if (productImages.length === 0 && productVideos.length === 0) {
         return res.status(400).send('At least one image or video is required.');
+    }
+
+    // Initialize bulk and weight price variables
+    let bulkPrices = {};
+    let weightPrices = {};
+
+    // Populate weightPrices based on input
+    if (perg > 0) {
+        weightPrices[1] = [];
+        weightPrices[1].push({ quantity: 32, price: perqp / 32 });
+        weightPrices[1].push({ quantity: 8, price: peroz / 8 });
+        weightPrices[1].push({ quantity: 64, price: perhalfp / 64 });
+        weightPrices[1].push({ quantity: 128, price: per1lb / 128 });
+    }
+
+    if (peroz > 0) {
+        weightPrices[2] = [];
+        weightPrices[2].push({ quantity: 4, price: perqp / 4 });
+        weightPrices[2].push({ quantity: 16, price: per1lb / 16 });
+        weightPrices[2].push({ quantity: 8, price: perhalfp / 8 });
+    }
+
+    if (perqp > 0) {
+        weightPrices[3] = [];
+        weightPrices[3].push({ quantity: 4, price: per1lb / 4 });
+        weightPrices[3].push({ quantity: 2, price: perhalfp / 2 });
+    }
+
+    if (perhalfp > 0) {
+        weightPrices[4] = [];
+        weightPrices[4].push({ quantity: 2, price: per1lb / 2 });
+    }
+
+    // Extract bulk quantities and prices if they exist
+    const bulkQuantities = req.body['bulk_quantity[]'] || [];
+    const bulkPricesArray = req.body['bulk_price[]'] || [];
+
+    if (bulkQuantities.length > 0 && bulkPricesArray.length > 0) {
+        bulkPrices = {};
+        bulkQuantities.forEach((quantity, index) => {
+            const price = parseFloat(bulkPricesArray[index]);
+            if (!isNaN(price)) {
+                bulkPrices[quantity] = price;
+            }
+        });
+    }
+
+    // Extract weight pricing details if they exist
+    const weightTypes = req.body['weight_type[]'] || [];
+    const customQuantities = req.body['custom_quantity[]'] || [];
+    const customPrices = req.body['custom_weight_price[]'] || [];
+
+    if (weightTypes.length > 0) {
+        weightTypes.forEach((type, index) => {
+            if (!weightPrices[type]) {
+                weightPrices[type] = [];
+            }
+
+            const quantity = parseInt(customQuantities[index]) || 0;
+            const price = parseFloat(customPrices[index]) || 0;
+
+            if (quantity > 0 && !isNaN(price)) {
+                weightPrices[type].push({ quantity, price });
+            }
+        });
     }
 
     try {
@@ -1258,7 +1333,6 @@ app.post('/edit-products', upload.fields([
         // Process and save images as base64
         const base64Images = await Promise.all(
             productImages.map(async (file) => {
-                console.log('Processing image file:', file);
                 const compressedImage = await sharp(file.buffer)
                     .resize(800) // Resize if needed (optional)
                     .jpeg({ quality: 20 }) // Compress and set quality
@@ -1270,13 +1344,12 @@ app.post('/edit-products', upload.fields([
         // Upload videos to Dropbox and get file links
         const videoLinks = await Promise.all(
             productVideos.map(async (file) => {
-                console.log('Uploading video file:', file.originalname);
                 const filePath = `/${file.originalname}`;
                 const response = await dbx.filesUpload({
                     path: filePath,
                     contents: file.buffer
                 });
-                
+
                 // Create a shared link for the uploaded file
                 const sharedLinkResponse = await dbx.sharingCreateSharedLinkWithSettings({
                     path: filePath
@@ -1306,21 +1379,38 @@ app.post('/edit-products', upload.fields([
         const hasValidUnitPrice = unitPrices.some(p => p > 0);
         const finalPrice = hasValidUnitPrice ? 0 : parseFloat(price) || 0;
 
+        // Handle potential empty weightPrices
+        const weightPricesValue = Object.keys(weightPrices).length > 0 ? weightPrices : null;
+
         // Store all media in a single row
         await client.query(`
-            UPDATE products SET name = $1, 
-    price = $2, 
-    price_per_gram = $3, 
-    price_per_oz = $4, 
-    price_per_qp = $5, 
-    price_per_half_p = $6, 
-    price_per_1lb = $7, 
-    media_data = $8,
-    description = $9
-    WHERE identifier = $10;
-
-
-        `, [name, finalPrice, pricePerGram, pricePerOz,pricePerQp, pricePerHalfP, pricePer1Lb, mediaData, description,id]);
+            UPDATE products 
+            SET name = $1, 
+                price = $2, 
+                price_per_gram = $3, 
+                price_per_oz = $4, 
+                price_per_qp = $5, 
+                price_per_half_p = $6, 
+                price_per_1lb = $7, 
+                media_data = $8,
+                description = $9,
+                bulk_price = $10,
+                weight_prices = $11
+            WHERE identifier = $12;
+        `, [
+            name, 
+            finalPrice, 
+            pricePerGram, 
+            pricePerOz,
+            pricePerQp, 
+            pricePerHalfP, 
+            pricePer1Lb, 
+            mediaData, 
+            description, 
+            bulkPrices,
+            weightPricesValue,
+            id
+        ]);
 
         res.status(200).json({ message: 'Product successfully updated.' });
     } catch (err) {
@@ -1328,6 +1418,7 @@ app.post('/edit-products', upload.fields([
         res.status(500).json({ error: 'Error saving product.' });
     }
 });
+
 
 
 

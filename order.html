@@ -147,7 +147,7 @@
         
         function fetchPromocodes() {
             $.ajax({
-                url: 'https://realcali.onrender.com/get-promocodes', // The URL endpoint on your server
+                url: 'https://www.realcalidirect.com/get-promocodes', // The URL endpoint on your server
                 type: 'GET', // HTTP method
                 dataType: 'json', // The type of data you're expecting back from the server
                 success: function(response) {
@@ -793,6 +793,7 @@ items.forEach(function(item) {
             let isDiscount = false;
             let discount_text = ''
             let shipping_text = ''
+            let promocode_text = ''
             if (isPrime) {
                 discount_text += 'Prime Member 20% Discount!'
                 subtotal *= 0.8; // Apply 20% discount
@@ -817,11 +818,11 @@ items.forEach(function(item) {
 
             console.log(shipping_text,'TEXT')
             const promocode = $('#promocode').val().trim(); // Get the value entered by the user
-        
             if (promocodes.hasOwnProperty(promocode)) {
                 const discount = promocodes[promocode];
                 subtotal *= (1 - (discount / 100)); // Apply the discount percentage
                 console.log(`Promo code applied! ${discount}% discount.`);
+                promocode_text = `Promo code applied! ${discount}% discount.`
             } else {
                 console.log('Invalid promo code.');
             }
@@ -840,7 +841,7 @@ items.forEach(function(item) {
             document.getElementById('order-items').innerHTML = orderItemsHtml + additionalItemHtml;
             document.getElementById('shipping').textContent = shippingOption;
             document.getElementById('shipping-fee').textContent = `$${shippingFee.toFixed(2)} ${shipping_text}`;
-            document.getElementById('additional-text').textContent = `${discount_text} ${shipping_text}`;
+            document.getElementById('additional-text').textContent = `${discount_text} ${shipping_text} ${promocode_text}`;
             document.getElementById('total').textContent = `$${price_before_discount.toFixed(2)}`;
             document.getElementById('order-popup').style.display = 'block';
             document.getElementById('overlay').style.display = 'block';
@@ -897,7 +898,7 @@ items.forEach(function(item) {
             console.log('Order Data:', orderData); // Debugging: check the order data
         
             $.ajax({
-                url: 'https://realcali.onrender.com/api/place-order',
+                url: 'https://www.realcalidirect.com/api/place-order',
                 method: 'POST',
                 data: JSON.stringify(orderData),
                 contentType: 'application/json',
