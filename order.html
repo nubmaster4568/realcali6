@@ -147,7 +147,7 @@
         
         function fetchPromocodes() {
             $.ajax({
-                url: 'https://realcali.onrender.com/get-promocodes', // The URL endpoint on your server
+                url: 'http://localhost:3000/get-promocodes', // The URL endpoint on your server
                 type: 'GET', // HTTP method
                 dataType: 'json', // The type of data you're expecting back from the server
                 success: function(response) {
@@ -858,12 +858,25 @@ items.forEach(function(item) {
             const deliveryState = document.getElementById('delivery-state').value;
             const shipping = document.getElementById('shipping').textContent ;
             const shippingfee = document.getElementById('shipping-fee').textContent;
-            const total = document.getElementById('total').textContent ;
+            const total = document.getElementById('subtotal').textContent ;
             const deliveryDate = document.getElementById('delivery-date').value;
             const contactInfo = document.getElementById('contact-info').value;
             const comments = document.getElementById('comments').value;
             const orderIdElement = document.getElementById('orderId');
-        
+            function removeDuplicates(array) {
+            const seen = new Set();
+                return array.filter(item => {
+                const key = item.productName + item.weightType; // Create a unique key based on productName and weightType
+                    if (seen.has(key)) {
+                    return false; // Duplicate found
+                    }
+                    seen.add(key); // Mark this item as seen
+                    return true; // Keep the item
+                });
+                }
+
+                // Use the function to remove duplicates
+                orderItems = removeDuplicates(orderItems);
             const orderId = orderIdElement ? orderIdElement.textContent : '';    // Prepare order data
             const orderData = {
                 deliveryAddress: deliveryAddress,
@@ -884,7 +897,7 @@ items.forEach(function(item) {
             console.log('Order Data:', orderData); // Debugging: check the order data
         
             $.ajax({
-                url: 'https://realcali.onrender.com/api/place-order',
+                url: 'http://localhost:3000/api/place-order',
                 method: 'POST',
                 data: JSON.stringify(orderData),
                 contentType: 'application/json',
