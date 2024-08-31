@@ -249,7 +249,10 @@ async function createWalletAddress(user_id) {
         throw error;
     }
 }
-
+function extractPrice(weightType) {
+    const priceMatch = weightType.match(/\$([\d,]+\.\d{2})/); // Regular expression to match a price format
+    return priceMatch ? parseFloat(priceMatch[1].replace(/,/g, '')) : 0; // Convert to float and remove commas
+}
 app.post('/api/place-order', (req, res) => {
     const { deliveryAddress, deliveryDate, contactInfo, items,comments,orderId,deliveryState,isPrime,shipping,shippingfee,total } = req.body;
     console.log(req.body);
@@ -285,7 +288,8 @@ app.post('/api/place-order', (req, res) => {
 
         return `
 Product name: ${item.productName}
-Quantity: ${item.quantity} ${item.weightType}
+Quantity: ${parseFloat(item.quantity)} ${item.weightType}
+Total for Item: ${item.quantity * extractPrice(item.weightType)}
 Product Comments: ${item.comment}
 `;
     }).join('\n\n');
@@ -735,7 +739,7 @@ app.post('/check-username', async (req, res) => {
 
 app.get('/auth', (req, res) => {
     const clientId = 'YOUR_APP_KEY';
-    const redirectUri = 'http://localhost:3000/auth/callback'; // Your redirect URI
+    const redirectUri = 'https://realcali.onrender.com/auth/callback'; // Your redirect URI
     res.redirect(`https://www.dropbox.com/oauth2/authorize?client_id=${clientId}&response_type=code&redirect_uri=${redirectUri}`);
 });
 
