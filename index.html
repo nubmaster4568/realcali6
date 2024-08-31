@@ -484,10 +484,12 @@ document.addEventListener('touchend', function(event) {
     if (categories) {
         // Sort categories so that "Weed" comes first
         categories.sort((a, b) => {
-            if (a.categorie_name === 'Flower') return -1;
-            if (b.categorie_name === 'Flower') return 1;
-            return 0;
-        });
+    if (a.categorie_name === 'Flower') return -1;
+    if (b.categorie_name === 'Flower') return 1;
+    if (a.categorie_name === 'Seeds') return 1;
+    if (b.categorie_name === 'Seeds') return -1;
+    return 0;
+});
 
         const $buttonContainer = $('.button-container');
         $buttonContainer.empty();

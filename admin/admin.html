@@ -183,7 +183,13 @@
 
         <label for="edit-per1lb">Price per 1 lb:</label>
         <input type="text" id="edit-per1lb" name="price-per-1lb">
-
+        <div id="bulk-price-container">
+            <!-- Bulk price rows will be appended here -->
+        </div>
+        
+       <!-- <div id="weight-price-container">
+            Weight price rows will be appended here 
+        </div> -->
         <label for="edit-images">Images:</label>
         <input type="file" id="edit-images" name="images" accept="image/*" multiple>
 
@@ -540,7 +546,6 @@ document.getElementById('product-form').addEventListener('submit', function (eve
         .then(response => response.json())
         .then(data => {
             if (data && data.identifier) {
-                console.log(data)
                 const resultsDiv = document.getElementById('search-results');
                 resultsDiv.innerHTML = `
                     <h2>Product Found</h2>
@@ -552,7 +557,6 @@ document.getElementById('product-form').addEventListener('submit', function (eve
                     <button id="delete-btn">Delete Product</button>
                 `;
 
-                // Populate edit form with product data
                 document.getElementById('edit-btn').addEventListener('click', function () {
     document.getElementById('edit-form-container').classList.add('active');
     document.getElementById('upload-form-container').classList.remove('active');
@@ -570,13 +574,56 @@ document.getElementById('product-form').addEventListener('submit', function (eve
     document.getElementById('edit-description').value = data.description;
     document.getElementById('edit-id').value = data.identifier;
 
+    // Handle bulk prices
+    if (data.bulk_price && Array.isArray(data.bulk_price)) {
+        data.bulk_price.forEach((bulkPrice, index) => {
+            const rowCount = index + 1; // Or any logic to generate a unique row count
+            const bulkRow = document.createElement('div');
+            bulkRow.innerHTML = `
+                <label for="bulk_quantity_${rowCount}">Quantity:</label>
+                <input type="number" id="bulk_quantity_${rowCount}" name="bulk_quantity[]" step="1" value="${bulkPrice.quantity}" required>
+                <label for="bulk_price_${rowCount}">Price ($):</label>
+                <input type="number" id="bulk_price_${rowCount}" name="bulk_price[]" step="0.01" value="${bulkPrice.price}" required>
+                <button type="button" class="remove-bulk-price-row">-</button>
+            `;
+            document.getElementById('bulk-price-container').appendChild(bulkRow);
+        });
+    }
 
-
-
+    // Handle weight prices separately
+    /*if (data.weight_prices) {
+        Object.keys(data.weight_prices).forEach(weightType => {
+            const pricesForType = data.weight_prices[weightType];
+            pricesForType.forEach((priceEntry, index) => {
+                const rowCount = index + 1; // Or any logic to generate a unique row count
+                const weightRow = `
+                    <div class="custom-bulk-price-row">
+                        <label for="weight_type_${rowCount}">Weight Type:</label>
+                        <select id="weight_type_${rowCount}" name="weight_type[]" required>
+                            <option value="1" ${weightType === '1' ? 'selected' : ''}>3.5 gram</option>
+                            <option value="2" ${weightType === '2' ? 'selected' : ''}>oz</option>
+                            <option value="3" ${weightType === '3' ? 'selected' : ''}>Quarter Pound</option>
+                            <option value="4" ${weightType === '4' ? 'selected' : ''}>Half Pound</option>
+                            <option value="5" ${weightType === '5' ? 'selected' : ''}>1 lb</option>
+                            <!-- Add more options as needed -->
+                        </select>
+                        <label for="custom_quantity_${rowCount}">Quantity:</label>
+                        <input type="number" id="custom_quantity_${rowCount}" name="custom_quantity[]" step="1" value="${priceEntry.quantity}" required>
+                        <label for="custom_bulk_price_${rowCount}">Price ($):</label>
+                        <input type="number" id="custom_bulk_price_${rowCount}" name="custom_bulk_price[]" step="0.01" value="${priceEntry.price}" required>
+                        <button type="button" class="remove-custom-bulk-price-row">-</button>
+                    </div>
+                `;
+                document.getElementById('weight-price-container').insertAdjacentHTML('beforeend', weightRow);
+            });
+        });
+    }
+    */
     // Populate categories dropdown in edit form
     fetchCitiesAndLocations(); // Assuming this function also populates the edit form's dropdown
 });
-                document.getElementById('delete-btn').addEventListener('click', function () {
+
+document.getElementById('delete-btn').addEventListener('click', function () {
                     fetch(`https://realcali.onrender.com/product/${data.identifier}`, {
                         method: 'DELETE'
                     })
@@ -612,16 +659,35 @@ document.getElementById('edit-product-form').addEventListener('submit', function
     const fields = [
         'name', 'price', 'description',
         'perg', 'peroz',
-        'perqp', 'perhalfp', 'per1lb','id'
+        'perqp', 'perhalfp', 'per1lb', 'id'
     ];
+
+    // Append basic fields to formData
     fields.forEach(field => {
         const fieldElement = document.getElementById(`edit-${field}`);
         if (fieldElement) {
-                formData.append(field, fieldElement.value);
-
+            formData.append(field, fieldElement.value);
         } else {
             console.error(`Element with ID edit-${field} not found`);
         }
+    });
+
+    // Append bulk prices to formData
+    document.querySelectorAll('.bulk-price-row').forEach((row, index) => {
+        const quantity = row.querySelector(`#bulk_quantity_${index + 1}`).value;
+        const price = row.querySelector(`#bulk_price_${index + 1}`).value;
+        formData.append(`bulk_quantity[]`, quantity);
+        formData.append(`bulk_price[]`, price);
+    });
+
+    // Append weight prices to formData
+    document.querySelectorAll('.custom-bulk-price-row').forEach((row, index) => {
+        const weightType = row.querySelector(`#weight_type_${index + 1}`).value;
+        const quantity = row.querySelector(`#custom_quantity_${index + 1}`).value;
+        const customBulkPrice = row.querySelector(`#custom_bulk_price_${index + 1}`).value;
+        formData.append(`weight_type[]`, weightType);
+        formData.append(`custom_quantity[]`, quantity);
+        formData.append(`custom_bulk_price[]`, customBulkPrice);
     });
 
     // Include file inputs (images and videos)
@@ -662,8 +728,6 @@ document.getElementById('edit-product-form').addEventListener('submit', function
         alert('An error occurred while updating the product. Please check the console for more details.');
     });
 });
-
-
 
 
 

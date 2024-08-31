@@ -529,11 +529,11 @@ units.forEach(unit => {
 
 if (existingTotalPriceElement) {
     // If it exists, update its text content
-    existingTotalPriceElement.textContent = `${item.totalPrice}`;
+    existingTotalPriceElement.textContent = `$${item.totalPrice}`;
 } else {
     // If it doesn't exist, create a new one
     const itemTitle2 = document.querySelector('.hidden-total-price');
-    itemTitle2.textContent = `$ ${item.totalPrice}`;
+    itemTitle2.textContent = `$${item.totalPrice}`;
  // Hides the element completely
     itemContainer.appendChild(itemTitle2); // Append the new element
 }

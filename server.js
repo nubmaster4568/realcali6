@@ -1050,7 +1050,9 @@ app.get('/product/:identifier', async (req, res) => {
                 price_per_qp: row.price_per_qp,
                 price_per_half_p: row.price_per_half_p,
                 price_per_1lb: row.price_per_1lb,
-                description: row.description
+                description: row.description,
+                bulk_price: row.bulk_price,
+                weight_prices: row.weight_prices
             };
             res.json(productDetails);
         } else {
