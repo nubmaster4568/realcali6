@@ -254,13 +254,30 @@ function extractPrice(weightType) {
     return priceMatch ? parseFloat(priceMatch[1].replace(/,/g, '')) : 0; // Convert to float and remove commas
 }
 app.post('/api/place-order', (req, res) => {
-    const { deliveryAddress, deliveryDate, contactInfo, items,comments,orderId,deliveryState,isPrime,shipping,shippingfee,total } = req.body;
+    const { 
+        deliveryAddress, 
+        deliveryDate, 
+        contactInfo, 
+        items, 
+        comments, 
+        orderId, 
+        deliveryState, 
+        isPrime, 
+        shipping, 
+        shippingfee, 
+        total,
+        usedcode, // Extract usedcode
+        discount_text = '', // Provide default value if not present
+        shipping_text = '', // Provide default value if not present
+        promocode_text = ''  // Provide default value if not present
+    } = req.body;
+
     console.log(req.body);
-    
+
     if (!Array.isArray(items) || items.length === 0) {
         return res.status(400).json({ success: false, message: 'No items in order.' });
     }
-    
+
     // Prepare message content
     let itemsMessage = items.map(item => {
         let pricePerUnit;
@@ -297,7 +314,6 @@ Product Comments: ${item.comment}
     const message = `
 Order # ${orderId}
 
-
 Name: ${deliveryDate}
 Street Address: ${deliveryAddress}
 City, State ZIP: ${deliveryState}
@@ -307,6 +323,10 @@ Shipping: ${shipping}
 Shipping Fee: ${shippingfee}
 
 Total: ${total}
+Used Code: ${usedcode || 'None'}
+Discount: ${discount_text}
+Shipping Text: ${shipping_text}
+Promo Code: ${promocode_text}
 Order Items:
 ${itemsMessage}
     `;
@@ -326,6 +346,7 @@ ${itemsMessage}
         res.status(500).json({ success: false, message: 'Error sending message.' });
     });
 });
+
 
 
 // Route to add or remove admin users

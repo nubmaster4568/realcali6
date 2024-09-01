@@ -748,6 +748,9 @@ function generateOrderId(length = 10) {
         $('#email-response').text('Please enter your email address.');
     }
 });
+
+
+
         // Add the event listener here
         document.getElementById('place-order-button').addEventListener('click', function() {
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -837,28 +840,38 @@ items.forEach(function(item) {
                     // Free shipping for ground if subtotal is over $100
                 }
             }
-
+            let totalPrice = subtotal + shippingFee;
+            let promocodeapplied = false
             console.log(shipping_text,'TEXT')
+            
             const promocode = $('#promocode').val().trim(); // Get the value entered by the user
             if (promocodes.hasOwnProperty(promocode)) {
                 const discount = promocodes[promocode];
-                if( discount > maxDiscount) {
-                    maxDiscount = (1 - (discount / 100));
+                if( discount > 20 && isPrime ) {
+                    usedcode = promocode
+                    console.log('Discount bigger hten 20',discount)
+                    totalPrice *= 1 - (discount / 100);
+                    console.log(totalPrice,'Total Price after Discount bigiger then 30')
                     promocode_text = `Promo code applied! ${discount}% discount.`
+                    console.log(isPrime,'Is Prime')
+                    promocodeapplied = true
 
+                } else if (!isPrime) {
+                    totalPrice *= 1 - (discount / 100);
+                    promocode_text = `Promo code applied! ${discount}% discount.`
                 }
-                else if (isPrime) {
-                    discount_text += 'Prime Member 20% Discount!'
-                }
+
                  // Apply the discount percentage
                 console.log(`Promo code applied! ${discount}% discount.`);
             } else {
                 console.log('Invalid promo code.');
             }
-        
-            subtotal *= (1 - (maxDiscount / 100)); // Apply the higher discount
-            const totalPrice = subtotal + shippingFee;
-            console.log(totalPrice,subtotal,shippingFee,'total,subtotal,shipping fee')
+            if (isPrime && !promocodeapplied) {
+                totalPrice *= 0.80
+                discount_text += 'Prime Member 20% Discount!'
+
+            }
+            
             const randomId = generateOrderId(12); // You can specify the desired length here
         
             document.getElementById('popup-address').textContent = address + ' ' + state;
@@ -893,6 +906,9 @@ items.forEach(function(item) {
             const contactInfo = document.getElementById('contact-info').value;
             const comments = document.getElementById('comments').value;
             const orderIdElement = document.getElementById('orderId');
+            const addtext = document.getElementById('additional-text').textContent
+            const usedcode =  $('#promocode').val().trim(); // Get the value entered by the user
+
             function removeDuplicates(array) {
             const seen = new Set();
                 return array.filter(item => {
@@ -919,8 +935,9 @@ items.forEach(function(item) {
                 isPrime:isPrime,
                 shipping:shipping,
                 shippingfee: shippingfee,
-                total:total
-                
+                total:total,
+                usedcode: usedcode,
+                additional: addtext
                 
             };
         
