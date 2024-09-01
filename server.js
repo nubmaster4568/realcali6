@@ -1255,7 +1255,6 @@ app.get('/api/products', async (req, res) => {
     }
 });
 
-
 app.post('/edit-products', upload.fields([
     { name: 'images[]', maxCount: 10 },
     { name: 'videos[]', maxCount: 5 }
@@ -1271,21 +1270,17 @@ app.post('/edit-products', upload.fields([
         per1lb, 
         id 
     } = req.body;
-
     const productImages = req.files['images[]'] || [];
     const productVideos = req.files['videos[]'] || [];
-
-    console.log(req.body); // Debugging line to check received files
 
     if (productImages.length === 0 && productVideos.length === 0) {
         return res.status(400).send('At least one image or video is required.');
     }
 
-    // Initialize bulk and weight price variables
     let bulkPrices = {};
     let weightPrices = {};
 
-    // Populate weightPrices based on input
+
     if (perg > 0) {
         weightPrices[1] = [];
         weightPrices[1].push({ quantity: 32, price: perqp / 32 });
@@ -1312,12 +1307,17 @@ app.post('/edit-products', upload.fields([
         weightPrices[4].push({ quantity: 2, price: per1lb / 2 });
     }
 
-    // Extract bulk quantities and prices if they exist
-    const bulkQuantities = req.body['bulk_quantity[]'] || [];
-    const bulkPricesArray = req.body['bulk_price[]'] || [];
+
+    console.log('Request Body:', req.body);
+
+    // Access the bulk quantities and prices
+    const bulkQuantities = req.body['bulk_quantity[]'] || req.body.bulk_quantity || [];
+    const bulkPricesArray = req.body['bulk_price[]'] || req.body.bulk_price || [];
+
+    console.log('Bulk Quantities:', bulkQuantities);
+    console.log('Bulk Prices:', bulkPricesArray);
 
     if (bulkQuantities.length > 0 && bulkPricesArray.length > 0) {
-        bulkPrices = {};
         bulkQuantities.forEach((quantity, index) => {
             const price = parseFloat(bulkPricesArray[index]);
             if (!isNaN(price)) {
@@ -1326,7 +1326,9 @@ app.post('/edit-products', upload.fields([
         });
     }
 
-    // Extract weight pricing details if they exist
+    // Check if bulkPrices is empty
+    const isBulkPricesEmpty = Object.keys(bulkPrices).length === 0;
+
     const weightTypes = req.body['weight_type[]'] || [];
     const customQuantities = req.body['custom_quantity[]'] || [];
     const customPrices = req.body['custom_weight_price[]'] || [];
@@ -1347,22 +1349,19 @@ app.post('/edit-products', upload.fields([
     }
 
     try {
-        // Get Dropbox access token
         const accessToken = await getAccessToken();
         const dbx = new Dropbox({ accessToken, fetch: fetch });
 
-        // Process and save images as base64
         const base64Images = await Promise.all(
             productImages.map(async (file) => {
                 const compressedImage = await sharp(file.buffer)
-                    .resize(800) // Resize if needed (optional)
-                    .jpeg({ quality: 20 }) // Compress and set quality
+                    .resize(800)
+                    .jpeg({ quality: 20 })
                     .toBuffer();
                 return `data:image/jpeg;base64,${compressedImage.toString('base64')}`;
             })
         );
 
-        // Upload videos to Dropbox and get file links
         const videoLinks = await Promise.all(
             productVideos.map(async (file) => {
                 const filePath = `/${file.originalname}`;
@@ -1371,40 +1370,33 @@ app.post('/edit-products', upload.fields([
                     contents: file.buffer
                 });
 
-                // Create a shared link for the uploaded file
                 const sharedLinkResponse = await dbx.sharingCreateSharedLinkWithSettings({
                     path: filePath
                 });
 
-                return sharedLinkResponse.result.url.replace('dl=0', 'dl=1'); // Get a direct download link
+                return sharedLinkResponse.result.url.replace('dl=0', 'dl=1');
             })
         );
 
-        // Combine all images and videos into a single JSON object
         const mediaData = JSON.stringify({
             images: base64Images,
             videos: videoLinks
         });
 
-        // Determine final price
         const pricePerGram = parseFloat(perg) || 0;
         const pricePerOz = parseFloat(peroz) || 0;
         const pricePerQp = parseFloat(perqp) || 0;
         const pricePerHalfP = parseFloat(perhalfp) || 0;
         const pricePer1Lb = parseFloat(per1lb) || 0;
 
-        // Array of price per unit
         const unitPrices = [pricePerGram, pricePerOz, pricePerQp, pricePerHalfP, pricePer1Lb];
-
-        // Determine final price
         const hasValidUnitPrice = unitPrices.some(p => p > 0);
         const finalPrice = hasValidUnitPrice ? 0 : parseFloat(price) || 0;
 
-        // Handle potential empty weightPrices
         const weightPricesValue = Object.keys(weightPrices).length > 0 ? weightPrices : null;
 
-        // Store all media in a single row
-        await client.query(`
+        // Build the SQL query conditionally
+        const updateQuery = `
             UPDATE products 
             SET name = $1, 
                 price = $2, 
@@ -1415,10 +1407,12 @@ app.post('/edit-products', upload.fields([
                 price_per_1lb = $7, 
                 media_data = $8,
                 description = $9,
-                bulk_price = $10,
-                weight_prices = $11
-            WHERE identifier = $12;
-        `, [
+                weight_prices = $10
+            ${!isBulkPricesEmpty ? ', bulk_price = $11' : ''}
+            WHERE identifier = $${!isBulkPricesEmpty ? '12' : '11'};
+        `;
+
+        const queryParams = [
             name, 
             finalPrice, 
             pricePerGram, 
@@ -1428,10 +1422,16 @@ app.post('/edit-products', upload.fields([
             pricePer1Lb, 
             mediaData, 
             description, 
-            bulkPrices,
-            weightPricesValue,
-            id
-        ]);
+            weightPricesValue
+        ];
+
+        if (!isBulkPricesEmpty) {
+            queryParams.push(bulkPrices, id);
+        } else {
+            queryParams.push(id);
+        }
+
+        await client.query(updateQuery, queryParams);
 
         res.status(200).json({ message: 'Product successfully updated.' });
     } catch (err) {
@@ -1439,7 +1439,6 @@ app.post('/edit-products', upload.fields([
         res.status(500).json({ error: 'Error saving product.' });
     }
 });
-
 
 
 

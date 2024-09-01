@@ -562,7 +562,7 @@ if (existingTotalPriceElement) {
 
         
                 updateCartItem(); // Calculate initial total price
-        
+               
                 quantityUnitSelect.addEventListener('change', updateCartItem);
                 quantityInput.addEventListener('input', updateCartItem);
                 commentTextArea.addEventListener('input', updateCartItem); // Update when comment changes
@@ -952,6 +952,8 @@ items.forEach(function(item) {
                     console.log('Order response:', response); // Debugging: check server response
                     if (response.success) {
                         // Optionally clear inputs or perform another action
+                        window.location.href = `index.html?userId=${chatId}`;
+
                     } else {
                         alert('Failed to place order.');
                     }
