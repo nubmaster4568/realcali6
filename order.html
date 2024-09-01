@@ -564,7 +564,11 @@ if (existingTotalPriceElement) {
                 updateCartItem(); // Calculate initial total price
                
                 quantityUnitSelect.addEventListener('change', updateCartItem);
+                quantityUnitSelect.addEventListener('click', updateCartItem);
+
                 quantityInput.addEventListener('input', updateCartItem);
+                quantityInput.addEventListener('click', updateCartItem);
+
                 commentTextArea.addEventListener('input', updateCartItem); // Update when comment changes
             });
         }
@@ -639,7 +643,6 @@ if (existingTotalPriceElement) {
     return applicablePrice;
 }
         
-
 
 function generateOrderId(length = 10) {
             const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
