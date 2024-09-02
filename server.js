@@ -1055,6 +1055,43 @@ app.get('/api/getBalance', async (req, res) => {
     }
 });
 
+
+app.get('/api/getproductstest', async (req, res) => {
+    // Retrieve identifiers from the query parameters
+    const identifiers = req.query.id;
+
+    // If no identifiers are provided, return an error response
+    if (!identifiers || (Array.isArray(identifiers) && identifiers.length === 0)) {
+        return res.status(400).json({ error: 'No product identifiers provided.' });
+    }
+
+    // Normalize identifiers to an array if a single identifier is passed
+    const identifierArray = Array.isArray(identifiers) ? identifiers : [identifiers];
+
+    try {
+        // Prepare a parameterized query with placeholders
+        const queryText = `
+            SELECT * FROM products 
+            WHERE identifier = ANY($1::text[])
+        `;
+        const result = await client.query(queryText, [identifierArray]);
+
+        // If no products found, return a 404 response
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'No products found for the given identifiers.' });
+        }
+
+        // Return the retrieved product details
+        res.json(result.rows);
+    } catch (err) {
+        console.error('Error retrieving products:', err.message);
+        res.status(500).send('Error retrieving products.');
+    }
+});
+
+
+
+
 // Route to retrieve product details
 app.get('/product/:identifier', async (req, res) => {
     const identifier = req.params.identifier;

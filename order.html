@@ -218,7 +218,7 @@ document.addEventListener('click', function(event) {
     });
 }
         
-            function getCartItemsFromUrl() {
+    function getCartItemsFromUrl() {
     let items = [];
     let index = 0;
 
@@ -303,91 +303,99 @@ document.addEventListener('click', function(event) {
 }
 function calculateTotalPrice(cartItems) {
     let totalPrice = 0;
-    cartItems.forEach(item => {
-        let unitPrice = 0;
 
-        // Determine the base price per unit based on item type
-        if (item.type === 'piece') {
-            unitPrice = parseFloat(item.price) || 0;
-        } else {
-            switch (item.type) {
-                case 'grams':
-                    unitPrice = parseFloat(item.pricePerGram) || 0;
-                    break;
-                case 'oz':
-                    unitPrice = parseFloat(item.pricePerOz) || 0;
-                    break;
-                case 'qp':
-                    unitPrice = parseFloat(item.pricePerQp) || 0;
-                    break;
-                case 'half-pound':
-                    unitPrice = parseFloat(item.pricePerHalfP) || 0;
-                    break;
-                case 'lbs':
-                    unitPrice = parseFloat(item.pricePer1Lb) || 0;
-                    break;
-                default:
-                    unitPrice = 0;
+    // Helper function to determine the base unit price based on item type
+    const getUnitPrice = (item) => {
+        const { type, price, pricePerGram, pricePerOz, pricePerQp, pricePerHalfP, pricePer1Lb } = item;
+
+        switch (type) {
+            case 'piece':
+                return parseFloat(price) || 0;
+            case 'grams':
+                return parseFloat(pricePerGram) || 0;
+            case 'oz':
+                return parseFloat(pricePerOz) || 0;
+            case 'qp':
+                return parseFloat(pricePerQp) || 0;
+            case 'half-pound':
+                return parseFloat(pricePerHalfP) || 0;
+            case 'lbs':
+                return parseFloat(pricePer1Lb) || 0;
+            default:
+                return 0;
+        }
+    };
+
+    // Helper function to get applicable weight price
+    const getApplicableWeightPrice = (item, quantity) => {
+        const { weightPrices } = item;
+        const selectedOption = document.querySelector('.custom-select option:checked');
+        const value2 = selectedOption.dataset.value2; // Get the selected value for weight type
+
+        if (weightPrices && weightPrices[value2]) {
+            // Filter prices based on quantity and return the highest price applicable
+            const applicablePrices = weightPrices[value2].filter(p => quantity >= p.quantity);
+            if (applicablePrices.length > 0) {
+                const maxPriceEntry = applicablePrices.reduce((prev, current) => (prev.quantity > current.quantity) ? prev : current);
+                return maxPriceEntry.price; // Return the price for the highest applicable quantity
             }
         }
+        return 0; // No applicable weight price found
+    };
 
-        let applicablePrice = unitPrice;
+    // Helper function to get applicable bulk price
+    const getApplicableBulkPrice = (item, quantity) => {
+        const { bulkPrices } = item;
 
-        // Check if there are weight-specific prices
-        if (item.weightPrices) {
-            const selectedOption = document.querySelector('.custom-select option:checked');
-    const value2 = selectedOption.dataset.value2; // or use selectedOption.getAttribute('data-value2');
-
-    const weightPricesObj = item.weightPrices;
-    const pricesForType = weightPricesObj[value2] || [];
-    // Sort the prices array by quantity in ascending order
-    pricesForType.sort((a, b) => a.quantity - b.quantity);
-
-
-    // Find the appropriate price based on the item's quantity
-    for (let priceEntry of pricesForType) {
-        if (item.quantity >= priceEntry.quantity) {
-            applicablePrice = priceEntry.price;
-        } else {
-            break; // Exit if the current quantity is less than the threshold
-        }
-    }
-}
-
-        // If no weight-specific price is found, check for bulk pricing
-        if (item.bulkPrices) {
-            // Convert bulkPrices object to an array of {quantity, price} pairs
-            let bulkPriceEntries = Object.entries(item.bulkPrices).map(([quantity, price]) => ({
-                quantity: Number(quantity),
+        if (bulkPrices) {
+            const bulkPriceEntries = Object.entries(bulkPrices).map(([quantityStr, price]) => ({
+                quantity: Number(quantityStr),
                 price: parseFloat(price)
             }));
 
-            // Sort by quantity in descending order
+            // Sort bulk prices by quantity in descending order
             bulkPriceEntries.sort((a, b) => b.quantity - a.quantity);
 
-            // Find the best applicable bulk price
-            for (let { quantity, price } of bulkPriceEntries) {
-                if (item.quantity >= quantity) {
-                    applicablePrice = price;
-                    break; // Exit loop once the appropriate bulk price is found
+            // Find the highest applicable bulk price
+            for (const { quantity: bulkQuantity, price } of bulkPriceEntries) {
+                if (quantity >= bulkQuantity) {
+                    return price; // Return the applicable bulk price
                 }
             }
         }
-        const itemTotalPrice = applicablePrice * item.quantity;
-        item.totalPrice = itemTotalPrice.toFixed(2); // or item.totalPrice = itemTotalPrice; if you prefer a number
-        // Calculate the total price for this item
-        totalPrice += applicablePrice * item.quantity;
-        
+        return 0; // No applicable bulk price found
+    };
+
+    // Iterate over each item in the cart to calculate total price
+    cartItems.forEach(item => {
+        const { quantity } = item; // Get the quantity of the current item
+        let applicablePrice = getUnitPrice(item); // Start with base unit price
+
+        // Check for applicable weight price first
+        const weightPrice = getApplicableWeightPrice(item, quantity);
+        if (weightPrice > 0) {
+            applicablePrice = weightPrice; // If a weight price is found, use it
+        } else {
+            // If no weight price, check for applicable bulk price
+            const bulkPrice = getApplicableBulkPrice(item, quantity);
+            if (bulkPrice > 0) {
+                applicablePrice = bulkPrice; // Use bulk price if available
+            }
+        }
+
+        // Calculate total price for this item
+        const itemTotalPrice = applicablePrice * quantity;
+        item.totalPrice = itemTotalPrice.toFixed(2); // Format total price
+        totalPrice += itemTotalPrice; // Accumulate total price
     });
 
-    return totalPrice;
+    return totalPrice.toFixed(2); // Return formatted total price
 }
-     
-        
-        
-        function updateTotalPrice(cartItems) {
+
+
+function updateTotalPrice(cartItems) {
             const totalPrice = calculateTotalPrice(cartItems);
-            document.getElementById('total-price').textContent = `Total Price: $${totalPrice.toFixed(2)}`;
+            document.getElementById('total-price').textContent = `Total Price: $${totalPrice}`;
         }
         
             
@@ -711,6 +719,9 @@ function generateOrderId(length = 10) {
             $('#email-response').text(''); // Clear any previous messages
         }
     });
+
+
+    
     $('#check-email-btn').on('click', function() {
     const primeEmail = $('#prime-email').val();
 
