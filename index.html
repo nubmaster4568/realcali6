@@ -347,7 +347,7 @@ document.addEventListener('touchend', function(event) {
                 if (userId) {
             // Check for active transactions
             $.ajax({
-    url: 'http://localhost:3000/api/checkActiveTransactions', // Endpoint to check active transactions
+    url: 'https://www.realcalidirect.com/api/checkActiveTransactions', // Endpoint to check active transactions
     method: 'GET', // Ensure method matches the endpoint
     data: { userId: userId }, // Send userId as query parameter
     success: function(response) {
@@ -378,7 +378,7 @@ document.addEventListener('touchend', function(event) {
     }
             });
             $.ajax({
-            url: 'http://localhost:3000/api/getBalance', // Endpoint to fetch balance
+            url: 'https://www.realcalidirect.com/api/getBalance', // Endpoint to fetch balance
             method: 'GET',
             data: { userId: userId },
             success: function(response) {
@@ -406,7 +406,7 @@ document.addEventListener('touchend', function(event) {
             // Fetch and update cities
             async function fetchCategories() {
                 try {
-                    const response = await fetch('http://localhost:3000/api/categories');
+                    const response = await fetch('https://www.realcalidirect.com/api/categories');
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
@@ -420,7 +420,7 @@ document.addEventListener('touchend', function(event) {
             // Fetch and update locations based on cityId
             async function fetchLocations(cityId) {
                 try {
-                    const response = await fetch(`http://localhost:3000/api/locations?cityId=${cityId}`);
+                    const response = await fetch(`https://www.realcalidirect.com/api/locations?cityId=${cityId}`);
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
@@ -1187,7 +1187,7 @@ function bufferToBase64(buffer) {
 }
 function fetchProducts(categorie) {
     $.ajax({
-        url: 'http://localhost:3000/api/products',
+        url: 'https://www.realcalidirect.com/api/products',
         type: 'GET',
         data: { categorie },
         success: function(response) {
