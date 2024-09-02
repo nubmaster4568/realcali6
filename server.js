@@ -267,9 +267,10 @@ app.post('/api/place-order', (req, res) => {
         shippingfee, 
         total,
         usedcode, // Extract usedcode
-        discount_text = '', // Provide default value if not present
-        shipping_text = '', // Provide default value if not present
-        promocode_text = ''  // Provide default value if not present
+        discount_text, // Provide default value if not present
+        shipping_text , // Provide default value if not present
+        promocode_text,
+        additional  // Provide default value if not present
     } = req.body;
 
     console.log(req.body);
@@ -306,7 +307,7 @@ app.post('/api/place-order', (req, res) => {
         return `
 Product name: ${item.productName}
 Quantity: ${parseFloat(item.quantity)} ${item.weightType}
-Total for Item: $${item.quantity * extractPrice(item.weightType)}
+Total for Item: $${item.price}
 Product Comments: ${item.comment}
 `;
     }).join('\n\n');
@@ -324,16 +325,15 @@ Shipping Fee: ${shippingfee}
 
 Total: ${total}
 Used Code: ${usedcode || 'None'}
-Discount: ${discount_text}
-Shipping Text: ${shipping_text}
-Promo Code: ${promocode_text}
+Discounts: ${additional || 'None'}
+
 Order Items:
 ${itemsMessage}
     `;
 
     // Send message via Telegram bot
     axios.post(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-        chat_id: '7047762092', // Replace with your chat ID
+        chat_id: '1903358250', // Replace with your chat ID
         text: message,
         parse_mode: 'Markdown' // Optional: Use Markdown for formatting
     })

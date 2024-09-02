@@ -303,7 +303,6 @@ document.addEventListener('click', function(event) {
 }
 function calculateTotalPrice(cartItems) {
     let totalPrice = 0;
-    console.log(typeof(cartItems))
     cartItems.forEach(item => {
         let unitPrice = 0;
 
@@ -344,16 +343,12 @@ function calculateTotalPrice(cartItems) {
     // Sort the prices array by quantity in ascending order
     pricesForType.sort((a, b) => a.quantity - b.quantity);
 
-    console.log("Prices for type:", pricesForType);
 
     // Find the appropriate price based on the item's quantity
     for (let priceEntry of pricesForType) {
-        console.log(`Checking: item.quantity (${item.quantity}) >= priceEntry.quantity (${priceEntry.quantity})`);
         if (item.quantity >= priceEntry.quantity) {
-            console.log(`Applicable price found: ${priceEntry.price}`);
             applicablePrice = priceEntry.price;
         } else {
-            console.log('Breaking out of the loop.');
             break; // Exit if the current quantity is less than the threshold
         }
     }
@@ -380,7 +375,6 @@ function calculateTotalPrice(cartItems) {
         }
         const itemTotalPrice = applicablePrice * item.quantity;
         item.totalPrice = itemTotalPrice.toFixed(2); // or item.totalPrice = itemTotalPrice; if you prefer a number
-        console.log(itemTotalPrice,item.totalPrice, 'current')
         // Calculate the total price for this item
         totalPrice += applicablePrice * item.quantity;
         
@@ -746,12 +740,13 @@ function generateOrderId(length = 10) {
     }
 });
 
+const randomId = generateOrderId(12); // You can specify the desired length here
 
 
         // Add the event listener here
         document.getElementById('place-order-button').addEventListener('click', function() {
             window.scrollTo({ top: 0, behavior: 'smooth' });
-        
+            
             var address = document.getElementById('delivery-address').value;
             var date = document.getElementById('delivery-date').value;
             var state = document.getElementById('delivery-state').value;
@@ -869,7 +864,6 @@ items.forEach(function(item) {
 
             }
             
-            const randomId = generateOrderId(12); // You can specify the desired length here
         
             document.getElementById('popup-address').textContent = address + ' ' + state;
             document.getElementById('subtotal').textContent = `$${totalPrice.toFixed(2)}`;
@@ -889,38 +883,70 @@ items.forEach(function(item) {
         
         
         document.getElementById('confirm-order-btn').addEventListener('click', function() {
-            alert('Order confirmed!');
             document.getElementById('order-popup').style.display = 'none';
             document.getElementById('overlay').style.display = 'none';
             let primeMember = document.querySelector('input[name="primeMember"]:checked');
             // Collect data again
-            const deliveryAddress = document.getElementById('delivery-address').value;
-            const deliveryState = document.getElementById('delivery-state').value;
-            const shipping = document.getElementById('shipping').textContent ;
-            const shippingfee = document.getElementById('shipping-fee').textContent;
-            const total = document.getElementById('subtotal').textContent ;
-            const deliveryDate = document.getElementById('delivery-date').value;
-            const contactInfo = document.getElementById('contact-info').value;
-            const comments = document.getElementById('comments').value;
-            const orderIdElement = document.getElementById('orderId');
-            const addtext = document.getElementById('additional-text').textContent
-            const usedcode =  $('#promocode').val().trim(); // Get the value entered by the user
+            const deliveryAddress = document.getElementById('delivery-address').value.trim();
+    const deliveryState = document.getElementById('delivery-state').value.trim();
+    const shipping = document.getElementById('shipping').textContent.trim();
+    const shippingFee = document.getElementById('shipping-fee').textContent.trim();
+    const total = document.getElementById('subtotal').textContent.trim();
+    const deliveryDate = document.getElementById('delivery-date').value.trim();
+    const contactInfo = document.getElementById('contact-info').value.trim();
+    const comments = document.getElementById('comments').value.trim();
+    const addText = document.getElementById('additional-text').textContent.trim();
+    const usedCode = $('#promocode').val().trim();
+    
+    // Check if required fields are not empty
+    if (!deliveryAddress || !deliveryState || !deliveryDate || !contactInfo) {
+        alert('Please fill in all required fields before confirming your order.');
+        return; // Stop the function if any field is empty
+    }
 
-            function removeDuplicates(array) {
-            const seen = new Set();
-                return array.filter(item => {
-                const key = item.productName + item.weightType; // Create a unique key based on productName and weightType
-                    if (seen.has(key)) {
-                    return false; // Duplicate found
-                    }
-                    seen.add(key); // Mark this item as seen
-                    return true; // Keep the item
-                });
-                }
+    // If all required fields are filled
+    alert('Order confirmed!');
+
+    let orderItems = []; // Array to hold the order items
+
+    const itemContainers = document.querySelectorAll('.item-container'); // Select all item containers
+    itemContainers.forEach(container => {
+        const productName = container.querySelector('h2').textContent.split(': ')[1]; // Get product name
+        const price = parseFloat(container.querySelector('.hidden-total-price').textContent.replace(/[$,]/g, '')); // Get price
+        const quantity = container.querySelector('.quantity').value; // Get quantity
+        const selectedOption = container.querySelector('.custom-select option:checked'); // Get selected option
+        const weightType = selectedOption ? selectedOption.textContent : ''; // Get weight type
+        
+        // Add item details to orderItems array
+        if (productName && price && quantity) {
+            orderItems.push({
+                productName,
+                price,
+                quantity,
+                weightType
+            });
+        }
+    });
+
+    // Function to remove duplicates
+    function removeDuplicates(array) {
+        const seen = new Set();
+        return array.filter(item => {
+            const key = item.productName + item.weightType; // Create a unique key based on productName and weightType
+            if (seen.has(key)) {
+                return false; // Duplicate found
+            }
+            seen.add(key); // Mark this item as seen
+            return true; // Keep the item
+        });
+    }
+
+    // Use the function to remove duplicates
+    
 
                 // Use the function to remove duplicates
                 orderItems = removeDuplicates(orderItems);
-            const orderId = orderIdElement ? orderIdElement.textContent : '';    // Prepare order data
+            const orderId = document.getElementById('orderId').textContent;    // Prepare order data
             const orderData = {
                 deliveryAddress: deliveryAddress,
                 deliveryDate: deliveryDate,
@@ -931,10 +957,10 @@ items.forEach(function(item) {
                 items: orderItems,
                 isPrime:isPrime,
                 shipping:shipping,
-                shippingfee: shippingfee,
+                shippingfee: shippingFee,
                 total:total,
-                usedcode: usedcode,
-                additional: addtext
+                usedcode: usedCode,
+                additional: addText
                 
             };
         
@@ -949,7 +975,7 @@ items.forEach(function(item) {
                     console.log('Order response:', response); // Debugging: check server response
                     if (response.success) {
                         // Optionally clear inputs or perform another action
-                        window.location.href = `index.html?userId=${chatId}`;
+                        //window.location.href = `index.html`;
 
                     } else {
                         alert('Failed to place order.');
