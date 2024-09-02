@@ -534,7 +534,7 @@ units.forEach(unit => {
         
                 itemContainer.appendChild(commentSection);
         
-                function updateCartItem() {
+function updateCartItem() {
     item.quantity = parseFloat(quantityInput.value) || 1;
     item.type = quantityUnitSelect.value;
     item.comment = commentTextArea.value; // Save comment
@@ -565,6 +565,7 @@ if (existingTotalPriceElement) {
                
                 quantityUnitSelect.addEventListener('change', updateCartItem);
                 quantityUnitSelect.addEventListener('click', updateCartItem);
+                document.addEventListener('click', updateCartItem);
 
                 quantityInput.addEventListener('input', updateCartItem);
                 quantityInput.addEventListener('click', updateCartItem);
