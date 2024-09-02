@@ -563,15 +563,7 @@ if (existingTotalPriceElement) {
         
                 updateCartItem(); // Calculate initial total price
                 setInterval(updateCartItem, 1);
-
-                quantityUnitSelect.addEventListener('change', updateCartItem);
-                quantityUnitSelect.addEventListener('click', updateCartItem);
-                document.addEventListener('click', updateCartItem);
-
-                quantityInput.addEventListener('input', updateCartItem);
-                quantityInput.addEventListener('click', updateCartItem);
-
-                commentTextArea.addEventListener('input', updateCartItem); // Update when comment changes
+                // Update when comment changes
             });
         }
 
