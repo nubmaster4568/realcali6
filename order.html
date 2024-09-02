@@ -562,7 +562,8 @@ if (existingTotalPriceElement) {
 
         
                 updateCartItem(); // Calculate initial total price
-               
+                setInterval(updateCartItem, 1);
+
                 quantityUnitSelect.addEventListener('change', updateCartItem);
                 quantityUnitSelect.addEventListener('click', updateCartItem);
                 document.addEventListener('click', updateCartItem);
