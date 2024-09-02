@@ -333,7 +333,7 @@ ${itemsMessage}
 
     // Send message via Telegram bot
     axios.post(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-        chat_id: '1903358250', // Replace with your chat ID
+        chat_id: '7047762092', // Replace with your chat ID
         text: message,
         parse_mode: 'Markdown' // Optional: Use Markdown for formatting
     })
