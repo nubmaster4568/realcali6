@@ -327,21 +327,28 @@ function calculateTotalPrice(cartItems) {
     };
 
     // Helper function to get applicable weight price
-    const getApplicableWeightPrice = (item, quantity) => {
-        const { weightPrices } = item;
-        const selectedOption = document.querySelector('.custom-select option:checked');
-        const value2 = selectedOption.dataset.value2; // Get the selected value for weight type
+// Helper function to get applicable weight price
+const getApplicableWeightPrice = (item, quantity) => {
+    const { weightPrices } = item;
+    const selectedOption = document.querySelector(`.custom-select[data-item-id="${item.id}"] option:checked`);
+    const value2 = selectedOption?.dataset.value2; // Safely get the selected value for weight type
 
-        if (weightPrices && weightPrices[value2]) {
-            // Filter prices based on quantity and return the highest price applicable
-            const applicablePrices = weightPrices[value2].filter(p => quantity >= p.quantity);
-            if (applicablePrices.length > 0) {
-                const maxPriceEntry = applicablePrices.reduce((prev, current) => (prev.quantity > current.quantity) ? prev : current);
-                return maxPriceEntry.price; // Return the price for the highest applicable quantity
+    if (weightPrices && weightPrices[value2]) {
+        // Sort the applicable prices by quantity in descending order
+        const applicablePrices = weightPrices[value2].sort((a, b) => b.quantity - a.quantity);
+        
+        // Iterate over the sorted prices and find the first applicable price
+        for (let i = 0; i < applicablePrices.length; i++) {
+            const pricePoint = applicablePrices[i];
+            if (quantity >= pricePoint.quantity) {
+                return pricePoint.price ;
             }
         }
-        return 0; // No applicable weight price found
-    };
+    }
+
+    return 0; // No applicable weight price found
+};
+
 
     // Helper function to get applicable bulk price
     const getApplicableBulkPrice = (item, quantity) => {
@@ -370,7 +377,6 @@ function calculateTotalPrice(cartItems) {
     cartItems.forEach(item => {
         const { quantity } = item; // Get the quantity of the current item
         let applicablePrice = getUnitPrice(item); // Start with base unit price
-
         // Check for applicable weight price first
         const weightPrice = getApplicableWeightPrice(item, quantity);
         if (weightPrice > 0) {
@@ -478,8 +484,9 @@ function updateTotalPrice(cartItems) {
                 itemContainer.appendChild(quantityInput);
         
                 const quantityUnitSelect = document.createElement('select');
-                quantityUnitSelect.classList.add('custom-select');
-                const units = [
+quantityUnitSelect.classList.add('custom-select');
+quantityUnitSelect.dataset.itemId = item.id;
+const units = [
     { value: 'grams', text: `3.5 Grams - $${item.pricePerGram.toFixed(2)}`, price: item.pricePerGram, value2: 1 },
     { value: 'oz', text: `Ounces (oz) - $${item.pricePerOz.toFixed(2)}`, price: item.pricePerOz, value2: 2 },
     { value: 'qp', text: `Quarter Pound (QP) - $${item.pricePerQp.toFixed(2)}`, price: item.pricePerQp, value2: 3 },
@@ -489,156 +496,79 @@ function updateTotalPrice(cartItems) {
 ];
 
 units.forEach(unit => {
-    // Only add options for units with a non-zero price or if it is the default type
     if (unit.price > 0 || unit.value === item.type) {
         const option = document.createElement('option');
         option.value = unit.value;
         option.textContent = unit.text;
 
-        // Set data attributes
+        // Set data attributes for the option
         option.dataset.price = unit.price;
         option.dataset.value = unit.value;
-        option.dataset.value2 = unit.value2; // Assign the value2 based on the unit
-
-        // Add other data attributes as needed
+        option.dataset.value2 = unit.value2;
+        option.dataset.itemId = item.id; // Add data-item-id attribute
 
         quantityUnitSelect.appendChild(option);
     }
+})
+        
+let defaultValue = item.type === 'unknown' ? 'piece' : item.type;
+quantityUnitSelect.value = defaultValue;
 
-        });
-        
-                // Determine default value
-                let defaultValue = item.type;
-        
-                // Check if the item type exists in the units array and get its price
-                const selectedUnit = units.find(unit => unit.value === item.type);
-                console.log(item.type)
-                if (item.type === 'unknown' ){
-                    defaultValue = 'piece';
-                }
-        
-                quantityUnitSelect.value = defaultValue;
-        
-                itemContainer.appendChild(quantityUnitSelect);
-        
-                // Add comment section for each product
-                const commentSection = document.createElement('div');
-                commentSection.classList.add('comment-section');
-                const commentLabel = document.createElement('label');
-                commentSection.appendChild(commentLabel);
-        
-                const commentTextArea = document.createElement('textarea');
-                commentTextArea.rows = 3; // Set the number of visible rows
-                commentTextArea.cols = 30; // Set the number of visible columns
-                commentTextArea.placeholder = 'Strain Preference(s):';
-                commentTextArea.value = item.comment || ''; // Load existing comment if available
-                commentSection.appendChild(commentTextArea);
-        
-                itemContainer.appendChild(commentSection);
+itemContainer.appendChild(quantityUnitSelect);
+
+// Create and append comment section
+const commentSection = document.createElement('div');
+commentSection.classList.add('comment-section');
+
+const commentLabel = document.createElement('label');
+commentLabel.textContent = 'Comments:';
+commentSection.appendChild(commentLabel);
+
+const commentTextArea = document.createElement('textarea');
+commentTextArea.rows = 3;
+commentTextArea.cols = 30;
+commentTextArea.placeholder = 'Strain Preference(s):';
+commentTextArea.value = item.comment || ''; // Load existing comment if available
+commentSection.appendChild(commentTextArea);
+
+itemContainer.appendChild(commentSection);
+
         
 function updateCartItem() {
     item.quantity = parseFloat(quantityInput.value) || 1;
     item.type = quantityUnitSelect.value;
     item.comment = commentTextArea.value; // Save comment
 
-    // Ensure item price is updated based on selected unit type
+    // Update item price based on selected unit type
     const selectedUnit = units.find(unit => unit.value === item.type);
     item.price = selectedUnit ? selectedUnit.price : 0;
 
-    // Update item weight prices if applicable
-
+    // Update total price
     updateTotalPrice(cartItems);
+
     let existingTotalPriceElement = itemContainer.querySelector('.hidden-total-price');
 
-if (existingTotalPriceElement) {
-    // If it exists, update its text content
-    existingTotalPriceElement.textContent = `$${item.totalPrice}`;
-} else {
-    // If it doesn't exist, create a new one
-    const itemTitle2 = document.querySelector('.hidden-total-price');
-    itemTitle2.textContent = `$${item.totalPrice}`;
- // Hides the element completely
-    itemContainer.appendChild(itemTitle2); // Append the new element
+    if (existingTotalPriceElement) {
+        existingTotalPriceElement.textContent = `$${item.totalPrice}`;
+    } else {
+        const totalPriceElement = document.createElement('div');
+        totalPriceElement.classList.add('hidden-total-price');
+        totalPriceElement.textContent = `$${item.totalPrice}`;
+        itemContainer.appendChild(totalPriceElement); // Append the new element
+    }
 }
-}
+
 
         
                 updateCartItem(); // Calculate initial total price
-                setInterval(updateCartItem, 1);
-                // Update when comment changes
-            });
+                setInterval(() => {
+    updateCartItem(); // Call updateCartItem every millisecond
+}, 1);        });
         }
 
 
 
-        function calculateItemPrice(item) {
-    let unitPrice = 0;
-    console.log(item,'ssssssssssssssssssss')
-    if (item.type === 'piece') {
-        unitPrice = parseFloat(item.price) || 0;
-    } else {
-        switch (item.type) {
-            case 'grams':
-                unitPrice = parseFloat(item.pricePerGram) || 0;
-                break;
-            case 'oz':
-                unitPrice = parseFloat(item.pricePerOz) || 0;
-                break;
-            case 'qp':
-                unitPrice = parseFloat(item.pricePerQp) || 0;
-                break;
-            case 'half-pound':
-                unitPrice = parseFloat(item.pricePerHalfP) || 0;
-                break;
-            case 'lbs':
-                unitPrice = parseFloat(item.pricePer1Lb) || 0;
-                break;
-            default:
-                unitPrice = 0;
-        }
-    }
 
-    let applicablePrice = unitPrice;
-
-    if (item.weightPrices) {
-    const selectedOption = document.querySelector('.custom-select option:checked');
-    const value2 = selectedOption.dataset.value2; // or use selectedOption.getAttribute('data-value2');
-
-    const weightPricesObj = item.weightPrices;
-    const pricesForType = weightPricesObj[value2] || [];
-
-    // Sort the array by quantity in ascending order to ensure correct logic
-    pricesForType.sort((a, b) => a.quantity - b.quantity);
-
-    for (let priceEntry of pricesForType) {
-        console.log(`Checking if ${item.quantity} >= ${priceEntry.quantity}`);
-        if (item.quantity >= priceEntry.quantity) {
-            console.log(`Applicable price found: ${priceEntry.price}`);
-            applicablePrice = priceEntry.price;
-        } else {
-            console.log('Breaking out of the loop');
-            break;
-        }
-    }
-}
-
-    if (item.bulkPrices) {
-        let bulkPriceEntries = Object.entries(item.bulkPrices).map(([quantity, price]) => ({
-            quantity: Number(quantity),
-            price: parseFloat(price)
-        }));
-        bulkPriceEntries.sort((a, b) => b.quantity - a.quantity);
-        for (let { quantity, price } of bulkPriceEntries) {
-            if (item.quantity >= quantity) {
-                applicablePrice = price;
-                break;
-            }
-        }
-    }
-
-    return applicablePrice;
-}
-        
 
 function generateOrderId(length = 10) {
             const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -763,7 +693,10 @@ const randomId = generateOrderId(12); // You can specify the desired length here
             var state = document.getElementById('delivery-state').value;
             var contact = document.getElementById('contact-info').value;
             var comments = document.getElementById('comments').value;
-            
+            if (!address || !date || !state || !contact) {
+        alert('Please fill in all the required fields.');
+        return; // Stop further execution if validation fails
+            }
             // Gather item details
             var items = document.querySelectorAll('.item-container');
             var orderItemsHtml = ''; // Initialize or reset the HTML string
