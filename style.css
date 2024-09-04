@@ -2,7 +2,7 @@
 body {
     margin: 0;
     font-family: 'Roboto', sans-serif;
-    background-color: #fff9eb;
+    background-color: #0b2c18;
 }
 .sections {
     margin: 0;
@@ -353,7 +353,7 @@ body {
 .button-label {
     margin-top: 60px; /* Adjust spacing as needed */
     font-size: 11px; /* Adjust font size as needed */
-    color: #222222; /* Adjust color as needed */
+    color: #e5e5e5; /* Adjust color as needed */
     text-align: center;
 }
 .banner4 {
