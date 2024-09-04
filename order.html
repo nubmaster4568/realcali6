@@ -753,13 +753,15 @@ items.forEach(function(item) {
     let totalPriceText = item.querySelector('.hidden-total-price').textContent.trim();
     let totalPrice = parseFloat(totalPriceText.replace('$', '')) || 0;
                 
-                orderItems.push({
-                    productName: productName,
-                    quantity: quantity,
-                    weightType: weightType,
-                    comment: comment,
-                    totalPrice: totalPrice
-                });
+    if (quantity > 0) { // Check if quantity is greater than 0
+    orderItems.push({
+        productName: productName,
+        quantity: quantity,
+        weightType: weightType,
+        comment: comment,
+        totalPrice: totalPrice
+    });
+}
                 weightType = weightType.split(' - ')[0];
                 // Populate the popup with item details
                 orderItemsHtml += `
@@ -888,7 +890,7 @@ if (promocodesLower.hasOwnProperty(promocodeLower)) {
         const selectedOption = container.querySelector('.custom-select option:checked'); // Get selected option
         const weightType = selectedOption ? selectedOption.textContent : ''; // Get weight type
         // Add item details to orderItems array
-        if (productName && price && quantity) {
+        if (productName && price && quantity && quantity > 0) {
             orderItems.push({
                 productName,
                 price,
