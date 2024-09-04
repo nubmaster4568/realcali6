@@ -136,7 +136,7 @@
     <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
     <script>document.addEventListener('DOMContentLoaded', function() {
 
-
+        let price_before_discount;
 document.addEventListener('click', function(event) {
         // Get all input fields
         const inputFields = document.querySelectorAll('input');
@@ -632,6 +632,8 @@ function generateOrderId(length = 10) {
             <div class="form-group">
             <label for="promocode">Promocode:</label>
             <input type="text" id="promocode" name="promocode" placeholder="Enter promocode here">
+             <button id="check-promo-btn" class="check-promo-btn" type="button" style="width: 50%; margin-top: 10px; ">Check Promocode</button>
+        <div id="promo-response" style="color: white;"></div>
         </div>
             <div class="form-group">
                 <button id="place-order-button">Check Order</button>
@@ -650,6 +652,22 @@ function generateOrderId(length = 10) {
         }
     });
 
+    $('#check-promo-btn').on('click', function() {
+    const prom = $('#promocode').val();
+        console.log(promocodes)
+    // Check if email is provided
+    if (prom) {
+    if (prom in promocodes) {
+        $('#promo-response').text('Valid Promocode!');
+
+        // Promo code exists, do something here
+    } else {
+        // Promo code does not exist
+        $('#promo-response').text('Invalid promo code.');
+    }
+} else {
+}
+});
 
     
     $('#check-email-btn').on('click', function() {
@@ -749,7 +767,7 @@ items.forEach(function(item) {
                     </div>
                 `;
             });
-            let price_before_discount = subtotal + shippingFee
+            price_before_discount = subtotal + shippingFee
             let isDiscount = false;
             let discount_text = ''
             let shipping_text = ''
@@ -842,6 +860,7 @@ items.forEach(function(item) {
     const addText = document.getElementById('additional-text').textContent.trim();
     const usedCode = $('#promocode').val().trim();
     
+
     // Check if required fields are not empty
     if (!deliveryAddress || !deliveryState || !deliveryDate || !contactInfo) {
         alert('Please fill in all required fields before confirming your order.');
@@ -860,7 +879,6 @@ items.forEach(function(item) {
         const quantity = container.querySelector('.quantity').value; // Get quantity
         const selectedOption = container.querySelector('.custom-select option:checked'); // Get selected option
         const weightType = selectedOption ? selectedOption.textContent : ''; // Get weight type
-        
         // Add item details to orderItems array
         if (productName && price && quantity) {
             orderItems.push({
@@ -904,8 +922,8 @@ items.forEach(function(item) {
                 shippingfee: shippingFee,
                 total:total,
                 usedcode: usedCode,
-                additional: addText
-                
+                additional: addText,
+                def_disc: price_before_discount
             };
         
             console.log('Order Data:', orderData); // Debugging: check the order data

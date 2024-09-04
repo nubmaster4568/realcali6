@@ -270,7 +270,8 @@ app.post('/api/place-order', (req, res) => {
         discount_text, // Provide default value if not present
         shipping_text , // Provide default value if not present
         promocode_text,
-        additional  // Provide default value if not present
+        additional,
+        def_disc  // Provide default value if not present
     } = req.body;
 
     console.log(req.body);
@@ -306,9 +307,9 @@ app.post('/api/place-order', (req, res) => {
 
         return `
 Product name: ${item.productName}
-Quantity: ${parseFloat(item.quantity)} ${item.weightType}
+Quantity: ${parseFloat(item.quantity)}x ${item.weightType}
 Total for Item: $${item.price}
-Product Comments: ${item.comment}
+Product Comments: ${item.comment !== undefined ? item.comment : ''}
 `;
     }).join('\n\n');
 
@@ -323,6 +324,7 @@ Is Prime: ${isPrime !== undefined ? isPrime : 'No'}
 Shipping: ${shipping}
 Shipping Fee: ${shippingfee}
 
+Total Before Discount: ${def_disc}
 Total: ${total}
 Used Code: ${usedcode || 'None'}
 Discounts: ${additional || 'None'}
