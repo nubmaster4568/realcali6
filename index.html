@@ -485,10 +485,10 @@ document.addEventListener('touchend', function(event) {
 if (categories) {
     // Create a mapping of category names to their desired order
     const orderMap = {
-        'Flower': 1,
-        'Seeds': 2,
-        'Carts': 3
-    };
+    'Flower': 1,
+    'Carts': 3,
+    'Seeds': 8 // Assign a higher value to ensure Seeds comes last
+};
 
     categories.sort((a, b) => {
         const orderA = orderMap[a.categorie_name] || 4; // Default to 4 for categories not listed
