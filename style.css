@@ -728,6 +728,11 @@ body {
     border-radius: 5px;
 }
 
+.comment-section {
+    display: grid;
+    width: 96%
+}
+;
 /* Transaction styling */
 .transaction {
     background-color: #2b2e36;
