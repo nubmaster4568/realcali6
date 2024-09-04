@@ -1079,14 +1079,25 @@ $(document).on('click', '.delete-item', function() {
 });
 // Event listener for quantity type change
 $(document).on('change', '.quantity-type', function() {
-    var listItem = $(this).closest('li');
-    var selectedType = $(this).val();
-    var priceElement = listItem.find('.price');
-    var quantityElement = listItem.find('.quantity');
-    var pricePerUnit;
-    document.querySelector('.increase-quantity').click();
-    document.querySelector('.decrease-quantity').click();
+    // Iterate over all list items in the cart
+    $('.cart-items li').each(function() {
+        // Store the current list item (cart item)
+        var cartItem = $(this);
 
+        // Get the data-id for each product
+
+        // Find the increase and decrease buttons within this cart item
+        var increaseButton = cartItem.find('.increase-quantity');
+        var decreaseButton = cartItem.find('.decrease-quantity');
+
+        // Simulate clicking the increase button for this cart item
+        increaseButton.click();
+
+        // After 1 second (1000 milliseconds), simulate clicking the decrease button
+        setTimeout(function() {
+            decreaseButton.click();
+        }, 5); // 1 second = 1000 milliseconds
+    });
 });
 
 $(document).on('click', '.buy-button-cart', function() {
