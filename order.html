@@ -657,13 +657,15 @@ function generateOrderId(length = 10) {
     $('#check-promo-btn').on('click', function() {
     const prom = $('#promocode').val();
         console.log(promocodes)
-    // Check if email is provided
-    if (prom) {
-    if (prom in promocodes) {
-        $('#promo-response').text('Valid Promocode!');
+        const promLower = prom.toLowerCase();
+const promocodesLower = Object.keys(promocodes).map(code => code.toLowerCase());
 
-        // Promo code exists, do something here
-    } else {
+    if (prom) {
+        if (promocodesLower.includes(promLower)) {
+    $('#promo-response').text('Valid Promocode!');
+
+    // Promo code exists, do something here
+} else {
         // Promo code does not exist
         $('#promo-response').text('Invalid promo code.');
     }
@@ -800,19 +802,24 @@ items.forEach(function(item) {
             let promocodeapplied = false
             console.log(shipping_text,'TEXT')
             
-            const promocode = $('#promocode').val().trim(); // Get the value entered by the user
-            if (promocodes.hasOwnProperty(promocode)) {
-                const discount = promocodes[promocode];
-                if( discount > 20 && isPrime ) {
-                    usedcode = promocode
-                    console.log('Discount bigger hten 20',discount)
-                    totalPrice *= 1 - (discount / 100);
-                    console.log(totalPrice,'Total Price after Discount bigiger then 30')
-                    promocode_text = `Promo code applied! ${discount}% discount.`
-                    console.log(isPrime,'Is Prime')
-                    promocodeapplied = true
+            const promocode = $('#promocode').val().trim();
+            const promocodeLower = promocode.toLowerCase();
+const promocodesLower = Object.keys(promocodes).reduce((acc, key) => {
+    acc[key.toLowerCase()] = promocodes[key];
+    return acc;
+}, {});
 
-                } else if (!isPrime) {
+if (promocodesLower.hasOwnProperty(promocodeLower)) {
+    const discount = promocodesLower[promocodeLower];
+    if (discount > 20 && isPrime) {
+        usedcode = promocode;
+        console.log('Discount bigger than 20:', discount);
+        totalPrice *= 1 - (discount / 100);
+        console.log(totalPrice, 'Total Price after Discount bigger than 20');
+        promocode_text = `Promo code applied! ${discount}% discount.`;
+        console.log(isPrime, 'Is Prime');
+        promocodeapplied = true;
+    } else if (!isPrime) {
                     totalPrice *= 1 - (discount / 100);
                     promocode_text = `Promo code applied! ${discount}% discount.`
                 }
