@@ -192,6 +192,8 @@ document.addEventListener('click', function(event) {
             fetchPromocodes();
         
             const username = getUrlParameter(`username-0`)
+            const userId = getUrlParameter(`userId-0`)
+
             if (username) {
     $.ajax({
         url: '/check-username', // The endpoint on your server to check the username
@@ -923,7 +925,8 @@ items.forEach(function(item) {
                 total:total,
                 usedcode: usedCode,
                 additional: addText,
-                def_disc: price_before_discount
+                def_disc: price_before_discount,
+                userId: userId
             };
         
             console.log('Order Data:', orderData); // Debugging: check the order data

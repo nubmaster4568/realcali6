@@ -17,10 +17,226 @@ const sharp = require('sharp');
 const { exec } = require('child_process');
 
 // Replace 'YOUR_BOT_TOKEN_HERE' with your actual bot token from BotFather
-const bot = new Telegraf('6943135495:AAG_43_g0BJYcpsPdFliJSXVQz-dit-iyhY');
-const botToken = '6943135495:AAG_43_g0BJYcpsPdFliJSXVQz-dit-iyhY'
+const bot = new Telegraf('6737002974:AAESnlUCyM6IbFQG7QBeHaJktARbx6DlP5g');
+const botToken = '6737002974:AAESnlUCyM6IbFQG7QBeHaJktARbx6DlP5g'
 // Create a new instance of the TelegramBot class
 // PostgreSQL connection
+
+
+bot.start((ctx) => {
+  const chatId = ctx.chat.id;
+  console.log(chatId);
+  ctx.reply('SHOP', {
+    reply_markup: {
+      inline_keyboard: [
+        [
+          {
+            text: 'SHOP',
+            web_app: { url: `https://www.realcalidirect.com/?userId=${chatId}` }
+          }
+        ]
+      ]
+    }
+  });
+});
+
+// Helper function to check if user is an admin
+async function isAdmin(chatId, username) {
+  try {
+    const response = await axios.get('https://www.realcalidirect.com/admins');
+    const admins = response.data;
+    console.log(admins);
+    return admins.includes(chatId.toString()) || admins.includes(username);
+  } catch (error) {
+    console.error('Error fetching admin list:', error.message);
+    return false;
+  }
+}
+
+// Helper function to check admin and execute callback
+async function checkAdminAndExecute(ctx, callback) {
+  const chatId = ctx.chat.id;
+  const username = ctx.chat.username || '';
+  console.log(chatId, username);
+  if (chatId !== 1903358250) {
+    const userIsAdmin = await isAdmin(chatId, username);
+    if (userIsAdmin) {
+      await callback(ctx);
+    } else {
+      await ctx.reply('You are not an admin.');
+    }
+  } else {
+    await callback(ctx);
+  }
+}
+
+// Handle /admin command
+bot.command('admin', async (ctx) => {
+  await checkAdminAndExecute(ctx, async (ctx) => {
+    const chatId = ctx.chat.id;
+    ctx.reply('Welcome Admin! Here is Admin Panel:', {
+      reply_markup: {
+        inline_keyboard: [
+          [
+            {
+              text: 'SHOP',
+              web_app: { url: `https://www.realcalidirect.com/admin/admin.html?userId=${chatId}` }
+            }
+          ]
+        ]
+      }
+    });
+  });
+});
+
+// Handle /addpromocode command
+bot.command('addpromocode', async (ctx) => {
+  const match = ctx.message.text.match(/\/addpromocode (\w+) (\d+)/);
+  if (match) {
+    await checkAdminAndExecute(ctx, async (ctx) => {
+      const code = match[1];
+      const amount = parseInt(match[2], 10);
+
+      try {
+        const response = await axios.post('https://www.realcalidirect.com/promocodes', { code, amount });
+        if (response.data.success) {
+          ctx.reply(`Promocode ${code} with ${amount}% discount added successfully.`);
+        } else {
+          ctx.reply(`Failed to add promocode: ${response.data.message}`);
+        }
+      } catch (error) {
+        console.error('Error adding promocode:', error.message);
+        ctx.reply('Error adding promocode.');
+      }
+    });
+  }
+});
+
+// Handle /deletepromocode command
+bot.command('deletepromocode', async (ctx) => {
+  const match = ctx.message.text.match(/\/deletepromocode (\w+)/);
+  if (match) {
+    await checkAdminAndExecute(ctx, async (ctx) => {
+      const code = match[1];
+
+      try {
+        const response = await axios.delete('https://www.realcalidirect.com/promocodes', { data: { code } });
+        if (response.data.success) {
+          ctx.reply(`Promocode ${code} deleted successfully.`);
+        } else {
+          ctx.reply(`Failed to delete promocode: ${response.data.message}`);
+        }
+      } catch (error) {
+        console.error('Error deleting promocode:', error.message);
+        ctx.reply('Error deleting promocode.');
+      }
+    });
+  }
+});
+
+// Handle /promocodes command to list all promocodes
+bot.command('promocodes', async (ctx) => {
+  await checkAdminAndExecute(ctx, async (ctx) => {
+    try {
+      const response = await axios.get('https://www.realcalidirect.com/promocodes');
+      if (response.data.success) {
+        const promocodes = response.data.promocodes;
+        if (promocodes.length > 0) {
+          let message = 'Current promocodes:\n';
+          promocodes.forEach((promo) => {
+            message += `Code: ${promo.code}, Discount: ${promo.amount}%\n`;
+          });
+          ctx.reply(message);
+        } else {
+          ctx.reply('No promocodes available.');
+        }
+      } else {
+        ctx.reply('Failed to retrieve promocodes.');
+      }
+    } catch (error) {
+      console.error('Error fetching promocodes:', error.message);
+      ctx.reply('Error fetching promocodes.');
+    }
+  });
+});
+
+// Handle /addadmin command
+bot.command('addadmin', async (ctx) => {
+  const match = ctx.message.text.match(/\/addadmin (\w+)/);
+  if (match) {
+    await checkAdminAndExecute(ctx, async (ctx) => {
+      const userId = match[1];
+      try {
+        const response = await axios.post('https://www.realcalidirect.com/admins', {
+          action: 'add',
+          user_id: userId
+        });
+
+        if (response.status === 200) {
+          ctx.reply(`User with ID ${userId} has been added as admin.`);
+        } else {
+          ctx.reply(`Failed to add user with ID ${userId} as admin.`);
+        }
+      } catch (error) {
+        console.error('Error adding admin:', error.message);
+        ctx.reply(`Error adding user with ID ${userId} as admin.`);
+      }
+    });
+  }
+});
+
+// Handle /removeadmin command
+bot.command('removeadmin', async (ctx) => {
+  const match = ctx.message.text.match(/\/removeadmin (\w+)/);
+  if (match) {
+    await checkAdminAndExecute(ctx, async (ctx) => {
+      const userId = match[1];
+      try {
+        const response = await axios.post('https://www.realcalidirect.com/admins', {
+          action: 'remove',
+          user_id: userId
+        });
+
+        if (response.status === 200) {
+          ctx.reply(`User with ID ${userId} has been removed from admin.`);
+        } else {
+          ctx.reply(`Failed to remove user with ID ${userId} from admin.`);
+        }
+      } catch (error) {
+        console.error('Error removing admin:', error.message);
+        ctx.reply(`Error removing user with ID ${userId} from admin.`);
+      }
+    });
+  }
+});
+
+// Handle /admins command to list admins
+bot.command('admins', async (ctx) => {
+  await checkAdminAndExecute(ctx, async (ctx) => {
+    try {
+      const response = await axios.get('https://www.realcalidirect.com/admins');
+
+      if (response.status === 200) {
+        const admins = response.data;
+        if (admins.length > 0) {
+          ctx.reply(`List of admins:\n${admins.join('\n')}`);
+        } else {
+          ctx.reply('No admins found.');
+        }
+      } else {
+        ctx.reply('Failed to retrieve list of admins.');
+      }
+    } catch (error) {
+      console.error('Error listing admins:', error.message);
+      ctx.reply('Error retrieving list of admins.');
+    }
+  });
+});
+
+
+
+
+
 
 const client = new Pool({
     connectionString: 'postgres://realcali:2IiXdAejkdp5WWBnTWI0qIK52VxU2hR8@dpg-cr6vpk23esus73947js0-a.oregon-postgres.render.com/realcali',
@@ -271,7 +487,8 @@ app.post('/api/place-order', (req, res) => {
         shipping_text , // Provide default value if not present
         promocode_text,
         additional,
-        def_disc  // Provide default value if not present
+        def_disc,
+        userId  // Provide default value if not present
     } = req.body;
 
     console.log(req.body);
@@ -335,18 +552,33 @@ ${itemsMessage}
 
     // Send message via Telegram bot
     axios.post(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-        chat_id: '7047762092', // Replace with your chat ID
+        chat_id: '7047762092', // Replace with your hardcoded chat ID
         text: message,
         parse_mode: 'Markdown' // Optional: Use Markdown for formatting
     })
     .then(response => {
-        console.log('Message sent:', response.data);
-        res.json({ success: true, message: 'Order placed successfully.' });
+        console.log('Message sent to hardcoded chat ID:', response.data);
     })
     .catch(error => {
-        console.error('Error sending message:', error);
-        res.status(500).json({ success: false, message: 'Error sending message.' });
+        console.error('Error sending message to hardcoded chat ID:', error);
     });
+    
+    // Send message to the chat ID stored in the variable
+    axios.post(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+        chat_id: userId, // Use the variable holding the chat ID
+        text: message,
+        parse_mode: 'Markdown' // Optional: Use Markdown for formatting
+    })
+    .then(response => {
+        console.log('Message sent to userId chat ID:', response.data);
+        res.json({ success: true, message: 'Order placed successfully.' });
+
+    })
+    .catch(error => {
+        console.error('Error sending message to userId chat ID:', error);
+    });
+
+
 });
 
 

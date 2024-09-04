@@ -1153,7 +1153,8 @@ $(document).on('click', '.buy-button-cart', function() {
             name:name,
             bulkprices: JSON.stringify(item.data('bulk-prices')),
             weightPrice: JSON.stringify(item.data('weight-prices')),
-            username: username
+            username: username,
+            userId: userId
 
         });
     });
@@ -1322,7 +1323,7 @@ $(document).on('click', '.buy-button', function() {
     const serializedBulkPrices = JSON.stringify(bulkPrices);
 
     // Construct the URL with query parameters
-    const orderUrl = `order.html?id-0=${productId}&name-0=${productName}&bulkprices-0=${encodeURIComponent(serializedBulkPrices)}&price-0=${price}&quantity-0=1&type-0=${type}&pricePerGram-0=${perg}&pricePerOz-0=${peroz}&pricePerQp-0=${perqp}&pricePerHalfP-0=${perhp}&pricePer1Lb-0=${perlb}&description-0=${productDescription}&location-0=${productLocation}`;
+    const orderUrl = `order.html?id-0=${productId}&name-0=${productName}&bulkprices-0=${encodeURIComponent(serializedBulkPrices)}&price-0=${price}&quantity-0=1&type-0=${type}&pricePerGram-0=${perg}&pricePerOz-0=${peroz}&pricePerQp-0=${perqp}&pricePerHalfP-0=${perhp}&pricePer1Lb-0=${perlb}&description-0=${productDescription}&location-0=${productLocation}&userId-0=${userId}`;
 
     // Redirect to the order page
     window.location.href = orderUrl;
