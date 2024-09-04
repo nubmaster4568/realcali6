@@ -894,9 +894,9 @@ if (promocodesLower.hasOwnProperty(promocodeLower)) {
         const quantity = container.querySelector('.quantity').value; // Get quantity
         const selectedOption = container.querySelector('.custom-select option:checked'); // Get selected option
         const weightType = selectedOption ? selectedOption.textContent : '';
-        const textarea = document.getElementById('comments');
+        const textarea = document.querySelector('.comment-section textarea');
         const comm = textarea.value.trim(); // Trim whitespace and new lines
-
+        console.log(comm)
 function isTextareaEmpty() {
     const value = textarea.value.trim(); // Trim whitespace and new lines
     return value === ''; // Return true if empty
@@ -962,7 +962,7 @@ function isTextareaEmpty() {
                     console.log('Order response:', response); // Debugging: check server response
                     if (response.success) {
                         alert('Order Sent. Please message @RealCaliDirect with your Order ID for payment');
-                        window.location.href = `index.html`;
+                        //window.location.href = `index.html`;
 
                     } else {
                         alert('Failed to place order.');
