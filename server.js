@@ -235,6 +235,7 @@ bot.command('admins', async (ctx) => {
 
 
 
+bot.launch();
 
 
 
