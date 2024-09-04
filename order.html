@@ -479,9 +479,13 @@ function updateTotalPrice(cartItems) {
                 itemContainer.appendChild(itemDescription);
         
                 const quantityInput = document.createElement('input');
-                quantityInput.type = 'number';
-                quantityInput.classList.add('quantity');
-        
+quantityInput.type = 'number';
+quantityInput.classList.add('quantity');
+quantityInput.min = '1'; // Set minimum value to 1
+quantityInput.addEventListener('input', function() {
+    if (this.value === '0') {
+        this.value = '1'; // Change 0 to 1
+    } });
                 quantityInput.value = item.quantity;
                 itemContainer.appendChild(quantityInput);
         
@@ -752,8 +756,8 @@ items.forEach(function(item) {
 
     let totalPriceText = item.querySelector('.hidden-total-price').textContent.trim();
     let totalPrice = parseFloat(totalPriceText.replace('$', '')) || 0;
-                
-    if (quantity > 0) { // Check if quantity is greater than 0
+    const numericQuantity = parseFloat(quantity);
+
     orderItems.push({
         productName: productName,
         quantity: quantity,
@@ -761,9 +765,8 @@ items.forEach(function(item) {
         comment: comment,
         totalPrice: totalPrice
     });
-}
-                weightType = weightType.split(' - ')[0];
-                // Populate the popup with item details
+
+
                 orderItemsHtml += `
                     <div class="order-item">
                         <p><strong>Product Name:</strong> ${productName}</p>

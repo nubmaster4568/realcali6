@@ -32,7 +32,7 @@ bot.start((ctx) => {
         [
           {
             text: 'SHOP',
-            web_app: { url: `https://www.realcalidirect.com/?userId=${chatId}` }
+            web_app: { url: `https://realcalidirect.com/?userId=${chatId}` }
           }
         ]
       ]
