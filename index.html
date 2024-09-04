@@ -865,6 +865,9 @@ $(document).on('click', '.add-button', function() {
 
 
 });
+
+
+
 $(document).on('click', '.increase-quantity', function() {
     var cartItem = $(this).closest('li');
     var bulkPrices = cartItem.data('bulk-prices');
@@ -1074,7 +1077,6 @@ $(document).on('click', '.delete-item', function() {
         updateBuyButton();
     }, 500); // Duration of the animation in milliseconds
 });
-
 // Event listener for quantity type change
 $(document).on('change', '.quantity-type', function() {
     var listItem = $(this).closest('li');
@@ -1082,38 +1084,9 @@ $(document).on('change', '.quantity-type', function() {
     var priceElement = listItem.find('.price');
     var quantityElement = listItem.find('.quantity');
     var pricePerUnit;
+    document.querySelector('.increase-quantity').click();
+    document.querySelector('.decrease-quantity').click();
 
-    // Get the price per unit based on selected type
-    switch (selectedType) {
-        case '1':
-            pricePerUnit = parseFloat(listItem.data('price-per-gram'));
-            break;
-        case '2':
-            pricePerUnit = parseFloat(listItem.data('price-per-oz'));
-            break;
-        case '3':
-            pricePerUnit = parseFloat(listItem.data('price-per-qp'));
-            break;
-        case '4':
-            pricePerUnit = parseFloat(listItem.data('price-per-half-p'));
-            break;
-        case '5':
-            pricePerUnit = parseFloat(listItem.data('price-per-1lb'));
-            break;
-            case '6':
-            pricePerUnit = parseFloat(listItem.data('price'));
-            break; 
-        default:
-            pricePerUnit = 0;
-    }
-
-    // Calculate new price
-    var quantity = parseInt(quantityElement.text());
-    var newPrice = pricePerUnit * quantity;
-
-    // Update price in the UI
-    priceElement.text(`Price: $${newPrice.toFixed(2)}`);
-    updateBuyButton(); // Ensure buy button is updated
 });
 
 $(document).on('click', '.buy-button-cart', function() {
