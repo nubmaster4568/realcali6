@@ -772,8 +772,10 @@ items.forEach(function(item) {
                         <p><strong>Product Name:</strong> ${productName}</p>
                         <p><strong>Quantity:</strong> ${quantity} ${weightType}</p>
                         <p><strong>Total:</strong> $${totalPrice}</p>
-                        <p><strong>Comment:</strong> ${comment}</p>
-                    </div>
+<div>
+    <strong>Comment:</strong>
+    <p>${comment}</p>
+</div>                    </div>
                 `;
             });
             price_before_discount = subtotal + shippingFee
@@ -891,14 +893,22 @@ if (promocodesLower.hasOwnProperty(promocodeLower)) {
         const price = parseFloat(container.querySelector('.hidden-total-price').textContent.replace(/[$,]/g, '')); // Get price
         const quantity = container.querySelector('.quantity').value; // Get quantity
         const selectedOption = container.querySelector('.custom-select option:checked'); // Get selected option
-        const weightType = selectedOption ? selectedOption.textContent : ''; // Get weight type
+        const weightType = selectedOption ? selectedOption.textContent : '';
+        const textarea = document.getElementById('comments');
+
+function isTextareaEmpty() {
+    const value = textarea.value.trim(); // Trim whitespace and new lines
+    return value === ''; // Return true if empty
+}
+ // Get weight type
         // Add item details to orderItems array
         if (productName && price && quantity && quantity > 0) {
             orderItems.push({
                 productName,
                 price,
                 quantity,
-                weightType
+                weightType,
+                textarea
             });
         }
     });

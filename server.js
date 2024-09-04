@@ -527,7 +527,7 @@ app.post('/api/place-order', (req, res) => {
 Product name: ${item.productName}
 Quantity: ${parseFloat(item.quantity)}x ${item.weightType}
 Total for Item: $${item.price}
-Product Comments: ${item.comment !== undefined ? item.comment : ''}
+Product Comments: ${item && item.textarea !== undefined ? item.textarea : ''}
 `;
     }).join('\n\n');
 
