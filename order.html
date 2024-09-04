@@ -870,7 +870,6 @@ items.forEach(function(item) {
     }
 
     // If all required fields are filled
-    alert('Order confirmed!');
 
     let orderItems = []; // Array to hold the order items
 
@@ -939,7 +938,7 @@ items.forEach(function(item) {
                 success: function(response) {
                     console.log('Order response:', response); // Debugging: check server response
                     if (response.success) {
-                        alert('Order Sent. You will be contacted soon');
+                        alert('Order Sent. You will be contacted soon. Please message @RealCaliDirect with your Order ID for payment');
                         window.location.href = `index.html`;
 
                     } else {
