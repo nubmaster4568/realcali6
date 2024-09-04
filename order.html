@@ -95,7 +95,9 @@
         <h2>Order Details</h2>
         <h3>Order Id: <span id="orderId"></span></h3>
         <p><strong>Name:</strong> <span id="popup-date"></span></p>
-        <p><strong>Delivery Address:</strong> <span id="popup-address"></span></p>
+        <p><strong>Street Address:</strong> <span id="popup-address"></span></p>
+        <p><strong>City, State, Zip:</strong> <span id="popup-state"></span></p>
+
         <p><strong>Contact Info:</strong> <span id="popup-contact"></span></p>
         <p><strong>Comments:</strong> <span id="popup-comments"></span></p>
         <p><strong>Shipping:</strong> <span id="shipping"></span></p>
@@ -843,7 +845,9 @@ if (promocodesLower.hasOwnProperty(promocodeLower)) {
             }
             
         
-            document.getElementById('popup-address').textContent = address + ' ' + state;
+            document.getElementById('popup-address').textContent = address ;
+            document.getElementById('popup-state').textContent =  state;
+
             document.getElementById('subtotal').textContent = `$${totalPrice.toFixed(2)}`;
             document.getElementById('orderId').textContent = randomId;
             document.getElementById('popup-date').textContent = date;

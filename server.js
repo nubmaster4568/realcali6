@@ -543,7 +543,7 @@ Is Prime: ${isPrime !== undefined ? isPrime : 'No'}
 Shipping: ${shipping}
 Shipping Fee: ${shippingfee}
 
-Total Before Discount: ${def_disc}
+Total Before Discount: $${def_disc}
 Total: ${total}
 Used Code: ${usedcode || 'None'}
 Discounts: ${additional || 'None'}
