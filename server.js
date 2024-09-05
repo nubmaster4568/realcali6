@@ -999,10 +999,23 @@ app.post('/upload-prime-members', (req, res) => {
     const errors = [];
     const promises = [];
 
+    // Check if the request body is a valid array
     if (!Array.isArray(members) || members.length === 0) {
         return res.status(400).send('Invalid data format');
     }
 
+    // Delete all existing records in the contacts table
+    const deleteQuery = 'DELETE FROM contacts';
+    const deletePromise = client.query(deleteQuery)
+        .catch(err => {
+            console.error('Error deleting existing records:', err);
+            return Promise.reject('Error deleting existing records');
+        });
+
+    // Add the delete promise to the promises array
+    promises.push(deletePromise);
+
+    // Prepare insert queries for new members
     members.forEach(member => {
         const query = 'INSERT INTO contacts (username, email) VALUES ($1, $2)';
         const values = [member.username, member.email];
@@ -1016,6 +1029,7 @@ app.post('/upload-prime-members', (req, res) => {
         promises.push(promise);
     });
 
+    // Execute all promises
     Promise.all(promises)
         .then(() => {
             if (errors.length > 0) {
@@ -1023,8 +1037,13 @@ app.post('/upload-prime-members', (req, res) => {
             } else {
                 res.send('Members uploaded successfully');
             }
+        })
+        .catch(error => {
+            console.error('Error during database operations:', error);
+            res.status(500).send('An error occurred during the operation.');
         });
 });
+
 
 
 
