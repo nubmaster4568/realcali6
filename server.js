@@ -43,7 +43,7 @@ bot.start((ctx) => {
 // Helper function to check if user is an admin
 async function isAdmin(chatId, username) {
   try {
-    const response = await axios.get('https://www.realcalidirect.com/admins');
+    const response = await axios.get('http://localhost:3000/admins');
     const admins = response.data;
     console.log(admins);
     return admins.includes(chatId.toString()) || admins.includes(username);
@@ -69,7 +69,34 @@ async function checkAdminAndExecute(ctx, callback) {
     await callback(ctx);
   }
 }
-
+bot.command('discount', async (ctx) => {
+    const args = ctx.message.text.split(' ').slice(1); // Get the command arguments
+    const discountValue = parseFloat(args[0]); // Parse the discount value
+  
+    if (isNaN(discountValue) || discountValue < 0 || discountValue > 1) {
+      ctx.reply('Please provide a valid discount value between 0 and 1 (e.g., /discount 0.80).');
+      return;
+    }
+  
+    await checkAdminAndExecute(ctx, async (ctx) => {
+      try {
+        // Call your server to save the discount
+        const response = await axios.post('http://localhost:3000/api/discount', {
+          discount: discountValue,
+        });
+  
+        // Respond to the user based on the server response
+        if (response.status === 200) {
+          ctx.reply(`Discount of ${discountValue * 100}% saved successfully!`);
+        } else {
+          ctx.reply('Failed to save the discount. Please try again.');
+        }
+      } catch (error) {
+        console.error('Error saving discount:', error);
+        ctx.reply('An error occurred while saving the discount. Please try again later.');
+      }
+    });
+  });
 // Handle /admin command
 bot.command('admin', async (ctx) => {
   await checkAdminAndExecute(ctx, async (ctx) => {
@@ -80,7 +107,7 @@ bot.command('admin', async (ctx) => {
           [
             {
               text: 'SHOP',
-              web_app: { url: `https://www.realcalidirect.com/admin/admin.html?userId=${chatId}` }
+              web_app: { url: `http://localhost:3000/admin/admin.html?userId=${chatId}` }
             }
           ]
         ]
@@ -98,7 +125,7 @@ bot.command('addpromocode', async (ctx) => {
       const amount = parseInt(match[2], 10);
 
       try {
-        const response = await axios.post('https://www.realcalidirect.com/promocodes', { code, amount });
+        const response = await axios.post('http://localhost:3000/promocodes', { code, amount });
         if (response.data.success) {
           ctx.reply(`Promocode ${code} with ${amount}% discount added successfully.`);
         } else {
@@ -120,7 +147,7 @@ bot.command('deletepromocode', async (ctx) => {
       const code = match[1];
 
       try {
-        const response = await axios.delete('https://www.realcalidirect.com/promocodes', { data: { code } });
+        const response = await axios.delete('http://localhost:3000/promocodes', { data: { code } });
         if (response.data.success) {
           ctx.reply(`Promocode ${code} deleted successfully.`);
         } else {
@@ -138,7 +165,7 @@ bot.command('deletepromocode', async (ctx) => {
 bot.command('promocodes', async (ctx) => {
   await checkAdminAndExecute(ctx, async (ctx) => {
     try {
-      const response = await axios.get('https://www.realcalidirect.com/promocodes');
+      const response = await axios.get('http://localhost:3000/promocodes');
       if (response.data.success) {
         const promocodes = response.data.promocodes;
         if (promocodes.length > 0) {
@@ -167,7 +194,7 @@ bot.command('addadmin', async (ctx) => {
     await checkAdminAndExecute(ctx, async (ctx) => {
       const userId = match[1];
       try {
-        const response = await axios.post('https://www.realcalidirect.com/admins', {
+        const response = await axios.post('http://localhost:3000/admins', {
           action: 'add',
           user_id: userId
         });
@@ -192,7 +219,7 @@ bot.command('removeadmin', async (ctx) => {
     await checkAdminAndExecute(ctx, async (ctx) => {
       const userId = match[1];
       try {
-        const response = await axios.post('https://www.realcalidirect.com/admins', {
+        const response = await axios.post('http://localhost:3000/admins', {
           action: 'remove',
           user_id: userId
         });
@@ -214,7 +241,7 @@ bot.command('removeadmin', async (ctx) => {
 bot.command('admins', async (ctx) => {
   await checkAdminAndExecute(ctx, async (ctx) => {
     try {
-      const response = await axios.get('https://www.realcalidirect.com/admins');
+      const response = await axios.get('http://localhost:3000/admins');
 
       if (response.status === 200) {
         const admins = response.data;
@@ -497,6 +524,7 @@ app.post('/api/place-order', (req, res) => {
     if (!Array.isArray(items) || items.length === 0) {
         return res.status(400).json({ success: false, message: 'No items in order.' });
     }
+    const primeGiftText = isPrime === true ? 'Add double mystery gifts' : ''; // Check if user is prime
 
     // Prepare message content
     let itemsMessage = items.map(item => {
@@ -549,6 +577,9 @@ Used Code: ${usedcode || 'None'}
 Discounts: ${additional || 'None'}
 
 Order Items:
+
+${primeGiftText}
+
 ${itemsMessage}
     `;
 
@@ -625,6 +656,45 @@ app.post('/admins', async (req, res) => {
     } catch (err) {
         console.error('Error handling admin user request:', err.message);
         res.status(500).send('Internal server error.');
+    }
+});
+app.post('/api/discount', async (req, res) => {
+    const { discount } = req.body;
+
+    try {
+        // Delete all existing discounts
+        await client.query('DELETE FROM discount');
+
+        // Insert the new discount into the database
+        const query = 'INSERT INTO discount (discount) VALUES ($1)';
+        await client.query(query, [discount]);
+
+        res.status(200).send('Discount saved successfully');
+    } catch (error) {
+        console.error('Error saving discount:', error);
+        res.status(500).send('Error saving discount');
+    }
+})
+
+
+app.get('/api/discount', async (req, res) => {
+    try {
+        // Query to select one discount
+        const result = await client.query('SELECT discount FROM discount LIMIT 1');
+
+        // Check if any discount is found
+        if (result.rows.length > 0) {
+            // Respond with the discount
+            console.log(result.rows[0].discount )
+            res.json({ discount: result.rows[0].discount });
+        } else {
+            // If no discount found, respond with a message
+            res.json({ discount: null, message: 'No discount found' });
+        }
+    } catch (error) {
+        console.error('Error retrieving discount:', error);
+        // Respond with an internal server error
+        res.status(500).json({ message: 'Internal server error' });
     }
 });
 
@@ -1008,7 +1078,7 @@ app.post('/check-username', async (req, res) => {
 
 app.get('/auth', (req, res) => {
     const clientId = 'YOUR_APP_KEY';
-    const redirectUri = 'https://www.realcalidirect.com/auth/callback'; // Your redirect URI
+    const redirectUri = 'http://localhost:3000/auth/callback'; // Your redirect URI
     res.redirect(`https://www.dropbox.com/oauth2/authorize?client_id=${clientId}&response_type=code&redirect_uri=${redirectUri}`);
 });
 

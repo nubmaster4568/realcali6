@@ -137,7 +137,29 @@
     <script src='https://api.mapbox.com/mapbox-gl-js/v2.9.0/mapbox-gl.js'></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
     <script>document.addEventListener('DOMContentLoaded', function() {
-
+async function getCurrentDiscount() {
+    try {
+        const response = await fetch('http://localhost:3000/api/discount'); // Replace with your actual server endpoint
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const data = await response.json(); // Assuming the server returns JSON
+        return data.discount; // Assuming the discount is in a field called 'discountPercentage'
+    } catch (error) {
+        console.error('Error fetching discount:', error);
+        return null; // Return null or some default value if the request fails
+    }
+}
+let current_discount;
+// Example usage
+getCurrentDiscount().then(discount => {
+    if (discount !== null) {
+        current_discount = discount
+        console.log(discount)
+    } else {
+        console.log('Could not retrieve discount');
+    }
+});
         let price_before_discount;
 document.addEventListener('click', function(event) {
         // Get all input fields
@@ -170,7 +192,7 @@ document.addEventListener('click', function(event) {
         
         function fetchPromocodes() {
             $.ajax({
-                url: 'https://www.realcalidirect.com/get-promocodes', // The URL endpoint on your server
+                url: 'http://localhost:3000/get-promocodes', // The URL endpoint on your server
                 type: 'GET', // HTTP method
                 dataType: 'json', // The type of data you're expecting back from the server
                 success: function(response) {
@@ -208,7 +230,7 @@ document.addEventListener('click', function(event) {
                 // User is a prime member
                 isPrime = true
                 $('.form-group.prime').remove(); // Remove the prime question
-                $('.primetext').append('<div class="prime-message">We know you are a prime member! You will get 20% discount</div>');
+                $('.primetext').append(`<div class="prime-message">We know you are a prime member! You will get ${Math.round((1 - current_discount)* 100)} discount</div>`);
             } else {
                 console.log(`User ${username} does not exist.`);
                 // Additional logic for when the user does not exist
@@ -839,8 +861,8 @@ if (promocodesLower.hasOwnProperty(promocodeLower)) {
                 console.log('Invalid promo code.');
             }
             if (isPrime && !promocodeapplied) {
-                totalPrice *= 0.80
-                discount_text += 'Prime Member 20% Discount!'
+                totalPrice *= current_discount
+                discount_text += `Prime Member ${Math.round((1 - current_discount)* 100)}% Discount!`
 
             }
             
@@ -879,7 +901,7 @@ if (promocodesLower.hasOwnProperty(promocodeLower)) {
     const comments = document.getElementById('comments').value.trim();
     const addText = document.getElementById('additional-text').textContent.trim();
     const usedCode = $('#promocode').val().trim();
-    
+
 
     // Check if required fields are not empty
     if (!deliveryAddress || !deliveryState || !deliveryDate || !contactInfo) {
@@ -907,7 +929,7 @@ function isTextareaEmpty() {
 }
  // Get weight type
         // Add item details to orderItems array
-        if (productName && price && quantity && quantity > 0) {
+        
             orderItems.push({
                 productName,
                 price,
@@ -915,7 +937,7 @@ function isTextareaEmpty() {
                 weightType,
                 comm
             });
-        }
+
     });
 
     // Function to remove duplicates
@@ -958,7 +980,7 @@ function isTextareaEmpty() {
             console.log('Order Data:', orderData); // Debugging: check the order data
         
             $.ajax({
-                url: 'https://www.realcalidirect.com/api/place-order',
+                url: 'http://localhost:3000/api/place-order',
                 method: 'POST',
                 data: JSON.stringify(orderData),
                 contentType: 'application/json',
