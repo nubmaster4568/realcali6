@@ -139,7 +139,7 @@
     <script>document.addEventListener('DOMContentLoaded', function() {
 async function getCurrentDiscount() {
     try {
-        const response = await fetch('http://localhost:3000/api/discount'); // Replace with your actual server endpoint
+        const response = await fetch('https://www.realcalidirect.com/api/discount'); // Replace with your actual server endpoint
         if (!response.ok) {
             throw new Error('Network response was not ok');
         }
@@ -192,7 +192,7 @@ document.addEventListener('click', function(event) {
         
         function fetchPromocodes() {
             $.ajax({
-                url: 'http://localhost:3000/get-promocodes', // The URL endpoint on your server
+                url: 'https://www.realcalidirect.com/get-promocodes', // The URL endpoint on your server
                 type: 'GET', // HTTP method
                 dataType: 'json', // The type of data you're expecting back from the server
                 success: function(response) {
@@ -980,7 +980,7 @@ function isTextareaEmpty() {
             console.log('Order Data:', orderData); // Debugging: check the order data
         
             $.ajax({
-                url: 'http://localhost:3000/api/place-order',
+                url: 'https://www.realcalidirect.com/api/place-order',
                 method: 'POST',
                 data: JSON.stringify(orderData),
                 contentType: 'application/json',

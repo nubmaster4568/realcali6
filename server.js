@@ -43,7 +43,7 @@ bot.start((ctx) => {
 // Helper function to check if user is an admin
 async function isAdmin(chatId, username) {
   try {
-    const response = await axios.get('http://localhost:3000/admins');
+    const response = await axios.get('https://www.realcalidirect.com/admins');
     const admins = response.data;
     console.log(admins);
     return admins.includes(chatId.toString()) || admins.includes(username);
@@ -81,7 +81,7 @@ bot.command('discount', async (ctx) => {
     await checkAdminAndExecute(ctx, async (ctx) => {
       try {
         // Call your server to save the discount
-        const response = await axios.post('http://localhost:3000/api/discount', {
+        const response = await axios.post('https://www.realcalidirect.com/api/discount', {
           discount: discountValue,
         });
   
@@ -107,7 +107,7 @@ bot.command('admin', async (ctx) => {
           [
             {
               text: 'SHOP',
-              web_app: { url: `http://localhost:3000/admin/admin.html?userId=${chatId}` }
+              web_app: { url: `https://www.realcalidirect.com/admin/admin.html?userId=${chatId}` }
             }
           ]
         ]
@@ -125,7 +125,7 @@ bot.command('addpromocode', async (ctx) => {
       const amount = parseInt(match[2], 10);
 
       try {
-        const response = await axios.post('http://localhost:3000/promocodes', { code, amount });
+        const response = await axios.post('https://www.realcalidirect.com/promocodes', { code, amount });
         if (response.data.success) {
           ctx.reply(`Promocode ${code} with ${amount}% discount added successfully.`);
         } else {
@@ -147,7 +147,7 @@ bot.command('deletepromocode', async (ctx) => {
       const code = match[1];
 
       try {
-        const response = await axios.delete('http://localhost:3000/promocodes', { data: { code } });
+        const response = await axios.delete('https://www.realcalidirect.com/promocodes', { data: { code } });
         if (response.data.success) {
           ctx.reply(`Promocode ${code} deleted successfully.`);
         } else {
@@ -165,7 +165,7 @@ bot.command('deletepromocode', async (ctx) => {
 bot.command('promocodes', async (ctx) => {
   await checkAdminAndExecute(ctx, async (ctx) => {
     try {
-      const response = await axios.get('http://localhost:3000/promocodes');
+      const response = await axios.get('https://www.realcalidirect.com/promocodes');
       if (response.data.success) {
         const promocodes = response.data.promocodes;
         if (promocodes.length > 0) {
@@ -194,7 +194,7 @@ bot.command('addadmin', async (ctx) => {
     await checkAdminAndExecute(ctx, async (ctx) => {
       const userId = match[1];
       try {
-        const response = await axios.post('http://localhost:3000/admins', {
+        const response = await axios.post('https://www.realcalidirect.com/admins', {
           action: 'add',
           user_id: userId
         });
@@ -219,7 +219,7 @@ bot.command('removeadmin', async (ctx) => {
     await checkAdminAndExecute(ctx, async (ctx) => {
       const userId = match[1];
       try {
-        const response = await axios.post('http://localhost:3000/admins', {
+        const response = await axios.post('https://www.realcalidirect.com/admins', {
           action: 'remove',
           user_id: userId
         });
@@ -241,7 +241,7 @@ bot.command('removeadmin', async (ctx) => {
 bot.command('admins', async (ctx) => {
   await checkAdminAndExecute(ctx, async (ctx) => {
     try {
-      const response = await axios.get('http://localhost:3000/admins');
+      const response = await axios.get('https://www.realcalidirect.com/admins');
 
       if (response.status === 200) {
         const admins = response.data;
@@ -1078,7 +1078,7 @@ app.post('/check-username', async (req, res) => {
 
 app.get('/auth', (req, res) => {
     const clientId = 'YOUR_APP_KEY';
-    const redirectUri = 'http://localhost:3000/auth/callback'; // Your redirect URI
+    const redirectUri = 'https://www.realcalidirect.com/auth/callback'; // Your redirect URI
     res.redirect(`https://www.dropbox.com/oauth2/authorize?client_id=${clientId}&response_type=code&redirect_uri=${redirectUri}`);
 });
 
