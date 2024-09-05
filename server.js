@@ -87,7 +87,7 @@ bot.command('discount', async (ctx) => {
   
         // Respond to the user based on the server response
         if (response.status === 200) {
-          ctx.reply(`Discount of ${discountValue * 100}% saved successfully!`);
+          ctx.reply(`Discount of ${Math.round((1 - discountValue) * 100)}% saved successfully!`);
         } else {
           ctx.reply('Failed to save the discount. Please try again.');
         }
