@@ -578,9 +578,10 @@ Discounts: ${additional || 'None'}
 
 Order Items:
 
+${itemsMessage}
+
 ${primeGiftText}
 
-${itemsMessage}
     `;
 
     // Send message via Telegram bot
